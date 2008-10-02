@@ -241,7 +241,7 @@ public class TextBlockStyleEditor extends StyleEditor {
         if(textDirection != null){
             directionCombo.setSelectedItem(textDirection);
         }else{
-            directionCombo.setSelectedItem("px");
+            directionCombo.setSelectedIndex(0);
         }
         
         wordSpacingUnitCombo.setModel(textBlockModel.getTextBlockUnitList());

@@ -38,25 +38,13 @@
     </folder>
     <folder name="Menu">
         <folder name="GoTo">
-            <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoDomainClassAction-separatorBefore.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                <attr name="position" intvalue="2525"/>
-            </file>
             <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.instance"/>
-                <attr name="position" intvalue="2537"/>
-            </file>
-            <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoDomainClassAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoDomainClassAction.instance"/>
-                <attr name="position" intvalue="2550"/>
+                <attr name="position" intvalue="550"/>
             </file>
             <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.instance"/>
-                <attr name="position" intvalue="2562"/>
-            </file>
-            <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction-separatorAfter.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                <attr name="position" intvalue="2574"/>
+                <attr name="position" intvalue="575"/>
             </file>
         </folder>
     </folder>
@@ -145,6 +133,22 @@
     
     <folder name="Projects">
         <folder name="org-netbeans-modules-groovy-grailsproject">
+            <folder name="Customizer">
+                <file name="General.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.grailsproject.ui.GrailsProjectCustomizerProvider.createGeneral"/>
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="Debugging.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.grailsproject.ui.GrailsProjectCustomizerProvider.createDebugging"/>
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="Formatting.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
+                    <attr name="allowedMimeTypes" stringvalue="text/x-groovy,text/x-java"/>
+                    <attr name="position" intvalue="1000"/>
+                </file>
+            </folder>
 
             <folder name="Nodes">
                 <file name="org-netbeans-modules-groovy-grailsproject-ui-SourceNodeFactory.instance"/>

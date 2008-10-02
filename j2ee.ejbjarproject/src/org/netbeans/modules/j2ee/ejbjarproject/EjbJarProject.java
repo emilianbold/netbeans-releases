@@ -77,6 +77,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSClientSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSSupport;
@@ -1279,7 +1280,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             return true;
         }
 
-        private void fireArtifactChange(Iterable<File> files) {
+        private void fireArtifactChange(Iterable<ArtifactListener.Artifact> files) {
             for (ArtifactListener listener : listeners) {
                 listener.artifactsUpdated(files);
             }
@@ -1295,8 +1296,10 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                     deleted = FileUtil.toFile(toDelete);
                     toDelete.delete();
                 }
+                if (deleted != null) {
+                    fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(deleted)));
+                }
             }
-            fireArtifactChange(Collections.singleton(deleted));
         }
 
         private void handleCopyFileToDestDir(FileObject fo) throws IOException {
@@ -1340,7 +1343,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                                 fl.releaseLock();
                             }
                             File file = FileUtil.toFile(destFile);
-                            fireArtifactChange(Collections.singleton(file));
+                            if (file != null) {
+                                fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(file)));
+                            }
                         }
                     }
                 }
@@ -1402,6 +1407,11 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 }
             }
             return result;
+        }
+
+        @Override
+        protected Artifact filterArtifact(Artifact artifact) {
+            return artifact.relocatable();
         }
 
     }

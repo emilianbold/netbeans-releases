@@ -164,6 +164,37 @@ public class GsfUtilities {
     }
 
     public static BaseDocument getDocument(FileObject fileObject, boolean openIfNecessary) {
+        return getDocument(fileObject, openIfNecessary, false);
+    }
+
+    /**
+     * Load the document for the given fileObject.
+     * @param fileObject the file whose document we want to obtain
+     * @param openIfNecessary If true, block if necessary to open the document. If false, will only return the
+     *    document if it is already open.
+     * @param skipLarge If true, check the file size, and if the file is really large (defined by
+     *    openide.loaders), then skip it (otherwise we could end up with a large file warning).
+     * @return
+     */
+    public static BaseDocument getDocument(FileObject fileObject, boolean openIfNecessary, boolean skipLarge) {
+        if (skipLarge) {
+            // Make sure we're not dealing with a huge file!
+            // Causes issues like 132306
+            // openide.loaders/src/org/openide/text/DataEditorSupport.java
+            // has an Env#inputStream method which posts a warning to the user
+            // if the file is greater than 1Mb...
+            //SG_ObjectIsTooBig=The file {1} seems to be too large ({2,choice,0#{2}b|1024#{3} Kb|1100000#{4} Mb|1100000000#{5} Gb}) to safely open. \n\
+            //  Opening the file could cause OutOfMemoryError, which would make the IDE unusable. Do you really want to open it?
+
+            // Apparently there is a way to handle this
+            // (see issue http://www.netbeans.org/issues/show_bug.cgi?id=148702 )
+            // but for many cases, the user probably doesn't want really large files as indicated
+            // by the skipLarge parameter).
+            if (fileObject.getSize () > 1024 * 1024) {
+                return null;
+            }
+        }
+
         try {
             DataObject dobj = DataObject.find(fileObject);
 
@@ -180,46 +211,9 @@ public class GsfUtilities {
         return null;
     }
 
+    @Deprecated // Use getDocument instead
     public static BaseDocument getBaseDocument(FileObject fileObject, boolean forceOpen) {
-        DataObject dobj;
-
-        try {
-            dobj = DataObject.find(fileObject);
-
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
-
-            if (ec == null) {
-                throw new IOException("Can't open " + fileObject.getNameExt());
-            }
-
-            Document document;
-
-            if (forceOpen) {
-                document = ec.openDocument();
-            } else {
-                document = ec.getDocument();
-            }
-
-            if (document instanceof BaseDocument) {
-                return ((BaseDocument)document);
-//            } else {
-//                // Must be testsuite execution
-//                try {
-//                    Class c = Class.forName("net.java.dev.nbpython.editor.PythonTestBase"); // NOI18N
-//                    if (c != null) {
-//                        @SuppressWarnings("unchecked")
-//                        java.lang.reflect.Method m = c.getMethod("getDocumentFor", new Class[] { FileObject.class });
-//                        return (BaseDocument) m.invoke(null, (Object[])new FileObject[] { fileObject });
-//                    }
-//                } catch (Exception ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
-            }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
-
-        return null;
+        return getDocument(fileObject, forceOpen);
     }
 
     public static FileObject findFileObject(Document doc) {

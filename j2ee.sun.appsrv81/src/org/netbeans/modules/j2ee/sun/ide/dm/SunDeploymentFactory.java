@@ -56,6 +56,9 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformValidator;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
+
+import org.openide.util.NbPreferences;
 
 /** This deploymenmt factory can creates an alternate deployment manager for
  * S1AS.
@@ -228,6 +231,7 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory, Insta
         synchronized (dms) {
             // serverInstanceID is really the URI of this installed server :)
             dms.remove(serverInstanceID);
+            NbPreferences.forModule(PluginProperties.class).putBoolean(PluginProperties.REMOVED_DEFAULT_GFV2, true);
         }
     }
     

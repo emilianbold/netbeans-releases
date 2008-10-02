@@ -112,13 +112,18 @@ class LuceneIndex extends Index {
     
     private static final boolean debugIndexMerging = Boolean.getBoolean("LuceneIndex.debugIndexMerge");     // NOI18N
     static final String REFERENCES = "gsf";    // NOI18N
+    private static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     
     private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
     
-    private final Directory directory;
+    private final File refCacheRoot;
+    //@GuardedBy(this)
+    private Directory directory;
     private Long rootTimeStamp;
     
-    private IndexReader reader; //Cache, do not use this dirrectly, use getReader
+    //@GuardedBy (this)
+    private IndexReader reader; //Cache, do not use this directly, use getReader
+    private volatile boolean closed;
     
     // For debugging purposes only
     private ClassIndexImpl classIndex;
@@ -140,6 +145,7 @@ class LuceneIndex extends Index {
     private LuceneIndex (final Language language, final File refCacheRoot) throws IOException {
         super(language);
         assert refCacheRoot != null;
+        this.refCacheRoot = refCacheRoot;
         this.directory = FSDirectory.getDirectory(refCacheRoot, NoLockFactory.getNoLockFactory());      //Locking controlled by rwlock
     }
 
@@ -204,11 +210,13 @@ class LuceneIndex extends Index {
     }    
 
     public boolean isUpToDate(String resourceName, long timeStamp) throws IOException {
+        checkPreconditions();
+
         // Don't do anything for preindexed filesystems
         if (Index.isPreindexed(cacheRoot)) {
             return true;
         }
-        
+
         if (!isValid(false)) {
             return false;
         }
@@ -231,8 +239,8 @@ class LuceneIndex extends Index {
                 if (hits.length() != 1) {   //0 = not present, 1 = present and has timestamp, >1 means broken index, probably killed IDE, treat it as not up to date and store will fix it.
                     return false;
                 }
-                else {                    
-                    try { 
+                else {
+                    try {
                         Hit hit = (Hit) hits.iterator().next();
                         long cacheTime = DocumentUtil.getTimeStamp(hit.getDocument());
                         if (resourceName == null) {
@@ -248,21 +256,24 @@ class LuceneIndex extends Index {
             } finally {
                 searcher.close();
             }
-        } catch (java.io.FileNotFoundException fnf) {
+        } catch (java.io.IOException ioe) {
+            //The FileNotFoundException may be thrown if the index is not fully merged,
+            //also IOException can be thrown when index was not closed on exit.
+            //Both can be caused by killing the IDE.
             this.clear();
             return false;
         }
     }
     
     
-    private FieldSelector FILE_AND_TIMESTAMP = new FieldSelector() {
+    private static final FieldSelector FILE_AND_TIMESTAMP = new FieldSelector() {
         public FieldSelectorResult accept(String key) {
             return DocumentUtil.FIELD_FILENAME.equals(key) || DocumentUtil.FIELD_TIME_STAMP.equals(key) ?
                 FieldSelectorResult.LOAD : FieldSelectorResult.NO_LOAD;
         }
     };
     
-    private class CustomFieldSelector implements FieldSelector {
+    private static class CustomFieldSelector implements FieldSelector {
         private Set<String> includeFields;
         
         CustomFieldSelector(Set<String> includeFields) {
@@ -277,11 +288,12 @@ class LuceneIndex extends Index {
     }
     
     public Map<String,String> getTimeStamps() throws IOException {
+        checkPreconditions();
         if (!isValid(false)) {
             return null;
         }
         final IndexReader in = getReader();
-        Map<String,String> result = new HashMap(2*in.numDocs());
+        Map<String,String> result = new HashMap<String,String>(2*in.numDocs());
         for (int i = 0, n = in.numDocs(); i < n; i++) {
             if (in.isDeleted(i)) {
                 continue;
@@ -302,8 +314,14 @@ class LuceneIndex extends Index {
         return result;
     }
 
-    public boolean isValid (boolean tryOpen) throws IOException {  
-        boolean res = IndexReader.indexExists(this.directory);
+    public boolean isValid (boolean tryOpen) throws IOException {
+        checkPreconditions();
+        boolean res = false;
+        try {
+            res = IndexReader.indexExists(this.directory);
+        } catch (IOException e) {
+            return res;
+        }
         if (res && tryOpen) {
             try {
                 getReader();
@@ -313,51 +331,58 @@ class LuceneIndex extends Index {
             }
         }
         return res;
-    }    
-    
-    public synchronized void clear () throws IOException {
-        this.close ();
-        final String[] content = this.directory.list();
-        boolean dirty = false;
-        for (String file : content) {
-            try {
-                directory.deleteFile(file);
-            } catch (IOException e) {
-                //Some temporary files
-                if (directory.fileExists(file)) {
-                    dirty = true;
-                }
-            }
-        }
-        if (dirty) {
-            //Try to delete dirty files and log what's wrong
-            final File cacheDir = ((FSDirectory)this.directory).getFile();
-            final File[] children = cacheDir.listFiles();
-            if (children != null) {
-                for (final File child : children) {
-                    if (!child.delete()) {
-                        final Class c = this.directory.getClass();
-                        int refCount = -1;
-                        try {
-                            final java.lang.reflect.Field field = c.getDeclaredField("refCount");
-                            field.setAccessible(true);
-                            refCount = field.getInt(this.directory);
-                        } catch (NoSuchFieldException e) {/*Not important*/}
-                          catch (IllegalAccessException e) {/*Not important*/}
+    }
 
-                        throw new IOException("Cannot delete: " + child.getAbsolutePath() + "(" +   //NOI18N
-                                child.exists()  +","+                                               //NOI18N
-                                child.canRead() +","+                                               //NOI18N
-                                child.canWrite() +","+                                              //NOI18N
-                                cacheDir.canRead() +","+                                            //NOI18N
-                                cacheDir.canWrite() +","+                                           //NOI18N
-                                refCount+")");                                                      //NOI18N
+    public synchronized void clear () throws IOException {
+        checkPreconditions();
+        this.close ();
+        try {
+            final String[] content = this.directory.list();
+            boolean dirty = false;
+            for (String file : content) {
+                try {
+                    directory.deleteFile(file);
+                } catch (IOException e) {
+                    //Some temporary files
+                    if (directory.fileExists(file)) {
+                        dirty = true;
                     }
                 }
             }
+            if (dirty) {
+                //Try to delete dirty files and log what's wrong
+                final File cacheDir = ((FSDirectory)this.directory).getFile();
+                final File[] children = cacheDir.listFiles();
+                if (children != null) {
+                    for (final File child : children) {
+                        if (!child.delete()) {
+                            final Class c = this.directory.getClass();
+                            int refCount = -1;
+                            try {
+                                final java.lang.reflect.Field field = c.getDeclaredField("refCount");
+                                field.setAccessible(true);
+                                refCount = field.getInt(this.directory);
+                            } catch (NoSuchFieldException e) {/*Not important*/}
+                              catch (IllegalAccessException e) {/*Not important*/}
+
+                            throw new IOException("Cannot delete: " + child.getAbsolutePath() + "(" +   //NOI18N
+                                    child.exists()  +","+                                               //NOI18N
+                                    child.canRead() +","+                                               //NOI18N
+                                    child.canWrite() +","+                                              //NOI18N
+                                    cacheDir.canRead() +","+                                            //NOI18N
+                                    cacheDir.canWrite() +","+                                           //NOI18N
+                                    refCount+")");                                                      //NOI18N
+                        }
+                    }
+                }
+            }
+        } finally {
+            //Need to recreate directory, see issue: #148374
+            this.directory = FSDirectory.getDirectory(refCacheRoot, NoLockFactory.getNoLockFactory());      //Locking controlled by rwlock
+            closed = false;
         }
     }
-    
+
     public synchronized void close () throws IOException {
         try {
             if (this.reader != null) {
@@ -366,13 +391,17 @@ class LuceneIndex extends Index {
             }
         } finally {
            this.directory.close();
+           if (PREINDEXING) {
+               return;
+           }
+           this.closed = true;
         }
     }
-    
+
     public @Override String toString () {
-        return this.directory.toString();
+        return getClass().getSimpleName()+"["+this.refCacheRoot.getAbsolutePath()+"]";  //NOI18N
     }
-    
+
     private synchronized IndexReader getReader () throws IOException {
         if (this.reader == null) {            
             this.reader = IndexReader.open(this.directory);
@@ -396,7 +425,13 @@ class LuceneIndex extends Index {
         }
         return refRoot;
     }
-    
+
+    private void checkPreconditions () throws ClassIndexImpl.IndexAlreadyClosedException{
+        if (closed) {
+            throw new ClassIndexImpl.IndexAlreadyClosedException();
+        }
+    }
+
     private static class LMListener implements LowMemoryListener {        
         
         private AtomicBoolean lowMemory = new AtomicBoolean (false);
@@ -409,6 +444,8 @@ class LuceneIndex extends Index {
 
     // BEGIN TOR MODIFICATIONS
     public void batchStore(List<IndexBatchEntry> list, boolean create) throws IOException {
+        checkPreconditions();
+
         // First, delete previous documents referring to any of these files
         // (but we don't have to do that for new filesystems being scanned,
         // which will be invalid)
@@ -545,7 +582,9 @@ class LuceneIndex extends Index {
     }
     
     public void store(String fileUrl, List<IndexDocument> documents) throws IOException {
+        checkPreconditions();
         assert ClassIndexManager.holdsWriteLock();
+
         boolean create = !isValid(false);
         if (!create) {
             IndexReader in = getReader();
@@ -573,6 +612,7 @@ class LuceneIndex extends Index {
     }    
     
     private void store (List<IndexDocument> d, final boolean create, final long timeStamp, final String filename) throws IOException {        
+        @SuppressWarnings("unchecked")
         List<IndexDocumentImpl> documents = (List<IndexDocumentImpl>)(List)d;
         final IndexWriter out = getWriter(create);
         try {
@@ -660,21 +700,14 @@ class LuceneIndex extends Index {
     @SuppressWarnings ("unchecked") // NOI18N, unchecked - lucene has source 1.4
     public void search(final String primaryField, final String name, final NameKind kind, final Set<ClassIndex.SearchScope> scope, 
             final Set<SearchResult> result, final Set<String> terms) throws IOException {
+        checkPreconditions();
         if (!isValid(false)) {
             LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
             return;
         }
 
-        assert name != null;                
-        final Set<Term> toSearch = new TreeSet<Term> (new Comparator<Term>(){
-            public int compare (Term t1, Term t2) {
-                int ret = t1.field().compareTo(t2.field());
-                if (ret == 0) {
-                    ret = t1.text().compareTo(t2.text());
-                }
-                return ret;
-            }
-        });
+        assert name != null;
+        final Set<Term> toSearch = new TreeSet<Term> (new TermComparator());
                 
         final IndexReader in = getReader();
         switch (kind) {
@@ -976,6 +1009,17 @@ class LuceneIndex extends Index {
                     result.add(map);
                 }
             }
+        }
+    }
+
+
+    private static class TermComparator implements Comparator<Term> {
+        public int compare (Term t1, Term t2) {
+            int ret = t1.field().compareTo(t2.field());
+            if (ret == 0) {
+                ret = t1.text().compareTo(t2.text());
+            }
+            return ret;
         }
     }
     

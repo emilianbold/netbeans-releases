@@ -85,12 +85,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }
 
     private void initWarCheckBox() {
-        RubyPlatform platform = getPlatform();
-        boolean jruby = platform != null ? platform.isJRuby() : false;
-        warCheckBox.setEnabled(jruby);
-        if (!jruby) {
-            warCheckBox.setSelected(false);
-        }
         warCheckBox.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
@@ -113,7 +107,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jrubyUsedLabel = new javax.swing.JLabel();
         warCheckBox = new javax.swing.JCheckBox();
         rubyPlatformLabel = new javax.swing.JLabel();
         manageButton = new javax.swing.JButton();
@@ -122,8 +115,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         serverComboBox = RailsServerManager.getServerComboBox(getPlatform());
 
         setPreferredSize(new java.awt.Dimension(226, 100));
-
-        org.openide.awt.Mnemonics.setLocalizedText(jrubyUsedLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "UsingRuby")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(warCheckBox, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "WarFile")); // NOI18N
 
@@ -160,19 +151,17 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(warCheckBox)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(serverLabel)
-                            .add(rubyPlatformLabel))
-                        .add(20, 20, 20)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(serverComboBox, 0, 186, Short.MAX_VALUE)
-                            .add(platforms, 0, 186, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(manageButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                    .add(jrubyUsedLabel))
+                    .add(serverLabel)
+                    .add(rubyPlatformLabel))
+                .add(20, 20, 20)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(serverComboBox, 0, 223, Short.MAX_VALUE)
+                    .add(platforms, 0, 223, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(manageButton)
+                .add(0, 0, 0))
+            .add(layout.createSequentialGroup()
+                .add(warCheckBox)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -186,10 +175,9 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(serverLabel)
                     .add(serverComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(19, 19, 19)
-                .add(jrubyUsedLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(warCheckBox))
+                .add(18, 18, 18)
+                .add(warCheckBox)
+                .addContainerGap())
         );
 
         warCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_WarFile")); // NOI18N
@@ -256,7 +244,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jrubyUsedLabel;
     private javax.swing.JButton manageButton;
     private javax.swing.JComboBox platforms;
     private javax.swing.JLabel rubyPlatformLabel;

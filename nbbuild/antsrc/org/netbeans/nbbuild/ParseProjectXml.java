@@ -1021,12 +1021,11 @@ public final class ParseProjectXml extends Task {
                 }
             }
             if (sb.length() > 0) {
-                sb.append(","); // NOI18N
+                sb.append(File.pathSeparator);
             }
-            // XXX it works only for netbeans.org modules :(
-            String nborgPath = entry.getNetbeansOrgPath();
-            if (nborgPath != null) {
-                sb.append(nborgPath);
+            File srcPath = entry.getSourceLocation();
+            if (srcPath != null) {
+                sb.append(srcPath.getAbsolutePath());
             }
         }
         cnbs.add(cnb);

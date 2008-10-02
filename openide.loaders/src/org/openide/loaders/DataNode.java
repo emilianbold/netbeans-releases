@@ -174,16 +174,12 @@ public class DataNode extends AbstractNode {
             super.setName (name);
             updateDisplayName ();
         } catch (IOException ex) {
-            String msg = null;
-            if ((ex.getLocalizedMessage() == null) || 
-                (ex.getLocalizedMessage().equals(ex.getMessage()))) {
-                msg = NbBundle.getMessage (DataNode.class, "MSG_renameError", getName (), name); // NOI18N
-            } else {
-                msg = ex.getLocalizedMessage();
+            String msg = Exceptions.findLocalizedMessage(ex);
+            if (msg == null) {
+                msg = NbBundle.getMessage(DataNode.class, "MSG_renameError", getName(), name); // NOI18N
             }
-            
-            RuntimeException e = new IllegalArgumentException();
-            UIException.annotateUser(e, null, msg, ex, null);
+            RuntimeException e = new IllegalArgumentException(ex);
+            Exceptions.attachLocalizedMessage(e, msg);
             throw e;
         }
     }
@@ -855,12 +851,22 @@ public class DataNode extends AbstractNode {
         public void annotationChanged (FileStatusEvent ev) {
             // #16541: listen for changes in both primary and secondary files
             boolean thisChanged = false;
-            Iterator it = obj.files().iterator();
-            while (it.hasNext()) {
-                FileObject fo = (FileObject)it.next();
-                if (ev.hasChanged(fo)) {
-                    thisChanged = true;
-                    break;
+            if (getDataObject() instanceof MultiDataObject) {
+                MultiDataObject multi = (MultiDataObject)getDataObject();
+                for (FileObject fo : multi.getSecondary().keySet()) {
+                    if (ev.hasChanged(fo)) {
+                        thisChanged = true;
+                        break;
+                    }
+                }
+            } else {
+                Iterator it = obj.files().iterator();
+                while (it.hasNext()) {
+                    FileObject fo = (FileObject)it.next();
+                    if (ev.hasChanged(fo)) {
+                        thisChanged = true;
+                        break;
+                    }
                 }
             }
             if (thisChanged) {
@@ -1003,8 +1009,7 @@ public class DataNode extends AbstractNode {
         }
         
         public boolean isEmpty() {
-            lazyInitialization();
-            return obj_files.isEmpty();
+            return false;
         }
         
         public Iterator<FileObject> iterator() {

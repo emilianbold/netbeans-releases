@@ -94,19 +94,19 @@ class Ordering {
         while (it.hasNext()) {
             FileObject child = it.next();
             if (childrenByName.put(child.getNameExt(), child) != null) {
-                throw new IllegalArgumentException("Duplicate in children list: " + child.getPath()); // NOI18N
+                throw new IllegalArgumentException("Duplicate in children list: " + child.getPath() + "\nChildren: " + children); // NOI18N
             }
             Object pos = child.getAttribute(ATTR_POSITION);
             if (pos instanceof Number) {
                 childrenByPosition.add(new ChildAndPosition(child, (Number) pos));
             } else if (logWarnings && pos != null) {
-                LOG.warning("Encountered nonnumeric position attribute " + pos + " of " + pos.getClass() + " for " + child.getPath());
+                LOG.warning("Encountered nonnumeric position attribute " + pos + " of " + pos.getClass() + " for " + child.getPath()  + "\nChildren: " + children);
             }
             if (parent == null) {
                 parent = child.getParent();
             } else {
                 if (child.getParent() != parent) {
-                    throw new IllegalArgumentException("All children must have the same parent: " + child.getParent().getPath() + " vs. " + parent.getPath()); // NOI18N
+                    throw new IllegalArgumentException("All children must have the same parent: " + child.getParent().getPath() + " vs. " + parent.getPath() + "\nChildren: " + children); // NOI18N
                 }
             }
         }

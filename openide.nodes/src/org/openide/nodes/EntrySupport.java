@@ -63,13 +63,9 @@ import org.openide.util.Utilities;
  * @author t_h
  */
 abstract class EntrySupport {
-    private static final Reference<ChildrenArray> EMPTY = new WeakReference<ChildrenArray>(null);
 
     /** children we are attached to */
     public Children children;
-
-    /** array of children Reference (ChildrenArray) */
-    Reference<ChildrenArray> array = EMPTY;
 
     /** collection of all entries */
     protected List<Entry> entries = Collections.emptyList();
@@ -119,30 +115,35 @@ abstract class EntrySupport {
      */
     static class Default extends EntrySupport {
 
+        private static final Reference<ChildrenArray> EMPTY = new WeakReference<ChildrenArray>(null);
+        /** array of children Reference (ChildrenArray) */
+        private Reference<ChildrenArray> array = EMPTY;
         /** mapping from entries to info about them */
         private Map<Entry, Info> map;
         private static final Object LOCK = new Object();
-        private static final Logger LOG_GET_ARRAY = Logger.getLogger("org.openide.nodes.Children.getArray"); // NOI18N
+        private static final Logger LOGGER = Logger.getLogger(Default.class.getName()); // NOI18N
+        //private static final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
         private Thread initThread;
-
+        private boolean inited = false;
 
         public Default(Children ch) {
             super(ch);
         }
 
         public boolean isInitialized() {
-            ChildrenArray arr = array.get();
-            return (arr != null) && arr.isInitialized();
+            return inited;
         }
 
         protected List<Node> createSnapshot() {
             return new DefaultSnapshot(getNodes(), array.get());
         }
-        public final Node[] getNodes() {
-            //Thread.dumpStack();
-            //System.err.println(off + "getNodes: " + getNode ());
-            boolean[] results = new boolean[2];
 
+        public final Node[] getNodes() {
+            final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
+            if (LOG_ENABLED) {
+                LOGGER.finer("getNodes() " + this);
+            }
+            boolean[] results = new boolean[2];
             for (;;) {
                 results[1] = isInitialized();
 
@@ -154,17 +155,19 @@ abstract class EntrySupport {
 
                 try {
                     Children.PR.enterReadAccess();
+                    if (this != children.entrySupport) {
+                        // support was switched while we were waiting for access
+                        return new Node[0];
+                    }
                     nodes = tmpArray.nodes();
                 } finally {
                     Children.PR.exitReadAccess();
                 }
 
-                final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
-                if (IS_LOG_GET_ARRAY) {
-                    LOG_GET_ARRAY.fine("  length     : " + (nodes == null ? "nodes is null" : nodes.length)); // NOI18N
-                    LOG_GET_ARRAY.fine("  entries    : " + entries); // NOI18N
-                    LOG_GET_ARRAY.fine("  init now   : " + isInitialized()); // NOI18N
-
+                if (LOG_ENABLED) {
+                    LOGGER.finer("  length     : " + (nodes == null ? "nodes is null" : nodes.length)); // NOI18N
+                    LOGGER.finer("  entries    : " + entries); // NOI18N
+                    LOGGER.finer("  init now   : " + isInitialized()); // NOI18N
                 }
                 // if not initialized that means that after
                 // we computed the nodes, somebody changed them (as a
@@ -184,23 +187,20 @@ abstract class EntrySupport {
         }
 
         public Node[] getNodes(boolean optimalResult) {
+            final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
             ChildrenArray hold;
             Node find;
             if (optimalResult) {
-                final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
-                if (IS_LOG_GET_ARRAY) {
-                    LOG_GET_ARRAY.fine("computing optimal result");// NOI18N
-
+                if (LOG_ENABLED) {
+                    LOGGER.finer("computing optimal result");// NOI18N
                 }
                 hold = getArray(null);
-                if (IS_LOG_GET_ARRAY) {
-                    LOG_GET_ARRAY.fine("optimal result is here: " + hold);// NOI18N
-
+                if (LOG_ENABLED) {
+                    LOGGER.finer("optimal result is here: " + hold);// NOI18N
                 }
                 find = children.findChild(null);
-                if (IS_LOG_GET_ARRAY) {
-                    LOG_GET_ARRAY.fine("Find child got: " + find); // NOI18N
-
+                if (LOG_ENABLED) {
+                    LOGGER.finer("Find child got: " + find); // NOI18N
                 }
             }
 
@@ -223,9 +223,7 @@ abstract class EntrySupport {
         final Node[] justComputeNodes() {
             if (map == null) {
                 map = Collections.synchronizedMap(new HashMap<Entry, Info>(17));
-
-            //      debug.append ("Map initialized\n"); // NOI18N
-            //      printStackTrace();
+                LOGGER.finer("Map initialized");
             }
 
             List<Node> l = new LinkedList<Node>();
@@ -261,10 +259,9 @@ abstract class EntrySupport {
                 if (info == null) {
                     info = new Info(entry);
                     map.put(entry, info);
-
-                //      debug.append ("Put: " + entry + " info: " + info); // NOI18N
-                //      debug.append ('\n');
-                //      printStackTrace();
+                    if (LOGGER.isLoggable(Level.FINER)) {
+                        LOGGER.finer("Put: " + entry + " info: " + info);
+                    }
                 }
                 return info;
             }
@@ -277,21 +274,21 @@ abstract class EntrySupport {
         private boolean mustNotifySetEnties = false;
 
         void notifySetEntries() {
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.finer(this + " mustNotifySetEntries()");
+            }
             mustNotifySetEnties = true;
         }
 
         protected void setEntries(Collection<? extends Entry> entries) {
-            final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
+            final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
             // current list of nodes
             ChildrenArray holder = array.get();
 
-            if (IS_LOG_GET_ARRAY) {
-                LOG_GET_ARRAY.fine("setEntries for " + this + " on " + Thread.currentThread()); // NOI18N
-
-                LOG_GET_ARRAY.fine("       values: " + entries); // NOI18N
-
-                LOG_GET_ARRAY.fine("       holder: " + holder); // NOI18N
-
+            if (LOG_ENABLED) {
+                LOGGER.finer("setEntries for " + this + " on " + Thread.currentThread()); // NOI18N
+                LOGGER.finer("       values: " + entries); // NOI18N
+                LOGGER.finer("       holder: " + holder); // NOI18N
             }
 
             Node[] current = holder == null ? null : holder.nodes();
@@ -332,8 +329,7 @@ abstract class EntrySupport {
             Collection<Info> toAdd = updateOrder(current, entries);
 
             if (!toAdd.isEmpty()) {
-                // toAdd contains Info objects that should
-                // be added
+                // toAdd contains Info objects that should bee added
                 updateAdd(toAdd, new ArrayList<Entry>(entries));
             }
         }
@@ -345,7 +341,6 @@ abstract class EntrySupport {
                         " probably caused by faulty key implementation." + // NOI18N
                         " The key hashCode() and equals() methods must behave as for an IMMUTABLE object" + // NOI18N
                         " and the hashCode() must return the same value for equals() keys."); // NOI18N
-
             }
         }
 
@@ -356,23 +351,19 @@ abstract class EntrySupport {
 
             for (Entry en : toRemove) {
                 Info info = map.remove(en);
-
-                //debug.append ("Removed: " + en + " info: " + info); // NOI18N
-                //debug.append ('\n');
-                //printStackTrace();
                 checkInfo(info, en, null, map);
-
                 nodes.addAll(info.nodes());
             }
 
-            // modify the current set of entries and empty the list of nodes
-            // so it has to be recreated again
-            //debug.append ("Current : " + this.entries + '\n'); // NOI18N
+            // modify the current set of entries
             this.entries.removeAll(toRemove);
 
-            //debug.append ("Removing: " + toRemove + '\n'); // NOI18N
-            //debug.append ("New     : " + this.entries + '\n'); // NOI18N
-            //printStackTrace();
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.finer("Current : " + this.entries);
+                LOGGER.finer("Removing: " + toRemove);
+            }
+            
+            // empty the list of nodes so it has to be recreated again
             clearNodes();
             notifyRemove(nodes, current);
         }
@@ -391,13 +382,10 @@ abstract class EntrySupport {
 
             {
                 int previousPos = 0;
-
                 for (Entry entry : entries) {
                     Info info = map.get(entry);
                     checkInfo(info, entry, entries, map);
-
                     offsets.put(info, previousPos);
-
                     previousPos += info.length();
                 }
             }
@@ -475,17 +463,18 @@ abstract class EntrySupport {
                     }
                 }
 
-                // reorderedEntries are not null
-                this.entries = reorderedEntries;
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.finer("Entries before reordering: " + entries);
+                    LOGGER.finer("Entries after reordering: " + reorderedEntries);
+                }
 
-                //      debug.append ("Set3: " + this.entries); // NOI18N
-                //      printStackTrace();
+                // reorderedEntries are not null
+                entries = reorderedEntries;
+
                 // notify the permutation to the parent
                 clearNodes();
 
-                //System.err.println("Paremutaiton! " + getNode ());
                 Node p = children.parent;
-
                 if (p != null) {
                     p.fireReorderChange(perm);
                 }
@@ -503,15 +492,14 @@ abstract class EntrySupport {
             for (Info info : infos) {
                 nodes.addAll(info.nodes());
                 map.put(info.entry, info);
-
-            //      debug.append ("updateadd: " + info.entry + " info: " + info + '\n'); // NOI18N
-            //      printStackTrace();
             }
 
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.finer("Entries before updateAdd(): " + this.entries);
+                LOGGER.finer("Entries after updateAdd(): " + entries);
+            }
             this.entries = entries;
 
-            //      debug.append ("Set4: " + entries); // NOI18N
-            //      printStackTrace();
             clearNodes();
             notifyAdd(nodes);
         }
@@ -522,6 +510,9 @@ abstract class EntrySupport {
         final void refreshEntry(Entry entry) {
             // current list of nodes
             ChildrenArray holder = array.get();
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.finer("refreshEntry: " + entry + " holder=" + holder);
+            }
 
             if (holder == null) {
                 return;
@@ -641,13 +632,10 @@ abstract class EntrySupport {
          * @return array of nodes that were deleted
          */
         Node[] notifyRemove(Collection<Node> nodes, Node[] current) {
-            //System.err.println("notifyRemove from: " + getNode ());
-            //System.err.println("notifyRemove: " + nodes);
-            //System.err.println("Current     : " + Arrays.asList (current));
-            //Thread.dumpStack();
-            //Keys.last.printStackTrace();
-            // [TODO] Children do not have always a parent
-            // see Services->FIRST ($SubLevel.class)
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.finer("notifyRemove: " + nodes);
+                LOGGER.finer("Current     : " + Arrays.asList(current));
+            }
             // during a deserialization it may have parent == null
             Node[] arr = nodes.toArray(new Node[nodes.size()]);
 
@@ -676,6 +664,9 @@ abstract class EntrySupport {
          * @param nodes list of removed nodes
          */
         void notifyAdd(Collection<Node> nodes) {
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.finer("notifyAdd: " + nodes);
+            }            
             // notify about parent change
             for (Node n : nodes) {
                 n.assignTo(children, -1);
@@ -709,8 +700,7 @@ abstract class EntrySupport {
          *    give up on computation of best result
          */
         private ChildrenArray getArray(boolean[] cannotWorkBetter) {
-            final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
-
+            final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
             ChildrenArray arr;
             boolean doInitialize = false;
             synchronized (LOCK) {
@@ -727,9 +717,8 @@ abstract class EntrySupport {
             }
 
             if (doInitialize) {
-                if (IS_LOG_GET_ARRAY) {
-                    LOG_GET_ARRAY.fine("Initialize " + this + " on " + Thread.currentThread()); // NOI18N
-
+                if (LOG_ENABLED) {
+                    LOGGER.finer("Initialize " + this + " on " + Thread.currentThread()); // NOI18N
                 }
 
                 // this call can cause a lot of callbacks => be prepared
@@ -737,22 +726,20 @@ abstract class EntrySupport {
                 try {
                     children.callAddNotify();
 
-                    if (IS_LOG_GET_ARRAY) {
-                        LOG_GET_ARRAY.fine("addNotify successfully called for " + this + " on " + Thread.currentThread()); // NOI18N
-
+                    if (LOG_ENABLED) {
+                        LOGGER.finer("addNotify successfully called for " + this + " on " + Thread.currentThread()); // NOI18N
                     }
                 } finally {
                     boolean notifyLater;
                     notifyLater = Children.MUTEX.isReadAccess();
 
-                    if (IS_LOG_GET_ARRAY) {
-                        LOG_GET_ARRAY.fine(
-                                "notifyAll for " + this + " on " + Thread.currentThread() + "  notifyLater: " + notifyLater); // NOI18N
-
+                    if (LOG_ENABLED) {
+                        LOGGER.finer("notifyAll for " + this + " on " + Thread.currentThread() + "  notifyLater: " + notifyLater); // NOI18N
                     }
 
                     // now attach to entrySupport, so when entrySupport == null => we are
                     // not fully initialized!!!!
+                    inited = true;
                     arr.entrySupport = this;
                     class SetAndNotify implements Runnable {
 
@@ -764,8 +751,8 @@ abstract class EntrySupport {
                                 initThread = null;
                                 LOCK.notifyAll();
                             }
-                            if (IS_LOG_GET_ARRAY) {
-                                LOG_GET_ARRAY.fine("notifyAll done"); // NOI18N
+                            if (LOG_ENABLED) {
+                                LOGGER.finer("notifyAll done"); // NOI18N
                             }
                         }
                     }
@@ -784,33 +771,33 @@ abstract class EntrySupport {
                         setAndNotify.run();
                     }
                 }
-            } else {
+            } else if (initThread != null) {
                 // otherwise, if not initialize yet (arr.children) wait
                 // for the initialization to finish, but only if we can wait
                 if (Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess() || (initThread == Thread.currentThread())) {
                     // fail, we are in read access
-                    if (IS_LOG_GET_ARRAY) {
-                        LOG_GET_ARRAY.log(Level.FINE,
+                    if (LOG_ENABLED) {
+                        LOGGER.log(Level.FINER,
                                 "cannot initialize better " + this + // NOI18N
                                 " on " + Thread.currentThread() + // NOI18N
                                 " read access: " + Children.MUTEX.isReadAccess() + // NOI18N
-                                " initThread: " + initThread, // NOI18N
-                                new Exception("StackTrace") // NOI18N
+                                " write access: " + Children.MUTEX.isWriteAccess() + // NOI18N
+                                " initThread: " + initThread // NOI18N
+                                //, new Exception("StackTrace") // NOI18N
                                 );
                     }
 
                     if (cannotWorkBetter != null) {
                         cannotWorkBetter[0] = true;
                     }
-
                     return arr;
                 }
 
                 // otherwise we can wait
                 synchronized (LOCK) {
                     while (initThread != null) {
-                        if (IS_LOG_GET_ARRAY) {
-                            LOG_GET_ARRAY.fine(
+                        if (LOG_ENABLED) {
+                            LOGGER.finer(
                                     "waiting for children for " + this + // NOI18N
                                     " on " + Thread.currentThread() // NOI18N
                                     );
@@ -822,11 +809,11 @@ abstract class EntrySupport {
                         }
                     }
                 }
-                if (IS_LOG_GET_ARRAY) {
-                    LOG_GET_ARRAY.fine(
+                if (LOG_ENABLED) {
+                    LOGGER.finer(
                             " children are here for " + this + // NOI18N
                             " on " + Thread.currentThread() + // NOI18N
-                            " children " + children);
+                            " children " + children); // NOI18N
                 }
             }
 
@@ -836,9 +823,10 @@ abstract class EntrySupport {
         /** Clears the nodes
          */
         private void clearNodes() {
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.finer("  clearNodes()"); // NOI18N
+            }
             ChildrenArray arr = array.get();
-
-            //System.err.println(off + "  clearNodes: " + getNode ());
             if (arr != null) {
                 // clear the array
                 arr.clear();
@@ -851,35 +839,34 @@ abstract class EntrySupport {
          * @param weak use weak or hard reference
          */
         final void registerChildrenArray(final ChildrenArray chArr, boolean weak) {
-            final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
-            if (IS_LOG_GET_ARRAY) {
-                LOG_GET_ARRAY.fine("registerChildrenArray: " + chArr + " weak: " + weak); // NOI18N
-
+            final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
+            if (LOG_ENABLED) {
+                LOGGER.finer("registerChildrenArray: " + chArr + " weak: " + weak); // NOI18N
             }
             synchronized (LOCK) {
                 this.array = new ChArrRef(chArr, weak);
             }
-            if (IS_LOG_GET_ARRAY) {
-                LOG_GET_ARRAY.fine("pointed by: " + chArr + " to: " + this.array); // NOI18N
+            if (LOG_ENABLED) {
+                LOGGER.finer("pointed by: " + chArr + " to: " + this.array); // NOI18N
             }
         }
 
         /** Finalized.
          */
         final void finalizedChildrenArray(Reference caller) {
-            final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
             // usually in removeNotify setKeys is called => better require write access
             try {
                 Children.PR.enterWriteAccess();
 
-                if (IS_LOG_GET_ARRAY) {
-                    LOG_GET_ARRAY.fine("previous array: " + array + " caller: " + caller);
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.fine("previous array: " + array + " caller: " + caller); // NOI18N
                 }
                 synchronized (LOCK) {
                     if (array == caller && children.entrySupport == this) {
                         // really finalized and not reconstructed
                         mustNotifySetEnties = false;
                         array = EMPTY;
+                        inited = false;
                         children.callRemoveNotify();
                         assert array == EMPTY;
                     }
@@ -962,8 +949,7 @@ abstract class EntrySupport {
             }
         }
 
-        private class ChArrRef extends WeakReference<ChildrenArray>
-        implements Runnable {
+        private class ChArrRef extends WeakReference<ChildrenArray> implements Runnable {
             private final ChildrenArray chArr;
 
             public ChArrRef(ChildrenArray referent, boolean lazy) {
@@ -989,8 +975,8 @@ abstract class EntrySupport {
         /** entries with node*/
         private List<Entry> visibleEntries = Collections.emptyList();
 
-        private static final Logger LAZY_LOG = Logger.getLogger("org.openide.nodes.Children.getArray"); // NOI18N
-
+        private static final Logger LOGGER = Logger.getLogger(Lazy.class.getName());
+        //private static final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
         private static final int prefetchCount = Math.max(Integer.getInteger("org.openide.explorer.VisualizerNode.prefetchCount", 50), 0);  // NOI18N
 
         public Lazy(Children ch) {
@@ -1014,8 +1000,12 @@ abstract class EntrySupport {
                 }
             }
 
+            final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER); 
             if (doInit) {
-
+                if (LOG_ENABLED) {
+                    LOGGER.finer("Initialize " + this + " on " + Thread.currentThread());
+                    LOGGER.finer("    callAddNotify()"); // NOI18N
+                }
                 try {
                     children.callAddNotify();
                 } finally {
@@ -1037,6 +1027,16 @@ abstract class EntrySupport {
                 }
             } else {
                 if (Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess() || (initThread == Thread.currentThread())) {
+                    if (LOG_ENABLED) {
+                        LOGGER.log(Level.FINER,
+                                "Cannot wait for finished initialization " + this + // NOI18N
+                                " on " + Thread.currentThread() + // NOI18N
+                                " read access: " + Children.MUTEX.isReadAccess() + // NOI18N
+                                " write access: " + Children.MUTEX.isWriteAccess() + // NOI18N
+                                " initThread: " + initThread // NOI18N
+                                //, new Exception("StackTrace") // NOI18N
+                                );                        
+                    }
                     // we cannot wait
                     notifySetEntries();
                     return false;
@@ -1060,7 +1060,7 @@ abstract class EntrySupport {
                 try {
                     Children.PR.enterWriteAccess();
                     boolean zero = false;
-                    LAZY_LOG.fine("register node"); // NOI18N
+                    LOGGER.finer("register node"); // NOI18N
                     synchronized (Lazy.this.LOCK) {
                         int cnt = 0;
                         boolean found = false;
@@ -1084,6 +1084,9 @@ abstract class EntrySupport {
                             initThread = null;
                             initInProgress = false;
                             if (children != null && children.entrySupport == this) {
+                                if (LOGGER.isLoggable(Level.FINER)) {
+                                    LOGGER.finer("callRemoveNotify() " + this); // NOI18N
+                                }
                                 children.callRemoveNotify();
                             }
                         }
@@ -1198,17 +1201,25 @@ abstract class EntrySupport {
         }
         
         final boolean isDummyNode(Node node) {
-            return node.getClass().getName().endsWith("EntrySupport$Lazy$DummyNode");
+            return node.getClass().getName().endsWith("EntrySupport$Lazy$DummyNode"); // NOI18N
         }
 
         @Override
         void refreshEntry(Entry entry) {
+            final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
+            if (LOG_ENABLED) {
+                LOGGER.finer("refreshEntry() " + this);
+                LOGGER.finer("    entry: " + entry); // NOI18N
+            }
             if (!inited) {
                 return;
             }
             EntryInfo info = entryToInfo.get(entry);
 
             if (info == null) {
+                if (LOG_ENABLED) {
+                    LOGGER.finer("    no such entry: " + entry); // NOI18N
+                }
                 // no such entry
                 return;
             }
@@ -1251,18 +1262,32 @@ abstract class EntrySupport {
             fireSubNodesChangeIdx(true, new int[]{info.getIndex()}, entry, createSnapshot(), null);
         }
 
-        private boolean mustNotifySetEnties = false;
+        private boolean mustNotifySetEntries = false;
 
         void notifySetEntries() {
-            mustNotifySetEnties = true;
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.finer("notifySetEntries() " + this); // NOI18N
+            }
+            mustNotifySetEntries = true;
         }
 
         @Override
         void setEntries(Collection<? extends Entry> newEntries) {
-            assert entries.size() == entryToInfo.size() : "Entries: " + entries.size() 
-                    + "; vis. entries: " + visibleEntries.size() + "; Infos: " + entryToInfo.size();
+            final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
+            if (LOG_ENABLED) {
+                LOGGER.finer("setEntries(): " + this); // NOI18N
+                LOGGER.finer("    inited: " + inited); // NOI18N
+                LOGGER.finer("    mustNotifySetEnties: " + mustNotifySetEntries); // NOI18N
+                LOGGER.finer("    newEntries size: " + newEntries.size() + " data:" + newEntries); // NOI18N
+                LOGGER.finer("    entries size: " + entries.size() + " data:" + entries); // NOI18N
+                LOGGER.finer("    visibleEntries size: " + visibleEntries.size() + " data:" + visibleEntries); // NOI18N
+                LOGGER.finer("    entryToInfo size: " + entryToInfo.size()); // NOI18N
+            }
 
-            if (!mustNotifySetEnties && !inited) {
+            assert entries.size() == entryToInfo.size() : "Entries: " + entries.size() // NOI18N
+                    + "; vis. entries: " + visibleEntries.size() + "; Infos: " + entryToInfo.size(); // NOI18N
+
+            if (!mustNotifySetEntries && !inited) {
                 entries = new ArrayList<Entry>(newEntries);
                 visibleEntries = new ArrayList<Entry>(newEntries);
                 entryToInfo.keySet().retainAll(entries);
@@ -1401,6 +1426,10 @@ abstract class EntrySupport {
                 Children.PR.enterReadAccess();
                 EntryInfo info = entryToInfo.get(entry);
                 if (info == null) {
+                    if (LOGGER.isLoggable(Level.FINER)) {
+                        LOGGER.finer("getNode() " + this);
+                        LOGGER.finer("    no such entry: " + entry); // NOI18N
+                    }
                     return null;
                 }
                 Node node = info.getNode();
@@ -1499,7 +1528,7 @@ abstract class EntrySupport {
                             node = new DummyNode();
                         } else {
                             if (nodes.size() > 1) {
-                                LAZY_LOG.fine("Number of nodes for Entry: " + entry + " is " + nodes.size() + " instead of 1");
+                                LOGGER.fine("Number of nodes for Entry: " + entry + " is " + nodes.size() + " instead of 1"); // NOI18N
                             }
                             node = nodes.iterator().next();
                         }
@@ -1576,7 +1605,17 @@ abstract class EntrySupport {
             });
         }
 
-       private void removeEntries(Set<Entry> entriesToRemove, Entry entryToRemove, Node oldNode, boolean justHide, boolean delayed) {
+        private void removeEntries(Set<Entry> entriesToRemove, Entry entryToRemove, Node oldNode, boolean justHide, boolean delayed) {
+            final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
+            if (LOG_ENABLED) {
+                LOGGER.finer("removeEntries(): " + this); // NOI18N
+                LOGGER.finer("    entriesToRemove: " + entriesToRemove); // NOI18N
+                LOGGER.finer("    entryToRemove: " +  entryToRemove); // NOI18N
+                LOGGER.finer("    oldNode: " + oldNode); // NOI18N
+                LOGGER.finer("    justHide: " + justHide); // NOI18N
+                LOGGER.finer("    delayed: " + delayed // NOI18N
+                        );
+            }
             int index = 0;
             int removedIdx = 0;
             int removedNodesIdx = 0;
