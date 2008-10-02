@@ -49,5 +49,5 @@ made subject to such option by the copyright holder.
 -->
 
 <bindings>
-    <bind actionName="fix-groovy-imports" key="DS-Y" />
+    <bind actionName="fix-groovy-imports" key="DS-I" />
 </bindings>
