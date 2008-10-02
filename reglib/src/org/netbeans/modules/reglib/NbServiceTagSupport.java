@@ -154,7 +154,7 @@ public class NbServiceTagSupport {
         inited = true;
     }
 
-    /** Returns NetBeans IDE procut name. */
+    /** Returns NetBeans IDE product name. */
     public static String getProductName () {
         return NbBundle.getMessage(NbServiceTagSupport.class,"nb.product.name");
     }
