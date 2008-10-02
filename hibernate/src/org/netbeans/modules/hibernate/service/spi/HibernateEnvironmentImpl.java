@@ -490,7 +490,7 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
                         if (file == null) {
                             continue;
                         }
-                        url = file.toURL();
+                        url = file.toURI().toURL();
                     } catch (MalformedURLException ex) {
                         Exceptions.printStackTrace(ex);
                     }
