@@ -122,7 +122,7 @@ public final class VarTypeResolver {
     }
 
     public String resolveType() {
-        final Map<String, Union2<Variable, String>> assignments = new HashMap<String, Union2<Variable, String>>();
+        final Map<String, Union2<? extends ASTNode, String>> assignments = new HashMap<String, Union2<? extends ASTNode, String>>();
         final Map<String, ElementKind> memberNames = new HashMap<String, ElementKind>();
         final List<ASTNode> path = new LinkedList<ASTNode>();
         new DefaultVisitor() {
@@ -258,12 +258,19 @@ public final class VarTypeResolver {
 
 
             public void visit(Assignment node) {
-                int offset = anchor;
+                int offset = anchor;                
                 if ((offset != (-1) && offset >= node.getStartOffset())) {
                     VariableBase leftHandSide = node.getLeftHandSide();
                     Expression rightHandSide = node.getRightHandSide();
-                    if (leftHandSide instanceof Variable) {
-                        String leftVarName = CodeUtils.extractVariableName((Variable) leftHandSide);
+                    if (leftHandSide instanceof Variable || leftHandSide instanceof FieldAccess) {
+                        String leftVarName = null;
+                        if (leftHandSide instanceof Variable) {
+                            leftVarName = CodeUtils.extractVariableName((Variable) leftHandSide);
+                        } else if (leftHandSide instanceof FieldAccess) {
+                            leftVarName = getInternalName((FieldAccess) leftHandSide, assignments);
+                        } else {
+                            assert false : leftHandSide.getClass().getName();
+                        }
                         if (leftVarName != null) {
                             if (isValidBlock(path)) {
                                 if (rightHandSide instanceof Reference) {
@@ -271,13 +278,27 @@ public final class VarTypeResolver {
                                         rightHandSide = ((Reference)rightHandSide).getExpression();
                                     }
                                 }
-                                if (rightHandSide instanceof Variable) {
-                                    String rightVarName = CodeUtils.extractVariableName((Variable) rightHandSide);
-                                    Union2<Variable, String> rAssignment = assignments.get(rightVarName);
+                                if (rightHandSide instanceof Variable || rightHandSide instanceof FieldAccess) {
+                                    String rightVarName = null;
+                                    if (rightHandSide instanceof Variable) {
+                                        rightVarName = CodeUtils.extractVariableName((Variable) rightHandSide);
+                                    } else if (rightHandSide instanceof FieldAccess) {
+                                        rightVarName = getInternalName((FieldAccess) rightHandSide, assignments);
+                                    } else {
+                                        assert false : rightHandSide.getClass().getName();
+                                    }
+
+                                    Union2<? extends ASTNode, String> rAssignment = assignments.get(rightVarName);
                                     if (rAssignment != null) {
                                         assignments.put(leftVarName, rAssignment);
                                     } else {
-                                        assignments.put(leftVarName, Union2.<Variable, String>createFirst((Variable) rightHandSide));
+                                        if (rightHandSide instanceof Variable) {
+                                            assignments.put(leftVarName, Union2.<Variable, String>createFirst((Variable) rightHandSide));
+                                        } else if (rightHandSide instanceof FieldAccess) {
+                                            assignments.put(leftVarName, Union2.<FieldAccess, String>createFirst((FieldAccess) rightHandSide));
+                                        } else {
+                                            assert false : rightHandSide.getClass().getName();
+                                        }
                                     }
                                 } else if (rightHandSide instanceof ClassInstanceCreation) {
                                     ClassInstanceCreation clsInstanceCreation = (ClassInstanceCreation) rightHandSide;
@@ -291,32 +312,7 @@ public final class VarTypeResolver {
                                 } else {
                                     String typeName = null;
                                     if (rightHandSide instanceof VariableBase) {
-                                        Stack<VariableBase> stack = new Stack<VariableBase>();
-                                        createVariableBaseChain((VariableBase) rightHandSide, stack);
-                                        while (!stack.isEmpty() && stack.peek() != null) {
-                                            VariableBase varBase = stack.pop();
-                                            if (typeName == null) {
-                                                if (varBase instanceof FunctionInvocation) {
-                                                    typeName = getReturnType((FunctionInvocation) varBase, result, index);
-                                                } else if (varBase instanceof Variable) {
-                                                    typeName = findPrecedingType((Variable) varBase, assignments);
-                                                } else if (varBase instanceof StaticFieldAccess) {
-                                                    typeName = getReturnType((StaticFieldAccess) varBase, result, index);
-                                                } else if (varBase instanceof StaticMethodInvocation) {
-                                                    typeName = getReturnType((StaticMethodInvocation) varBase, result, index);
-                                                }
-                                                if (typeName == null) {
-                                                    break;
-                                                }
-                                            } else {
-                                                if (varBase instanceof MethodInvocation) {
-                                                    typeName = getReturnType(typeName, (MethodInvocation) varBase, result, index);
-                                                } else {
-                                                    typeName = null;
-                                                    break;
-                                                }
-                                            }
-                                        }
+                                        typeName = evaluateVariableBase((VariableBase)rightHandSide, assignments);
                                     }
                                     if (typeName == null) {
                                         assignments.put(leftVarName, null);
@@ -356,6 +352,53 @@ public final class VarTypeResolver {
             }
         }
         return retval;
+    }
+
+    private String getInternalName(FieldAccess fieldAccess,  Map<String, Union2<? extends ASTNode, String>> assignments) {
+        StringBuffer sb = new StringBuffer();
+        VariableBase dispatcher = fieldAccess.getDispatcher();
+        String dispType = evaluateVariableBase((VariableBase) dispatcher, assignments);
+        if (dispType != null) {
+            Variable field = fieldAccess.getField();
+            String fldName = CodeUtils.extractVariableName(field);
+            if (fldName.startsWith("$")) {//NOI18N
+                fldName.substring(1);
+            }
+            sb.append(dispType).append("::").append(fldName);
+            return sb.toString();
+        }
+        return null;
+    }
+
+    private String evaluateVariableBase(VariableBase rightHandSide, Map<String, Union2<? extends ASTNode, String>> assignments) {
+        String typeName = null;
+        Stack<VariableBase> stack = new Stack<VariableBase>();
+        createVariableBaseChain((VariableBase) rightHandSide, stack);
+        while (!stack.isEmpty() && stack.peek() != null) {
+            VariableBase varBase = stack.pop();
+            if (typeName == null) {
+                if (varBase instanceof FunctionInvocation) {
+                    typeName = getReturnType((FunctionInvocation) varBase, result, index);
+                } else if (varBase instanceof Variable) {
+                    typeName = findPrecedingType((Variable) varBase, assignments);
+                } else if (varBase instanceof StaticFieldAccess) {
+                    typeName = getReturnType((StaticFieldAccess) varBase, result, index);
+                } else if (varBase instanceof StaticMethodInvocation) {
+                    typeName = getReturnType((StaticMethodInvocation) varBase, result, index);
+                }
+                if (typeName == null) {
+                    break;
+                }
+            } else {
+                if (varBase instanceof MethodInvocation) {
+                    typeName = getReturnType(typeName, (MethodInvocation) varBase, result, index);
+                } else {
+                    typeName = null;
+                    break;
+                }
+            }
+        }
+        return typeName;
     }
     private static void createVariableBaseChain(VariableBase node, Stack<VariableBase> stack) {
         stack.push(node);
@@ -418,7 +461,7 @@ public final class VarTypeResolver {
         }
         return null;
     }
-    private static String findPrecedingType(Variable node, final Map<String, Union2<Variable, String>> assignments) {
+    private static String findPrecedingType(Variable node, final Map<String, Union2<? extends ASTNode, String>> assignments) {
         String varName = CodeUtils.extractVariableName(node);
 
         if (varName == null){
@@ -428,9 +471,9 @@ public final class VarTypeResolver {
         return findPrecedingType(varName, assignments);
     }
 
-    private static String findPrecedingType(String varName, final Map<String, Union2<Variable, String>> assignments) {
+    private static String findPrecedingType(String varName, final Map<String, Union2<? extends ASTNode, String>> assignments) {
         String retval = null;
-        Union2<Variable, String> rAssignment = assignments.get(varName);
+        Union2<? extends ASTNode, String> rAssignment = assignments.get(varName);
         if (rAssignment != null && rAssignment.hasSecond()) {
             retval = rAssignment.second();
         }
@@ -451,6 +494,9 @@ public final class VarTypeResolver {
     }
 
     private boolean isValidBlock(final List<ASTNode> path) {
+        if (varName != null && varName.contains("::")) {//NOI18N
+            return true;
+        }
         ASTNode nearestBlock = findNearestBlock(path);
         if (nearestBlock == null) {
             return false;

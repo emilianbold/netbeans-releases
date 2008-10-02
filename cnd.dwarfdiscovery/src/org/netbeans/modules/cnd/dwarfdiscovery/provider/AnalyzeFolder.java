@@ -245,7 +245,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                 break;
             }
             File d = new File((String)it.next());
-            if (d.isDirectory()){
+            if (d.exists() && d.isDirectory() && d.canRead()){
                 File[] ff = d.listFiles();
                 for (int i = 0; i < ff.length; i++) {
                     if (ff[i].isFile()) {
@@ -288,7 +288,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
         if (isStoped) {
             return;
         }
-        if (d.isDirectory()){
+        if (d.exists() && d.isDirectory() && d.canRead()){
             if (DiscoveryUtils.ignoreFolder(d)){
                 return;
             }

@@ -485,19 +485,28 @@ public class InfoPanel extends javax.swing.JPanel {
         // add toggle buttons
         Dimension space = new Dimension(3, 0);
         for (int i = 0; i < toggles.size(); i++) {
-            final int index = i;
-            final JToggleButton curToggle = toggles.get(i);
-            curToggle.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    filtersDesc.setSelected(index, curToggle.isSelected());
-                }
-            });
+            JToggleButton curToggle = toggles.get(i);
+            curToggle.addActionListener(new ToggleButtonActionListener(i));
             toolbar.add(curToggle);
             if (i != toggles.size() - 1) {
                 toolbar.addSeparator(space);
             }
         }
         return toolbar;
+    }
+
+    private static class ToggleButtonActionListener implements ActionListener {
+
+        private int index;
+
+        public ToggleButtonActionListener(int index) {
+            this.index = index;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            JToggleButton curToggle = (JToggleButton) e.getSource();
+            FiltersDescriptor.getInstance().setSelected(index, curToggle.isSelected());
+        }
     }
 
     private JToggleButton createToggle (FiltersDescriptor filtersDesc, int index) {

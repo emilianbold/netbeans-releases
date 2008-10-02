@@ -8,6 +8,8 @@ Go to Spring Bean...             B
 ==============================
 Go to Test                       G
 Go to Rails Action or View       R
+Go to Grails Controller          t
+Go to Grails View                e
 Go to Previous Document          r
 ==============================
 Go to Source                     S
@@ -29,5 +31,5 @@ Previous Error                   P
 ==============================
 Select in Projects               j
 Select in Files                  c
-Select in Classes                c
+Select in Classes                C
 Select in Favorites              a

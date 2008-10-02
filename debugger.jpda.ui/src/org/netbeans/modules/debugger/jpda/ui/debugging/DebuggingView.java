@@ -309,7 +309,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private javax.swing.JScrollBar treeScrollBar;
     // End of variables declaration//GEN-END:variables
 
-    public void setRootContext(Models.CompoundModel model, DebuggerEngine engine) {
+    public void setRootContext(Models.CompoundModel model, final DebuggerEngine engine) {
         {   // Destroy the old node
             Node root = manager.getRootContext();
             if (root != null) {
@@ -374,6 +374,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 adjustTreeScrollBar(-1);
+                if (engine == null) {
+                    // Clean up the UI from memory leaks:
+                    setActivatedNodes (new Node[] {});
+                    treeView.resetSelection();
+                    treeView.updateUI();
+                }
             }
         });
     }
@@ -391,9 +397,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         return view;
     }
 
-    public Action[] getFilterActions() {
+    /*public Action[] getFilterActions() {
         return FiltersDescriptor.getInstance().getFilterActions();
-    }
+    }*/
     
     public void setSuspendTableVisible(boolean visible) {
         rightPanel.setVisible(visible);

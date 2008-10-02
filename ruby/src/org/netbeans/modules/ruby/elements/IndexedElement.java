@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.ruby.elements;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
@@ -51,7 +50,7 @@ import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.gsf.spi.DefaultParserFile;
-import org.netbeans.modules.ruby.NbUtilities;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.filesystems.FileObject;
 
 
@@ -142,7 +141,7 @@ public abstract class IndexedElement extends RubyElement {
                 return null;
             }
 
-            document = NbUtilities.getBaseDocument(fileObject, true);
+            document = GsfUtilities.getDocument(fileObject, true);
         }
 
         return document;

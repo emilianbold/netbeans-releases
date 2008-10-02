@@ -89,6 +89,10 @@ public class StartManager {
         return listener;
     }
 
+    public boolean isStartRequested() {
+        return startRequested;
+    }
+
     private synchronized void setIsStarting(boolean isStarting) {
         this.isStarting = isStarting;
     }
