@@ -882,6 +882,7 @@ bigloop:
         public ExplorerManager getExplorerManager();
     }
 
+    static boolean SCHEDULE_REMOVE_ASYNCH = true;
     /** Listener to be notified when root node has been destroyed.
     * Then the root node is changed to Node.EMPTY
     */
@@ -904,11 +905,16 @@ bigloop:
             } else {
                 // assume that the node is among currently selected nodes
                 final Node n = ev.getNode();
-                SwingUtilities.invokeLater( new Runnable() {
+                Runnable r = new Runnable() {
                     public void run() {
                         scheduleRemove(n);
                     }
-                });
+                };
+                if (SCHEDULE_REMOVE_ASYNCH) {
+                    SwingUtilities.invokeLater(r);
+                } else {
+                    r.run();
+                }
             }
         }
 
