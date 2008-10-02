@@ -65,6 +65,7 @@ import org.netbeans.modules.gsf.api.PositionManager;
 import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.gsf.spi.DefaultError;
+import org.openide.util.NbBundle;
 
 /**
  * Parser for YAML. Delegates to the YAML parser shipped with JRuby (jvyamlb)
@@ -82,6 +83,13 @@ public class YamlParser implements Parser {
     
     private ParserResult parse(String source, ParserFile file) {
         try {
+            if (source.length() > 512*1024) {
+                YamlParserResult result = new YamlParserResult(null, this, file, false, null, null);
+                DefaultError error = new DefaultError(null, NbBundle.getMessage(YamlParser.class, "TooLarge"), null, file.getFileObject(), 0, 0, Severity.WARNING);
+                result.addError(error);
+                return result;
+            }
+            source.length();
             ByteList byteList = null;
             int[] byteToUtf8 = null;
             int[] utf8toByte = null;
