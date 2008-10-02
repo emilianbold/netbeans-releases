@@ -38,25 +38,13 @@
     </folder>
     <folder name="Menu">
         <folder name="GoTo">
-            <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoDomainClassAction-separatorBefore.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                <attr name="position" intvalue="2525"/>
-            </file>
             <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.instance"/>
-                <attr name="position" intvalue="2537"/>
-            </file>
-            <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoDomainClassAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoDomainClassAction.instance"/>
-                <attr name="position" intvalue="2550"/>
+                <attr name="position" intvalue="550"/>
             </file>
             <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.instance"/>
-                <attr name="position" intvalue="2562"/>
-            </file>
-            <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction-separatorAfter.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                <attr name="position" intvalue="2574"/>
+                <attr name="position" intvalue="575"/>
             </file>
         </folder>
     </folder>
