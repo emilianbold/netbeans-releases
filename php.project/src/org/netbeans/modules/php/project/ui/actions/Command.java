@@ -268,8 +268,8 @@ public abstract class Command {
     }
 
     /** eventually show the customizer */
-    protected boolean isRunConfigurationSet() {
-        return ProjectPropertiesSupport.getRunAs(project, true) != null;
+    protected boolean isRunConfigurationValid() {
+        return ProjectPropertiesSupport.isActiveConfigValid(project, true);
     }
 
     protected boolean isScriptSelected() {
