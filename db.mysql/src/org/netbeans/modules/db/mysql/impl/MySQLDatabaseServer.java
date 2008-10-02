@@ -697,18 +697,23 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             @Override
             public void execute() throws Exception {
                 ProgressHandle handle = ProgressHandleFactory.createHandle(Utils.getMessage("LBL_StoppingMySQLServer"));
-                        
-                handle.start();
-                handle.switchToIndeterminate();
                 Process proc = null;
-
-                proc = runProcess(getStopPath(), getStopArgs(),true, Utils.getMessage("LBL_MySQLOutputTab"));
-                if (proc != null) {
-                    proc.destroy();
-                }
-                
-                handle.finish();
-                
+                try {
+                   handle.start();
+                   handle.switchToIndeterminate();
+                   proc = runProcess(getStopPath(), getStopArgs(), true, Utils.getMessage("LBL_MySQLOutputTab"));
+                   // wait until server is shut down
+                   synchronized(proc) {
+                       while(checkRunning()) {
+                           proc.wait();
+                       }
+                   }
+               } finally {
+                   if (proc != null) {
+                       proc.destroy();
+                   }
+                   handle.finish();
+               } 
             }
         }.postCommand("stop"); // NOI18N
     }
