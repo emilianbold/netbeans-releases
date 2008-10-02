@@ -48,6 +48,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -156,11 +157,12 @@ public final class RecentViewListAction extends AbstractAction
     }
     
     private class ActivatableTC implements SwitcherTableItem.Activatable {
-        private TopComponent tc;
+        private WeakReference<TopComponent> wtc;
         private ActivatableTC(TopComponent tc) {
-            this.tc = tc;
+            this.wtc = new WeakReference<TopComponent>(tc);
         }
         public void activate() {
+            TopComponent tc = wtc.get();
             if (tc != null) {
                 tc.requestActive();
             }
