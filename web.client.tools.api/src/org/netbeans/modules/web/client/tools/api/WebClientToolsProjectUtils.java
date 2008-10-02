@@ -99,7 +99,9 @@ public final class WebClientToolsProjectUtils {
     public static boolean showDebugDialog(Project project) {
         Preferences globalPrefs = NbPreferences.forModule(WebClientToolsProjectUtils.class);
         boolean showDialog = globalPrefs.getBoolean(DIALOG_DISPLAY_CONFIG, true);
-        if (!showDialog) {
+        boolean serverDebugEnabled = WebClientToolsProjectUtils.getServerDebugProperty(project);
+
+        if (!showDialog || !serverDebugEnabled) {
             return true;
         } else {
             String projectName = ProjectUtils.getInformation(project).getDisplayName();
