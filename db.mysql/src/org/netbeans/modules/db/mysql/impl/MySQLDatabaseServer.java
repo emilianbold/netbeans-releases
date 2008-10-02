@@ -79,6 +79,7 @@ import org.netbeans.modules.db.mysql.DatabaseUser;
 import org.netbeans.modules.db.mysql.util.ExecSupport;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
+import org.openide.util.Cancellable;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -705,31 +706,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             throw new DatabaseException(Utils.getMessage("MSG_InvalidStopCommand"));
         }
 
-        final DatabaseServer server = this;
-
-        new DatabaseCommand() {
-            @Override
-            public void execute() throws Exception {
-                ProgressHandle handle = ProgressHandleFactory.createHandle(Utils.getMessage("LBL_StoppingMySQLServer"));
-                Process proc = null;
-                try {
-                   handle.start();
-                   handle.switchToIndeterminate();
-                   proc = runProcess(getStopPath(), getStopArgs(), true, Utils.getMessage("LBL_MySQLOutputTab"));
-                   // wait until server is shut down
-                   synchronized(proc) {
-                       while(checkRunning()) {
-                           proc.waitFor();
-                       }
-                   }
-               } finally {
-                   if (proc != null) {
-                       proc.destroy();
-                   }
-                   handle.finish();
-               } 
-            }
-        }.postCommand("stop"); // NOI18N
+        new StopDatabaseCommand().postCommand("stop"); // NOI18N
     }
 
     /**
@@ -988,5 +965,32 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         public Throwable getException() {
             return throwable;
         }
-    }    
+    }
+
+    private class StopDatabaseCommand extends DatabaseCommand implements Cancellable {
+        private Process proc = null;
+
+        @Override
+        public void execute() throws Exception {
+            ProgressHandle handle = ProgressHandleFactory.createHandle(Utils.getMessage("LBL_StoppingMySQLServer"), this);
+            try {
+                handle.start();
+                handle.switchToIndeterminate();
+                proc = runProcess(getStopPath(), getStopArgs(), true, Utils.getMessage("LBL_MySQLOutputTab"));
+                // wait until server is shut down
+                proc.waitFor();
+            } finally {
+                if (proc != null) {
+                    proc.destroy();
+                }
+                handle.finish();
+            }
+        }
+        
+        public boolean cancel() {
+            proc.destroy();
+            return true;
+        }
+
+    }
 }
