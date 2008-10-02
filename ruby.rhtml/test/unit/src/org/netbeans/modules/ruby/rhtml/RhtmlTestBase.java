@@ -83,6 +83,7 @@ public abstract class RhtmlTestBase extends RubyTestBase {
     }
     
     @Override
+    @SuppressWarnings("deprecation") // For setFormatter()
     protected void setUp() throws Exception {
         super.setUp();
         try {

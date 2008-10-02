@@ -956,9 +956,9 @@ class LuceneIndex extends Index {
         return refRoot;
     }
     
-    private void checkPreconditions () {
+    private void checkPreconditions () throws ClassIndexImpl.IndexAlreadyClosedException{
         if (closed) {
-            throw new IllegalStateException ("Index already closed");   //NOI18N
+            throw new ClassIndexImpl.IndexAlreadyClosedException();
         }
     }
     

@@ -120,7 +120,8 @@ public class TranslateClassPath extends Task {
             URL entry = FileUtil.urlForArchiveOrDir(entryFile);
             
             SourceForBinaryQuery.Result2 r = SourceForBinaryQuery.findSourceRoots2(entry);
-            
+            boolean appendEntry = false;
+
             if (r.preferSources() && r.getRoots().length > 0) {
                 List<File> translated = new LinkedList<File>();
                 
@@ -129,10 +130,18 @@ public class TranslateClassPath extends Task {
 
                     if (sourceFile == null) {
                         log("Source URL: " + source.getURL().toExternalForm() + " cannot be translated to file, skipped", Project.MSG_WARN);
+                        appendEntry = true;
+                        continue;
+                    }
+
+                    Boolean bamiResult = BuildArtifactMapperImpl.ensureBuilt(sourceFile.toURI().toURL(), true);
+
+                    if (bamiResult == null) {
+                        appendEntry = true;
                         continue;
                     }
                     
-                    if (!BuildArtifactMapperImpl.ensureBuilt(sourceFile.toURI().toURL(), true)) {
+                    if (!bamiResult) {
                         throw new UserCancel();
                     }
                     
@@ -148,6 +157,10 @@ public class TranslateClassPath extends Task {
                             translated.add(sourceFile);
                         }
                     }
+                }
+
+                if (appendEntry) {
+                    translated.add(entryFile);
                 }
                 
                 return translated.toArray(new File[0]);

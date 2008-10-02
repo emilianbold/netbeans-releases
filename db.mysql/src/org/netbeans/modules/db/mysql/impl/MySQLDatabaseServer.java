@@ -815,7 +815,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
                 } catch (IOException ex) {
                     running = false;
                 } catch (NumberFormatException nfe) {
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(MySQLDatabaseServer.class, "MSG_MySQL_InvalidPortNumber" + "  " + getPort()), NotifyDescriptor.ERROR_MESSAGE); // NOI18N
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(MySQLDatabaseServer.class, "MSG_MySQL_InvalidPortNumber", getPort()), NotifyDescriptor.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notify(nd);
                     LOGGER.log(Level.WARNING, nfe.getMessage());
                     running = false;
