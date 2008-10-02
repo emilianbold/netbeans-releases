@@ -100,6 +100,13 @@ public class DebugSingleCommand extends DebugCommand {
             };
             
             boolean jsDebuggingAvailable = WebClientToolsSessionStarterService.isAvailable();
+            if (jsDebuggingAvailable) {
+                boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(getProject());
+                if (!keepDebugging) {
+                    return;
+                }
+            }
+            
             if (!jsDebuggingAvailable || WebClientToolsProjectUtils.getServerDebugProperty(getProject())) {
                 XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
                 if (dbgStarter != null) {

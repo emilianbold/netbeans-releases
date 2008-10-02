@@ -803,6 +803,12 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
                 clientDebug = false;
                 serverDebug = true;
             } else {
+                // show Debug Project dialog
+                boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(project);
+                if (!keepDebugging) {
+                    return;
+                }
+
                 serverDebug = WebClientToolsProjectUtils.getServerDebugProperty(project);
                 clientDebug = WebClientToolsProjectUtils.getClientDebugProperty(project);
             }

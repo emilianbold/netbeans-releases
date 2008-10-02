@@ -404,7 +404,10 @@ class WebActionProvider implements ActionProvider {
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
             setDirectoryDeploymentProperty(p);
             
-            setJavaScriptDebuggerProperties(p);
+            boolean keepDebugging = setJavaScriptDebuggerProperties(p);
+            if (!keepDebugging) {
+                return null;
+            }
                         
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
@@ -541,7 +544,10 @@ class WebActionProvider implements ActionProvider {
                 return null;
             }
 
-            setJavaScriptDebuggerProperties(p);
+            boolean keepDebugging = setJavaScriptDebuggerProperties(p);
+            if (!keepDebugging) {
+                return null;
+            }
             
             WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
             if (wscs != null) { //project contains ws reference
@@ -738,18 +744,27 @@ class WebActionProvider implements ActionProvider {
         return targetNames;
     }
 
-    private void setJavaScriptDebuggerProperties(Properties p) {       
+    private boolean setJavaScriptDebuggerProperties(Properties p) {
         if (!WebClientToolsSessionStarterService.isAvailable()) {
             // If JavaScript debugger is not available, set to server debugging only
             p.setProperty("debug.client", "false"); // NOI18N
             p.setProperty("debug.server", "true"); // NOI18N
+            return true;
 
         } else {
+            // display Debug Project Dialog
+            boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(project);
+            if (!keepDebugging) {
+                return false;
+            }
+
             boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(project);
             boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(project);
 
             p.setProperty("debug.client", String.valueOf(debugClient)); // NOI18N
             p.setProperty("debug.server", String.valueOf(debugServer)); // NOI18N
+
+            return true;
         }
     }
 
