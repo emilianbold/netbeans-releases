@@ -74,15 +74,14 @@ public class DebugCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
+        if (!isRunConfigurationValid()) {
+            // property not set yet
+            return;
+        }
         boolean scriptSelected = isScriptSelected();
         if (scriptSelected) {
-            // we don't need to check anything here, because if the customizer show, then scriptSelected == false
             debugLocalCommand.invokeAction(null);
         } else {
-            if (!isIndexFileSet() || !isUrlSet()) {
-                // property not set yet
-                return;
-            }
             eventuallyUploadFiles();
             Runnable runnable = new Runnable() {
                 public void run() {

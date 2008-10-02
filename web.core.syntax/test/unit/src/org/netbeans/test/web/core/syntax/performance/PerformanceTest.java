@@ -117,7 +117,7 @@ public class PerformanceTest extends NbTestCase {
             String message = log.getMessage();
             if (message.contains("Navigator Initialization")) {
                 verify(log, 500, 2000);
-            } else if (message.contains("Parsing (text/html)")){
+            } else if (message.contains("Parsing (text/html)") || message.contains("Navigator Merge")){
                 verify(log, 300, 1000);
             }else {
                 verify(log, 200, 800);

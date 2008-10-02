@@ -144,7 +144,7 @@ public class CompilationInfo extends org.netbeans.modules.gsf.api.CompilationInf
             throw new IllegalStateException ();
         }
         try {
-            return ((SourceFileObject) this.jfo).getTokenHierarchy();
+            return this.jfo.getTokenHierarchy();
         } catch (IOException ioe) {
             //Should never happen
             ErrorManager.getDefault().notify(ioe);

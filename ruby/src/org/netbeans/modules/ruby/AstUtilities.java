@@ -1992,7 +1992,11 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             return guessedName;
         }
         
-        return params.get(index);
+        String s = params.get(index);
+        if (s.startsWith("*") || s.startsWith("&")) { // Don't include * or & in variable name
+            s = s.substring(1);
+        }
+        return s;
     }
     
     public static Set<String> getUsedFields(RubyIndex index, AstPath path) {

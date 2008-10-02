@@ -53,8 +53,6 @@ import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.DataEditorSupport;
@@ -94,6 +92,7 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
      * @return true if the environment accepted being marked as modified
      *    or false if it has refused and the document should remain unmodified
      */
+    @Override
     protected boolean notifyModified () {
         if (!super.notifyModified()) 
             return false;
@@ -104,6 +103,7 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
     }
 
     /** Overrides superclass method. Adds removing of save cookie. */
+    @Override
     protected void notifyUnmodified () {
         super.notifyUnmodified();
 
@@ -165,6 +165,7 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
          * Overrides superclass method.
          * @return text editor support (instance of enclosing class)
          */
+        @Override
         public CloneableOpenSupport findCloneableOpenSupport() {
             DataObject obj = getDataObject ();
             DefaultES ret;

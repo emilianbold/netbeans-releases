@@ -154,8 +154,11 @@ public class PersistenceUtil {
         nodeWriter.setViewport(null);
         nodeWriter.setPEID(PersistenceUtil.getPEID(widget));
         nodeWriter.setMEID(PersistenceUtil.getMEID(widget));
-        nodeWriter.setElementType(PersistenceUtil.getModelElement(widget).getElementType());
-
+        IElement elt = PersistenceUtil.getModelElement(widget);
+        if (elt != null)
+        {
+            nodeWriter.setElementType(elt.getElementType());
+        }
         return nodeWriter;
     }
 

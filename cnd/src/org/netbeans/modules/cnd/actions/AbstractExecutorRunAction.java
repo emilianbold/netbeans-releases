@@ -38,14 +38,21 @@
  */
 package org.netbeans.modules.cnd.actions;
 
+import java.io.File;
+import java.io.IOException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -79,7 +86,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     protected static String getDevelopmentHost(FileObject fileObject) {
         Project project = FileOwnerQuery.getOwner(fileObject);
 
-        String developmentHost = CompilerSetManager.LOCALHOST;
+        String developmentHost = CompilerSetManager.getDefaultDevelopmentHost();
         if (project != null) {
             RemoteProject info = project.getLookup().lookup(RemoteProject.class);
             if (info != null) {
@@ -87,6 +94,52 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
         return developmentHost;
+    }
+
+    protected String getMakeCommand(Node node){
+        DataObject dataObject = node.getCookie(DataObject.class);
+        FileObject fileObject = dataObject.getPrimaryFile();
+        Project project = FileOwnerQuery.getOwner(fileObject);
+        String makeCommand = null;
+        if (project != null) {
+            ToolchainProject toolchain = project.getLookup().lookup(ToolchainProject.class);
+            if (toolchain != null) {
+                Tool tool = toolchain.getCompilerSet().findTool(Tool.MakeTool);
+                if (tool != null) {
+                    makeCommand = tool.getPath();
+                }
+            }
+        }
+        if (makeCommand == null) {
+            MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
+            makeCommand = mes.getMakeCommand();
+        }
+        return makeCommand;
+    }
+
+    protected File getBuildDirectory(Node node){
+	MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
+        DataObject dataObject = node.getCookie(DataObject.class);
+        FileObject fileObject = dataObject.getPrimaryFile();
+        File makefile = FileUtil.toFile(fileObject);
+
+        // Build directory
+        String bdir = mes.getBuildDirectory();
+        File buildDir;
+        if (bdir.length() == 0 || bdir.equals(".")) { // NOI18N
+            buildDir = makefile.getParentFile();
+        } else if (IpeUtils.isPathAbsolute(bdir)) {
+            buildDir = new File(bdir);
+        } else {
+            buildDir = new File(makefile.getParentFile(), bdir);
+        }
+        try {
+            buildDir = buildDir.getCanonicalFile();
+        }
+        catch (IOException ioe) {
+            // FIXUP
+        }
+        return buildDir;
     }
 
     protected static String[] prepareEnv(String developmentHost) {

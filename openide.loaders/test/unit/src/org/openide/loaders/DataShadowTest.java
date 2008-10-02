@@ -214,6 +214,7 @@ implements java.net.URLStreamHandlerFactory {
      * and there is a link to a file in its layer - this link could possibly
      * not be updated (until creation of another data object)
      */
+    @RandomlyFails // NB-Core-Build #1441
     public void testDeleteInvalidatesCreateCreatesJustOnFileSystemLevel () throws Exception {
         doDeleteInvalidatesCreateCreates (false);
     }

@@ -201,7 +201,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
             if (null == f) {
                 // Prelude release hack
                 entryList = ServerUtilities.filterByManifest(entryList, 
-                        new File(gfRootStr, "modules"), 0);
+                        new File(gfRootStr, "modules"), 0, true);
             }
             for (String entry : entryList) {
                 f = ServerUtilities.getJarName(gfRootStr, entry);

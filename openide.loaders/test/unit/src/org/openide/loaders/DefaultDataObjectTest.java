@@ -44,13 +44,13 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.util.Enumeration;
+import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
-import junit.framework.TestCase;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
@@ -58,13 +58,8 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
-import org.openide.nodes.NodeMemberEvent;
-import org.openide.nodes.NodeReorderEvent;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Enumerations;
-import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -83,6 +78,7 @@ public class DefaultDataObjectTest extends NbTestCase {
         MockServices.setServices(Pool.class);
         
         clearWorkDir();
+        JspLoader.cnt = 0;
 
         String fsstruct [] = new String [] {
             "AA/a.test"
@@ -151,6 +147,63 @@ public class DefaultDataObjectTest extends NbTestCase {
         assertFalse("Invalidated", obj.isValid());
         
         assertNotNull("Document can be created", listener.doc);
+    }
+
+    public void testRenameOpenComponent() throws Exception {
+        {
+            OpenCookie oc = obj.getLookup().lookup(OpenCookie.class);
+            assertNotNull("We have open cookie", oc);
+            oc.open();
+        }
+
+        waitEQ();
+        EditorCookie ec = obj.getLookup().lookup(EditorCookie.class);
+        JEditorPane[] arr = getEPanes(ec);
+        assertNotNull("Editor is open", arr);
+        assertEquals("One Editor is open", 1, arr.length);
+
+        Node[] origNodes = obj.getFolder().getNodeDelegate().getChildren().getNodes();
+        assertEquals("One node", 1, origNodes.length);
+        assertEquals("the obj", obj, origNodes[0].getLookup().lookup(DataObject.class));
+
+        obj.rename("ToSomeStrangeName.jsp");
+        assertFalse("Invalid now", obj.isValid());
+
+        DataObject newObj = DataObject.find(obj.getPrimaryFile());
+        if (newObj == obj) {
+            fail("They should be different now: " + obj + ", " + newObj);
+        }
+
+        {
+            OpenCookie oc = newObj.getLookup().lookup(OpenCookie.class);
+            assertNotNull("We have open cookie", oc);
+            oc.open();
+        }
+        ec = newObj.getLookup().lookup(EditorCookie.class);
+        JEditorPane[] arr2 = getEPanes(ec);
+        assertNotNull("Editor is open", arr2);
+        assertEquals("One Editor is open", 1, arr2.length);
+
+        Node[] newNodes = obj.getFolder().getNodeDelegate().getChildren().getNodes();
+        assertEquals("One new node", 1, newNodes.length);
+        assertEquals("the new obj", newObj, newNodes[0].getLookup().lookup(DataObject.class));
+
+    }
+
+    private JEditorPane[] getEPanes(final EditorCookie ec) throws Exception {
+        class R implements Runnable {
+            JEditorPane[] arr;
+            public void run() {
+                arr = ec == null ? null : ec.getOpenedPanes();
+            }
+        }
+        R r = new R();
+        SwingUtilities.invokeAndWait(r);
+        return r.arr;
+    }
+
+    private void waitEQ() throws Exception {
+        getEPanes(null);
     }
 
     public static final class Pool extends DataLoaderPool {

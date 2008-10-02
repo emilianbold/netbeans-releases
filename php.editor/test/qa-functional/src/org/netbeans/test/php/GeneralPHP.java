@@ -292,4 +292,49 @@ public class GeneralPHP extends JellyTestCase {
     for( int i = 0; i < asCode.length; i++ )
       CheckResult( eoCode, asCode[ i ], iOffset + i );
   }
+
+  private class dummyClick implements Runnable
+  {
+    private JListOperator list;
+    private int index, count;
+    public dummyClick( JListOperator l, int i, int j )
+    {
+      list = l;
+      index = i;
+      count = j;
+    }
+
+    public void run( )
+    {
+      list.clickOnItem( index, count );
+    }
+  }
+
+  protected void ClickListItemNoBlock(
+      JListOperator jlList,
+      int iIndex,
+      int iCount
+    )
+  {
+    ( new Thread( new dummyClick( jlList, iIndex, iCount ) ) ).start( );
+  }
+
+    protected void ClickForTextPopup( EditorOperator eo, String menu )
+    {
+      JEditorPaneOperator txt = eo.txtEditorPane( );
+      JEditorPane epane =  ( JEditorPane )txt.getSource( );
+      try
+      {
+        Rectangle rct = epane.modelToView( epane.getCaretPosition( ) );
+        txt.clickForPopup( rct.x, rct.y );
+        JPopupMenuOperator popup = new JPopupMenuOperator( );
+        popup.pushMenu( menu );
+      }
+      catch( BadLocationException ex )
+      {
+        System.out.println( "=== Bad location" );
+      }
+
+      return;
+    }
 }

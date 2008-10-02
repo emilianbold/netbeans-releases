@@ -146,7 +146,6 @@ made subject to such option by the copyright holder.
                 <xsl:variable name="wsname" select="@name"/>
                 <xsl:variable name="package_name" select="jaxws:package-name"/>
                 <xsl:variable name="wsdl_url" select="jaxws:local-wsdl-file"/>
-                <xsl:variable name="wsdl_url_actual" select="jaxws:wsdl-url"/>
                 <xsl:variable name="package_path" select = "translate($package_name,'.','/')"/>
                 <xsl:variable name="catalog" select = "jaxws:catalog-file"/>
                 <target name="wsimport-client-check-{$wsname}" depends="wsimport-init">
@@ -170,7 +169,6 @@ made subject to such option by the copyright holder.
                         <xsl:with-param name="packageName" select="$package_name"/>
                         <xsl:with-param name="wsName" select="$wsname" />
                         <xsl:with-param name="wsdlUrl" select="$wsdl_url"/>
-                        <xsl:with-param name="wsdlUrlActual" select="$wsdl_url_actual"/>
                         <xsl:with-param name="Catalog" select="$catalog"/>
                         <xsl:with-param name="wsimportoptions" select="jaxws:wsimport-options"/>
                     </xsl:call-template>
@@ -265,7 +263,6 @@ made subject to such option by the copyright holder.
         <xsl:param name="isService" />
         <xsl:param name="wsName" />
         <xsl:param name="wsdlUrl"/>
-        <xsl:param name="wsdlUrlActual"/>
         <xsl:param name="Catalog"/>
         <xsl:param name="wsimportoptions"/>
         <wsimport>
@@ -295,9 +292,6 @@ made subject to such option by the copyright holder.
                 </xsl:choose>
             </xsl:variable>
             <xsl:attribute name="wsdl">${basedir}/${conf-dir}xml-resources/<xsl:value-of select="$wsDir"/>/<xsl:value-of select="$wsName"/>/wsdl/<xsl:value-of select="$wsdlUrl"/></xsl:attribute>
-            <xsl:if test="not($isService)">
-                <xsl:attribute name="wsdlLocation"><xsl:value-of select="$wsdlUrlActual" /></xsl:attribute>
-            </xsl:if>
             <xsl:attribute name="catalog"><xsl:value-of select="$Catalog" /></xsl:attribute>
             <xsl:if test="$wsimportoptions">
                 <xsl:for-each select="$wsimportoptions/jaxws:wsimport-option">

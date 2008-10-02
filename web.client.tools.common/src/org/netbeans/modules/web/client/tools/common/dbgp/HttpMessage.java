@@ -157,7 +157,9 @@ public class HttpMessage extends Message {
                 return nodeList.item(0).getNodeValue();
             }
         }
-        return null;
+        // XXX #148659 Fixing NPE.
+//        return null;
+        return ""; // NOI18N
 
 //        Map<String,String> map = Collections.emptyMap();
 //        return map;

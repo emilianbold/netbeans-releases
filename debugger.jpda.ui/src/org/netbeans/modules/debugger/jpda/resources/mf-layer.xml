@@ -289,6 +289,7 @@ made subject to such option by the copyright holder.
             </file>
         </folder>-->
         <folder name="Debug">
+            <attr name="position" intvalue="500"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.jpda.ui.Bundle"/>
             <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>

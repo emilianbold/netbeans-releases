@@ -642,6 +642,7 @@ public final class FileUtil extends Object {
      * @since 4.29
      */
     public static FileObject toFileObject(File file) {
+        Parameters.notNull("file", file);  //NOI18N
         // return null for UNC root
         if(file.getPath().equals("\\\\")) {
             return null;
@@ -1363,6 +1364,7 @@ public final class FileUtil extends Object {
      * @since 4.48
      */
     public static File normalizeFile(final File file) {
+        Parameters.notNull("file", file);  //NOI18N
         File retFile;
 
         if ((Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2))) {

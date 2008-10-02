@@ -104,6 +104,7 @@ public class ResizeElementsPanel extends javax.swing.JPanel
         heightLabel.setLabelFor(heightText);
         org.openide.awt.Mnemonics.setLocalizedText(heightLabel, org.openide.util.NbBundle.getMessage(ResizeElementsPanel.class, "LBL_HeightLabel")); // NOI18N
 
+        heightText.setColumns(10);
         heightText.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 heightTextFocusGained(evt);
@@ -113,6 +114,7 @@ public class ResizeElementsPanel extends javax.swing.JPanel
         widthLabel.setLabelFor(widthText);
         org.openide.awt.Mnemonics.setLocalizedText(widthLabel, org.openide.util.NbBundle.getMessage(ResizeElementsPanel.class, "LBL_WidthLabel")); // NOI18N
 
+        widthText.setColumns(10);
         widthText.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 widthTextFocusGained(evt);
@@ -121,24 +123,29 @@ public class ResizeElementsPanel extends javax.swing.JPanel
 
         statusLabel.setForeground(new java.awt.Color(255, 0, 0));
         statusLabel.setText("<error status>");
+        statusLabel.setMaximumSize(new java.awt.Dimension(573, 54));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(heightLabel)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .add(widthLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(widthText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .add(heightLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(heightText, 0, 0, Short.MAX_VALUE)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(heightText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 59, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(widthLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(widthText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 63, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE))
+                        .add(widthText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(167, 167, 167)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -153,7 +160,7 @@ public class ResizeElementsPanel extends javax.swing.JPanel
                     .add(widthLabel)
                     .add(widthText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
-                .add(statusLabel)
+                .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -235,7 +242,7 @@ public class ResizeElementsPanel extends javax.swing.JPanel
             
         try
         {
-            return (Long.valueOf(dimStrVal) > 0);
+            return (Integer.valueOf(dimStrVal) > 0);
         }
         
         catch (NumberFormatException ex)
@@ -283,7 +290,7 @@ public class ResizeElementsPanel extends javax.swing.JPanel
             {
                 if (!validNumber(heightText.getText()))
                     throw new PropertyVetoException(
-                        "Must be positive, whole number", evt); // NOI18N
+                        "Must be positive, whole number less then 2147483647", evt); // NOI18N
             }
         }
         
@@ -294,7 +301,7 @@ public class ResizeElementsPanel extends javax.swing.JPanel
             {
                 if (!validNumber(widthText.getText()))
                     throw new PropertyVetoException(
-                        "Must be positive, whole number", evt); // NOI18N
+                        "Must be positive, whole number less then 2147483647", evt); // NOI18N
             }
         }
     }

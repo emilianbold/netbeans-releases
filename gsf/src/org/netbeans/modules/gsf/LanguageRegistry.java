@@ -49,11 +49,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
@@ -63,7 +61,6 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathFactory;
@@ -599,269 +596,275 @@ public class LanguageRegistry implements Iterable<Language> {
 
         try {
             FileObject navigator = config.getFileObject("Navigator"); // NOI18N
-            FileObject panels = navigator.getFileObject("Panels"); // NOI18N
-            for (FileObject outerMime : panels.getChildren()) {
-                for (FileObject innerMime : outerMime.getChildren()) {
-                    FileObject panel = innerMime.getFileObject("org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance"); // NOI18N
-                    if (panel != null) {
-                        panel.delete();
-                        if (innerMime.getChildren().length == 0) {
-                            innerMime.delete();
+            if (navigator != null) {
+                FileObject panels = navigator.getFileObject("Panels"); // NOI18N
+                if (panels != null) {
+                    for (FileObject outerMime : panels.getChildren()) {
+                        for (FileObject innerMime : outerMime.getChildren()) {
+                            FileObject panel = innerMime.getFileObject("org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance"); // NOI18N
+                            if (panel != null) {
+                                panel.delete();
+                                if (innerMime.getChildren().length == 0) {
+                                    innerMime.delete();
+                                }
+                            }
+                            if (outerMime.getChildren().length == 0) {
+                                outerMime.delete();
+                            }
                         }
                     }
-                    if (outerMime.getChildren().length == 0) {
-                        outerMime.delete();
+                    if (panels.getChildren().length == 0) {
+                        panels.delete();
+                        if (navigator.getChildren().length == 0) {
+                            navigator.delete();
+                        }
                     }
-                }
-            }
-            if (panels.getChildren().length == 0) {
-                panels.delete();
-                if (navigator.getChildren().length == 0) {
-                    navigator.delete();
                 }
             }
 
 
             // Delete editors stuff
             FileObject editors = config.getFileObject("Editors"); // NOI18N
-            for (FileObject outerMime : editors.getChildren()) {
-                for (FileObject innerMime : outerMime.getChildren()) {
-                    String mimeType = outerMime.getName() + "/" + innerMime.getName();
+            if (editors != null) {
+                for (FileObject outerMime : editors.getChildren()) {
+                    for (FileObject innerMime : outerMime.getChildren()) {
+                        String mimeType = outerMime.getName() + "/" + innerMime.getName();
 
-                    FileObject root = innerMime;
+                        FileObject root = innerMime;
 
-                    // Clean up the settings files
-                    FileObject settings = root.getFileObject("Settings.settings"); // NOI18N
-                    if (settings != null) {
-                        settings.delete();
-                    }
-
-                    // init code folding bar
-                    FileObject fo = root.getFileObject("SideBar/org-netbeans-modules-editor-gsfret-GsfCodeFoldingSideBarFactory.instance");
-                    if (fo != null) {
-                        fo.delete();
-                    }
-                    fo = root.getFileObject("SideBar");
-                    if (fo != null && fo.getChildren().length == 0) {
-                        fo.delete();
-                    }
-                    fo = root.getFileObject("FoldManager/org-netbeans-modules-gsfret-editor-fold-GsfFoldManagerFactory.instance");
-                    if (fo != null) {
-                        fo.delete();
-                    }
-                    fo = root.getFileObject("FoldManager");
-                    if (fo != null && fo.getChildren().length == 0) {
-                        fo.delete();
-                    }
-
-                    // YAML cleanup: Was a Schliemann editor in 6.0/6.1/6.5dev so may have to delete its persistent system files
-                    if (mimeType.equals("text/x-yaml") || mimeType.equals("text/x-json")) { // NOI18N
-                        FileObject f = root.getFileObject("Popup/generate-fold-popup"); // NOI18N
-                        if (f != null) {
-                            f.delete();
-                            f = root.getFileObject("ToolTips/org-netbeans-modules-languages-features-ToolTipAnnotation.instance"); // NOI18N
-                            if (f != null) {
-                                f.delete();
-                            }
-                            f = root.getFileObject("Popup/org-netbeans-modules-languages-features-GoToDeclarationAction.instance"); // NOI18N
-                            if (f != null) {
-                                f.delete();
-                            }
-                            f = root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"); // NOI18N
-                            if (f != null) {
-                                f.delete();
-                            }
-                            f = root.getFileObject("run_script.instance"); // NOI18N
-                            if (f != null) {
-                                f.delete();
-                            }
-                        }
-                    }
-
-                    // Delete old names present up to and including beta2
-                    FileObject oldSidebar = root.getFileObject("SideBar/org-netbeans-modules-editor-retouche-GsfCodeFoldingSideBarFactory.instance");
-
-                    if (oldSidebar != null) {
-                        oldSidebar.delete();
-                        oldSidebar = root.getFileObject("FoldManager/org-netbeans-modules-retouche-editor-fold-GsfFoldManagerFactory.instance");
-                        if (oldSidebar != null) {
-                            oldSidebar.delete();
-                        }
-                    }
-
-                    // init hyperlink provider
-                    FileObject hyperlinkProvider = root.getFileObject("HyperlinkProviders/GsfHyperlinkProvider.instance");
-                    if (hyperlinkProvider != null) {
-                        hyperlinkProvider.delete();
-                    }
-                    fo = root.getFileObject("HyperlinkProviders");
-                    if (fo != null && fo.getChildren().length == 0) {
-                        fo.delete();
-                    }
-                    
-                    // Context menu
-                    FileObject popup = root.getFileObject("Popup");
-
-                    if (popup != null) {
-                        // I can't just do popup!=null to see if I need to dynamically add gsf
-                        // menu items because modules may have registered additional Popup
-                        // items, so the layer will contain Popup already
-                        FileObject ref = popup.getFileObject("in-place-refactoring");
-                        if (ref != null) {
-                            ref.delete();
+                        // Clean up the settings files
+                        FileObject settings = root.getFileObject("Settings.settings"); // NOI18N
+                        if (settings != null) {
+                            settings.delete();
                         }
 
-                        FileObject gotoF = popup.getFileObject("goto");
-                        if (gotoF != null) {
-                            fo = gotoF.getFileObject("goto-declaration");
-                            if (fo != null) {
-                                fo.delete();
-                            }
-                            fo = gotoF.getFileObject("goto");
-                            if (fo != null) {
-                                fo.delete();
-                            }
-                            if (gotoF.getChildren().length == 0) {
-                                gotoF.delete();
-                            }
-                        }
-                        fo = popup.getFileObject("SeparatorBeforeCut.instance");
+                        // init code folding bar
+                        FileObject fo = root.getFileObject("SideBar/org-netbeans-modules-editor-gsfret-GsfCodeFoldingSideBarFactory.instance");
                         if (fo != null) {
                             fo.delete();
                         }
-                        fo = popup.getFileObject("format");
-                        if (fo != null) {
-                            fo.delete();
-                        }
-                        fo = popup.getFileObject("SeparatorAfterFormat.instance");
-                        if (fo != null) {
-                            fo.delete();
-                        }
-                        fo = popup.getFileObject("pretty-print");
-                        if (fo != null) {
-                            fo.delete();
-                        }
-                        fo = popup.getFileObject("generate-goto-popup");
-                        if (fo != null) {
-                            fo.delete();
-                        }
-                        if (popup.getChildren().length == 0) {
-                            popup.delete();
-                        }
-                    }
-
-                    // Service to show if file is compileable or not
-                    fo = root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-gsfret-hints-GsfUpToDateStateProviderFactory.instance");
-                    if (fo != null) {
-                        fo.delete();
-                    }
-                    fo = root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-retouche-hints-GsfUpToDateStateProviderFactory.instance");
-                    if (fo != null) {
-                        fo.delete();
-                    }
-
-                    // I'm not sure what this is used for - perhaps to turn orange when there are unused imports etc.
-                    fo = root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-gsfret-editor-semantic-OccurrencesMarkProviderCreator.instance");
-                    if (fo != null) {
-                        fo.delete();
-                    }
-                    fo = root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-retouche-editor-semantic-OccurrencesMarkProviderCreator.instance");
-                    if (fo != null) {
-                        fo.delete();
-                    }
-                    fo = root.getFileObject("UpToDateStatusProvider");
-                    if (fo != null && fo.getChildren().length == 0) {
-                        fo.delete();
-                    }
-
-                    // Highlighting layers
-                    fo = root.getFileObject("org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance");
-                    if (fo != null) {
-                        fo.delete();
-                    }
-
-                    // Code completion
-                    String completionProviders = "CompletionProviders";
-                    FileObject completion = root.getFileObject(completionProviders);
-
-                    if (completion != null) {
-                        String templates = "org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance";
-                        FileObject templeteProvider = root.getFileObject(completionProviders + "/" + templates);
-                        if (templeteProvider != null) {
-                            templeteProvider.delete();
-                        }
-                        String provider = "org-netbeans-modules-gsfret-editor-completion-GsfCompletionProvider.instance";
-                        FileObject completionProvider = root.getFileObject(completionProviders + "/" + provider);
-                        if (completionProvider != null) {
-                            completionProvider.delete();
-                        }
-
-                        FileObject old = completion.getFileObject("org-netbeans-modules-retouche-editor-completion-GsfCompletionProvider.instance");
-                        if (old != null) {
-                            old.delete();
-                        }
-                        if (completion.getChildren().length == 0) {
-                            completion.delete();
-                        }
-                    }
-
-                    // Editor toolbar: commenting and uncommenting actions
-                    fo = root.getFileObject("Toolbars/Default/comment");
-                    if (fo != null) {
-                        fo.delete();
-                    }
-                    fo = root.getFileObject("Toolbars/Default/uncomment");
-                    if (fo != null) {
-                        fo.delete();
-                    }
-                    FileObject sep = root.getFileObject("Toolbars/Default/Separator-before-comment.instance");
-                    if (sep != null) {
-                        sep.delete();
-                    }
-                    fo = root.getFileObject("Toolbars/Default");
-                    if (fo != null && fo.getChildren().length == 0) {
-                        fo.delete();
-                        fo = root.getFileObject("Toolbars");
+                        fo = root.getFileObject("SideBar");
                         if (fo != null && fo.getChildren().length == 0) {
                             fo.delete();
                         }
+                        fo = root.getFileObject("FoldManager/org-netbeans-modules-gsfret-editor-fold-GsfFoldManagerFactory.instance");
+                        if (fo != null) {
+                            fo.delete();
+                        }
+                        fo = root.getFileObject("FoldManager");
+                        if (fo != null && fo.getChildren().length == 0) {
+                            fo.delete();
+                        }
+
+                        // YAML cleanup: Was a Schliemann editor in 6.0/6.1/6.5dev so may have to delete its persistent system files
+                        if (mimeType.equals("text/x-yaml") || mimeType.equals("text/x-json")) { // NOI18N
+                            FileObject f = root.getFileObject("Popup/generate-fold-popup"); // NOI18N
+                            if (f != null) {
+                                f.delete();
+                                f = root.getFileObject("ToolTips/org-netbeans-modules-languages-features-ToolTipAnnotation.instance"); // NOI18N
+                                if (f != null) {
+                                    f.delete();
+                                }
+                                f = root.getFileObject("Popup/org-netbeans-modules-languages-features-GoToDeclarationAction.instance"); // NOI18N
+                                if (f != null) {
+                                    f.delete();
+                                }
+                                f = root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"); // NOI18N
+                                if (f != null) {
+                                    f.delete();
+                                }
+                                f = root.getFileObject("run_script.instance"); // NOI18N
+                                if (f != null) {
+                                    f.delete();
+                                }
+                            }
+                        }
+
+                        // Delete old names present up to and including beta2
+                        FileObject oldSidebar = root.getFileObject("SideBar/org-netbeans-modules-editor-retouche-GsfCodeFoldingSideBarFactory.instance");
+
+                        if (oldSidebar != null) {
+                            oldSidebar.delete();
+                            oldSidebar = root.getFileObject("FoldManager/org-netbeans-modules-retouche-editor-fold-GsfFoldManagerFactory.instance");
+                            if (oldSidebar != null) {
+                                oldSidebar.delete();
+                            }
+                        }
+
+                        // init hyperlink provider
+                        FileObject hyperlinkProvider = root.getFileObject("HyperlinkProviders/GsfHyperlinkProvider.instance");
+                        if (hyperlinkProvider != null) {
+                            hyperlinkProvider.delete();
+                        }
+                        fo = root.getFileObject("HyperlinkProviders");
+                        if (fo != null && fo.getChildren().length == 0) {
+                            fo.delete();
+                        }
+
+                        // Context menu
+                        FileObject popup = root.getFileObject("Popup");
+
+                        if (popup != null) {
+                            // I can't just do popup!=null to see if I need to dynamically add gsf
+                            // menu items because modules may have registered additional Popup
+                            // items, so the layer will contain Popup already
+                            FileObject ref = popup.getFileObject("in-place-refactoring");
+                            if (ref != null) {
+                                ref.delete();
+                            }
+
+                            FileObject gotoF = popup.getFileObject("goto");
+                            if (gotoF != null) {
+                                fo = gotoF.getFileObject("goto-declaration");
+                                if (fo != null) {
+                                    fo.delete();
+                                }
+                                fo = gotoF.getFileObject("goto");
+                                if (fo != null) {
+                                    fo.delete();
+                                }
+                                if (gotoF.getChildren().length == 0) {
+                                    gotoF.delete();
+                                }
+                            }
+                            fo = popup.getFileObject("SeparatorBeforeCut.instance");
+                            if (fo != null) {
+                                fo.delete();
+                            }
+                            fo = popup.getFileObject("format");
+                            if (fo != null) {
+                                fo.delete();
+                            }
+                            fo = popup.getFileObject("SeparatorAfterFormat.instance");
+                            if (fo != null) {
+                                fo.delete();
+                            }
+                            fo = popup.getFileObject("pretty-print");
+                            if (fo != null) {
+                                fo.delete();
+                            }
+                            fo = popup.getFileObject("generate-goto-popup");
+                            if (fo != null) {
+                                fo.delete();
+                            }
+                            if (popup.getChildren().length == 0) {
+                                popup.delete();
+                            }
+                        }
+
+                        // Service to show if file is compileable or not
+                        fo = root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-gsfret-hints-GsfUpToDateStateProviderFactory.instance");
+                        if (fo != null) {
+                            fo.delete();
+                        }
+                        fo = root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-retouche-hints-GsfUpToDateStateProviderFactory.instance");
+                        if (fo != null) {
+                            fo.delete();
+                        }
+
+                        // I'm not sure what this is used for - perhaps to turn orange when there are unused imports etc.
+                        fo = root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-gsfret-editor-semantic-OccurrencesMarkProviderCreator.instance");
+                        if (fo != null) {
+                            fo.delete();
+                        }
+                        fo = root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-retouche-editor-semantic-OccurrencesMarkProviderCreator.instance");
+                        if (fo != null) {
+                            fo.delete();
+                        }
+                        fo = root.getFileObject("UpToDateStatusProvider");
+                        if (fo != null && fo.getChildren().length == 0) {
+                            fo.delete();
+                        }
+
+                        // Highlighting layers
+                        fo = root.getFileObject("org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance");
+                        if (fo != null) {
+                            fo.delete();
+                        }
+
+                        // Code completion
+                        String completionProviders = "CompletionProviders";
+                        FileObject completion = root.getFileObject(completionProviders);
+
+                        if (completion != null) {
+                            String templates = "org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance";
+                            FileObject templeteProvider = root.getFileObject(completionProviders + "/" + templates);
+                            if (templeteProvider != null) {
+                                templeteProvider.delete();
+                            }
+                            String provider = "org-netbeans-modules-gsfret-editor-completion-GsfCompletionProvider.instance";
+                            FileObject completionProvider = root.getFileObject(completionProviders + "/" + provider);
+                            if (completionProvider != null) {
+                                completionProvider.delete();
+                            }
+
+                            FileObject old = completion.getFileObject("org-netbeans-modules-retouche-editor-completion-GsfCompletionProvider.instance");
+                            if (old != null) {
+                                old.delete();
+                            }
+                            if (completion.getChildren().length == 0) {
+                                completion.delete();
+                            }
+                        }
+
+                        // Editor toolbar: commenting and uncommenting actions
+                        fo = root.getFileObject("Toolbars/Default/comment");
+                        if (fo != null) {
+                            fo.delete();
+                        }
+                        fo = root.getFileObject("Toolbars/Default/uncomment");
+                        if (fo != null) {
+                            fo.delete();
+                        }
+                        FileObject sep = root.getFileObject("Toolbars/Default/Separator-before-comment.instance");
+                        if (sep != null) {
+                            sep.delete();
+                        }
+                        fo = root.getFileObject("Toolbars/Default");
+                        if (fo != null && fo.getChildren().length == 0) {
+                            fo.delete();
+                            fo = root.getFileObject("Toolbars");
+                            if (fo != null && fo.getChildren().length == 0) {
+                                fo.delete();
+                            }
+                        }
+
+                        // init code templates
+                        fo = root.getFileObject("CodeTemplateProcessorFactories/org-netbeans-modules-gsfret-editor-codetemplates-GsfCodeTemplateProcessor$Factory.instance");
+                        if (fo != null) {
+                            fo.delete();
+                        }
+                        FileObject old = root.getFileObject("CodeTemplateProcessorFactories/org-netbeans-modules-retouche-editor-codetemplates-GsfCodeTemplateProcessor$Factory.instance");
+                        if (old != null) {
+                            old.delete();
+                        }
+                        fo = root.getFileObject("CodeTemplateProcessorFactories");
+                        if (fo != null && fo.getChildren().length == 0) {
+                            fo.delete();
+                        }
+
+                        // init code templates filters
+                        fo = root.getFileObject("CodeTemplateFilterFactories/org-netbeans-modules-gsfret-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance");
+                        if (fo != null) {
+                            fo.delete();
+                        }
+                        old = root.getFileObject("CodeTemplateFilterFactories/org-netbeans-modules-retouche-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance");
+                        if (old != null) {
+                            old.delete();
+                        }
+                        fo = root.getFileObject("CodeTemplateFilterFactories");
+                        if (fo != null && fo.getChildren().length == 0) {
+                            fo.delete();
+                        }
+
+                        if (innerMime.getChildren().length == 0) {
+                            innerMime.delete();
+                        }
                     }
 
-                    // init code templates
-                    fo = root.getFileObject("CodeTemplateProcessorFactories/org-netbeans-modules-gsfret-editor-codetemplates-GsfCodeTemplateProcessor$Factory.instance");
-                    if (fo != null) {
-                        fo.delete();
+                    if (outerMime.getChildren().length == 0) {
+                        outerMime.delete();
                     }
-                    FileObject old = root.getFileObject("CodeTemplateProcessorFactories/org-netbeans-modules-retouche-editor-codetemplates-GsfCodeTemplateProcessor$Factory.instance");
-                    if (old != null) {
-                        old.delete();
-                    }
-                    fo = root.getFileObject("CodeTemplateProcessorFactories");
-                    if (fo != null && fo.getChildren().length == 0) {
-                        fo.delete();
-                    }
-
-                    // init code templates filters
-                    fo = root.getFileObject("CodeTemplateFilterFactories/org-netbeans-modules-gsfret-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance");
-                    if (fo != null) {
-                        fo.delete();
-                    }
-                    old = root.getFileObject("CodeTemplateFilterFactories/org-netbeans-modules-retouche-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance");
-                    if (old != null) {
-                        old.delete();
-                    }
-                    fo = root.getFileObject("CodeTemplateFilterFactories");
-                    if (fo != null && fo.getChildren().length == 0) {
-                        fo.delete();
-                    }
-
-                    if (innerMime.getChildren().length == 0) {
-                        innerMime.delete();
-                    }
-                }
-
-                if (outerMime.getChildren().length == 0) {
-                    outerMime.delete();
                 }
             }
         } catch (IOException ioe) {

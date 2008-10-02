@@ -300,7 +300,8 @@ public class SourceAnalyser {
         private boolean isStaticImport;
         private State state;        
         private Element enclosingElement = null;
-        private Set<String> rsList;        
+        private Set<String> rsList;         //List of references from source in case when the source has more top levels or is wrongly packaged
+        private boolean crossedTopLevel;    //True when the visitor already reached the correctly packaged top level
         private boolean mainMethod;
         
         
@@ -554,6 +555,9 @@ public class SourceAnalyser {
                         if (virtual || !className.equals(sourceName)) {
                             if (signatureFiles && rsList == null) {
                                 rsList = new HashSet<String>();
+                                if (crossedTopLevel) {
+                                    rsList.add(sourceName);
+                                }
                             }
                             try {
                                 FileObject fo = URLMapper.findFileObject(this.sibling.toUri().toURL());
@@ -566,6 +570,9 @@ public class SourceAnalyser {
                             } catch (MalformedURLException e) {
                                 Exceptions.printStackTrace(e);
                             }
+                        }
+                        else {
+                            crossedTopLevel = true;
                         }
                     }
                     else {

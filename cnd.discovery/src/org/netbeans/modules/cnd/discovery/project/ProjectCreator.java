@@ -506,15 +506,17 @@ public class ProjectCreator {
     }
 
     private void removeProjectDir(File dir) {
-	for(File file : dir.listFiles()){
-            if (file.isDirectory()){
-                removeProjectDir(file);
+        if (dir.exists() && dir.canRead() && dir.isDirectory()) {
+            for(File file : dir.listFiles()){
+                if (file.isDirectory()){
+                    removeProjectDir(file);
+                }
             }
+            for(File file : dir.listFiles()){
+                file.delete();
+            }
+            dir.delete();
         }
-	for(File file : dir.listFiles()){
-            file.delete();
-        }
-        dir.delete();
     }
 
 }

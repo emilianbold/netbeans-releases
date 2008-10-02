@@ -192,9 +192,9 @@ public abstract class AbstractModelNode {
         int index = 0;
         for( AbstractVariableNode node : getVariables() ) {
             Property prop = node.getProperty();
-            String propName = prop.getName();
+            String nodePropName = prop != null ? prop.getName() : null;
             //String propType = prop.getType();
-            if ( propName.equals( property.getName())  )
+            if ( nodePropName != null && nodePropName.equals(property.getName())  )
                     // && propType.equals( property.getType()))
             {
                 return index;

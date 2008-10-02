@@ -147,6 +147,10 @@ public final class Manager {
         displayMessage(
                 session,
                 NbBundle.getMessage(getClass(), "LBL_RunningTests"));   //NOI18N
+
+        if (session.getStartingMsg() != null) {
+            displayOutput(session, session.getStartingMsg(), true);
+        }
     }
     
     /**

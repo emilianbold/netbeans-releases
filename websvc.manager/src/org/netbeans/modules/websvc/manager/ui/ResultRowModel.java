@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.websvc.manager.ui;
 
-import org.netbeans.swing.outline.RowModel;
+import org.netbeans.modules.websvc.manager.swing.outline.RowModel;
 import org.openide.util.NbBundle;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -51,11 +51,11 @@ import javax.swing.tree.DefaultMutableTreeNode;
  * @author  David Botterill
  */
 public class ResultRowModel implements RowModel {
-    
+
     /** Creates a new instance of TypeRowModel */
     public ResultRowModel() {
     }
-    
+
     public Class getColumnClass(int column) {
         switch(column) {
          //   case 0: return String.class;
@@ -63,19 +63,19 @@ public class ResultRowModel implements RowModel {
             default: return String.class;
         }
     }
-    
+
     public int getColumnCount() {
         return 1;
     }
-    
+
     public String getColumnName(int column) {
         switch(column) {
             case 0: return NbBundle.getMessage(this.getClass(), "PARAM_VALUE");
             default: return "";
         }
-        
+
     }
-    
+
     public Object getValueFor(Object inNode, int column) {
         if(null == inNode) return null;
         DefaultMutableTreeNode node = (DefaultMutableTreeNode)inNode;
@@ -85,13 +85,13 @@ public class ResultRowModel implements RowModel {
             case 0: return data.getTypeValue();
             default: return "";
         }
-        
+
     }
-    
+
     public boolean isCellEditable(Object inNode, int column) {
         return true;
     }
-    
+
     public void setValueFor(Object inNode, int column, Object value) {
         return;
     }

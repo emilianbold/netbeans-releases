@@ -269,6 +269,7 @@ made subject to such option by the copyright holder.
 
     <folder name="Toolbars">
         <folder name="Management">
+            <attr name="position" intvalue="970"/>
             <file name="EnableMMAction.shadow">
                 <attr name="originalFile" methodvalue="org.netbeans.modules.jmx.jconsole.FeaturesDeployer.enableMM"/>
                 <attr name="hidden" boolvalue="true"/>

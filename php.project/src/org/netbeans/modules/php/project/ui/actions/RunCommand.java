@@ -67,14 +67,13 @@ public class RunCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
+        if (!isRunConfigurationValid()) {
+            // property not set yet
+            return;
+        }
         if (isScriptSelected()) {
-            // we don't need to check anything here, because if the customizer show, then scriptSelected == false
             localCommand.invokeAction(null);
         } else {
-            if (!isIndexFileSet() || !isUrlSet()) {
-                // property not set yet
-                return;
-            }
             eventuallyUploadFiles();
             try {
                 showURLForProjectFile();
