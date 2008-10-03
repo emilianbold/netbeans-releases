@@ -432,10 +432,10 @@ public final class Util extends Object {
                         });
                     }
                 } else {
-                    FileObject templateFO = Repository.getDefault().getDefaultFileSystem()
-                            .findResource("Templates/Other/properties.properties"); // NOI18N
-                    DataObject template = DataObject.find(templateFO);
-                    template.createFromTemplate(DataFolder.findFolder(folder), newName);
+                    // Create an empty file - creating from template via DataObject
+                    // API would create a separate DataObject for the locale file.
+                    // After creation force the DataObject to refresh its entries.
+                    DataObject.find(folder.createData(newName, PropertiesDataLoader.PROPERTIES_EXTENSION));
                 }
             }
         } catch(IOException ioe) {

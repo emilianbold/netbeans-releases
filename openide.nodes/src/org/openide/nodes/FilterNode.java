@@ -1306,6 +1306,49 @@ public class FilterNode extends Node {
             original = or;
         }
         
+        @Override
+        EntrySupport entrySupport() {
+            FilterChildrenSupport support = null;
+            synchronized (Children.class) {
+                if (entrySupport != null && !entrySupport.isInitialized()) {
+                    // support is not initialized, it should be checked against original
+                    support = (FilterChildrenSupport) entrySupport;
+                }
+            }
+
+            if (support != null) {
+                // get original support without lock
+                EntrySupport origSupport = original.getChildren().entrySupport();
+                synchronized (Children.class) {
+                    if (entrySupport == support && support.originalSupport() != origSupport) {
+                        // original support was changed, force new support creation
+                        entrySupport = null;
+                    }
+                }
+            }
+
+            synchronized (Children.class) {
+                if (entrySupport != null) {
+                    return entrySupport;
+                }
+            }
+
+            // access without lock
+            org.openide.nodes.Children origChildren = original.getChildren();
+            EntrySupport os = origChildren.entrySupport();
+            boolean osIsLazy = origChildren.isLazy();
+
+            synchronized (Children.class) {
+                if (entrySupport != null) {
+                    return entrySupport;
+                }
+                lazySupport = osIsLazy;
+                entrySupport = lazySupport ? new LazySupport(this, (Lazy) os) : new DefaultSupport(this, (Default) os);
+                postInitializeEntrySupport();
+                return entrySupport;
+            }
+        }
+        
         /** Sets the original children for this children. 
          * Be aware that this method aquires
          * write lock on the nodes hierarchy ({@link Children#MUTEX}). 
@@ -1487,17 +1530,6 @@ public class FilterNode extends Node {
             return original.getChildren().add(arr);
         }
 
-        @Override
-        void checkSupportValidity() {
-            if (entrySupport != null && !entrySupport.isInitialized()) {
-                FilterChildrenSupport support = (FilterChildrenSupport) entrySupport;
-                EntrySupport origSupport = original.getChildren().entrySupport();
-                if (support.originalSupport() != origSupport) {
-                    entrySupport = null;
-                }
-            }
-        }
-
         private FilterChildrenSupport filterSupport() {
             return (FilterChildrenSupport) entrySupport();
         }
@@ -1578,13 +1610,6 @@ public class FilterNode extends Node {
         @Override
         Entry createEntryForKey(Node key) {
             return filterSupport().createEntryForKey(key);
-        }
-        
-        @Override
-        EntrySupport createEntrySource() {
-            EntrySupport os = original.getChildren().entrySupport();
-            lazySupport = original.getChildren().isLazy();
-            return lazySupport ? new LazySupport(this, (Lazy) os) : new DefaultSupport(this, (Default) os);
         }
         
         @Override
