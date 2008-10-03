@@ -51,6 +51,7 @@ import java.beans.SimpleBeanInfo;
 import java.beans.PropertyDescriptor;
 import java.util.ResourceBundle;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -96,9 +97,9 @@ public class I18nOptionsBeanInfo extends SimpleBeanInfo {
     /** Overrides superclass method. */
     public Image getIcon(int type) {
         if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-	    return Utilities.loadImage("org/netbeans/modules/i18n/i18nAction.gif"); // NOI18N
+	    return ImageUtilities.loadImage("org/netbeans/modules/i18n/i18nAction.gif"); // NOI18N
         } else { // 32
-            return Utilities.loadImage("org/netbeans/modules/properties/propertiesKey32.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/properties/propertiesKey32.gif"); // NOI18N
         }
     }
     

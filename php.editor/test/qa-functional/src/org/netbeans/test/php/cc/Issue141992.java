@@ -118,7 +118,7 @@ public class Issue141992 extends cc
       sCode = sCode + "\nclass a" + i + ( ( 1 == i ) ? "" : ( " extends a" + ( i - 1 ) ) ) + "\n{\npublic $a" + i + ";\n}";
     }
     eoPHP.insert( sCode );
-    Sleep( 10000 );
+    Sleep( 20000 );
     TypeCode( eoPHP, "\n$z = new a999;\n$z->" );
 
     // Check code completion list

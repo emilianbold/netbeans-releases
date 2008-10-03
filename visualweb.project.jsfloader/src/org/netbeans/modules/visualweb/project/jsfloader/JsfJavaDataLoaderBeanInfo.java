@@ -51,6 +51,7 @@ import java.awt.Image;
 
 import org.openide.ErrorManager;
 import org.openide.loaders.MultiFileLoader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 
@@ -72,9 +73,9 @@ public class JsfJavaDataLoaderBeanInfo extends SimpleBeanInfo {
 
     public Image getIcon(final int type) {
         if((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-	    return Utilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJavaLoader.gif"); // NOI18N
+	    return ImageUtilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJavaLoader.gif"); // NOI18N
         } else {
-	    return Utilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJavaLoader32.gif"); // NOI18N
+	    return ImageUtilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJavaLoader32.gif"); // NOI18N
         }
     }
 

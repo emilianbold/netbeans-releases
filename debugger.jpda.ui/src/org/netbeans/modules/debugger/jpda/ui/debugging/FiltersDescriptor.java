@@ -166,14 +166,14 @@ public final class FiltersDescriptor {
     
     private static FiltersDescriptor createDebuggingViewFilters() {
         FiltersDescriptor desc = new FiltersDescriptor();
+        desc.addItem(new Item(SHOW_SUSPENDED_THREADS_ONLY, getString("LBL_SUPSENDED_THREADS_ONLY"), getString("LBL_SUPSENDED_THREADS_ONLY_TIP"),
+                false, loadIcon("show_suspended_threads_option_16.png")));
         desc.addItem(new Item(SHOW_THREAD_GROUPS, getString("LBL_THREAD_GROUPS"), getString("LBL_THREAD_GROUPS_TIP"),
                 false, loadIcon("thread_group_mixed_16.png")));
         desc.addItem(new Item(SHOW_SUSPEND_TABLE, getString("LBL_SUSPEND_TABLE"), getString("LBL_SUSPEND_TABLE_TIP"),
                 false, loadIcon("show_suspend_table_option_16.png")));
         desc.addItem(new Item(SHOW_SYSTEM_THREADS, getString("LBL_SYSTEM_THREADS"), getString("LBL_SYSTEM_THREADS_TIP"),
                 false, loadIcon("show_system_threads_option_16.png")));
-        desc.addItem(new Item(SHOW_SUSPENDED_THREADS_ONLY, getString("LBL_SUPSENDED_THREADS_ONLY"), getString("LBL_SUPSENDED_THREADS_ONLY_TIP"),
-                false, loadIcon("show_suspended_threads_option_16.png")));
         desc.addItem(new Item(SHOW_MONITORS, getString("LBL_MONITORS"), getString("LBL_MONITORS_TIP"),
                 false, loadIcon("monitor_acquired_16.png")));
         desc.addItem(new Item(SHOW_QUALIFIED_NAMES, getString("LBL_QUALIFIED_NAMES"), getString("LBL_QUALIFIED_NAMES_TIP"),

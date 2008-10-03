@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.maven.repository;
 
+import java.awt.Image;
 import javax.swing.Action;
 import org.apache.maven.artifact.Artifact;
 
@@ -53,6 +54,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -62,11 +64,19 @@ import org.openide.util.Utilities;
  * @author Anuradha
  */
 public class VersionNode extends AbstractNode {
+    private static final String JAVADOC_BADGE_ICON = "org/netbeans/modules/maven/repository/DependencyJavadocIncluded.png"; //NOI18N
+    private static final String SOURCE_BADGE_ICON = "org/netbeans/modules/maven/repository/DependencySrcIncluded.png"; //NOI18N
 
     private NBVersionInfo record;
     private boolean hasJavadoc;
     private boolean hasSources;
     private RepositoryInfo info;
+
+    private static String toolTipJavadoc = "<img src=\"" + VersionNode.class.getClassLoader().getResource(JAVADOC_BADGE_ICON) + "\">&nbsp;" //NOI18N
+            + NbBundle.getMessage(VersionNode.class, "ICON_JavadocBadge");//NOI18N
+    private static String toolTipSource = "<img src=\"" + VersionNode.class.getClassLoader().getResource(SOURCE_BADGE_ICON) + "\">&nbsp;" //NOI18N
+            + NbBundle.getMessage(VersionNode.class, "ICON_SourceBadge");//NOI18N
+
     public static Children createChildren(RepositoryInfo info, NBVersionInfo record) {
         if (info.isLocal() && !"pom".equals(record.getType())) { //NOI18N
             try {
@@ -135,14 +145,14 @@ public class VersionNode extends AbstractNode {
     public java.awt.Image getIcon(int param) {
         java.awt.Image retValue = super.getIcon(param);
         if (hasJavadoc) {
-            retValue = Utilities.mergeImages(retValue,
-                    Utilities.loadImage("org/netbeans/modules/maven/repository/DependencyJavadocIncluded.png"),//NOI18N
-                    12, 12);
+            Image ann = ImageUtilities.loadImage(JAVADOC_BADGE_ICON); //NOI18N
+            ann = ImageUtilities.addToolTipToImage(ann, toolTipJavadoc);
+            retValue = ImageUtilities.mergeImages(retValue, ann, 12, 0);//NOI18N
         }
         if (hasSources) {
-            retValue = Utilities.mergeImages(retValue,
-                    Utilities.loadImage("org/netbeans/modules/maven/repository/DependencySrcIncluded.png"),//NOI18N
-                    12, 8);
+            Image ann = ImageUtilities.loadImage(SOURCE_BADGE_ICON); //NOI18N
+            ann = ImageUtilities.addToolTipToImage(ann, toolTipSource);
+            retValue = ImageUtilities.mergeImages(retValue, ann, 12, 8);//NOI18N
         }
         return retValue;
 
@@ -157,9 +167,9 @@ public class VersionNode extends AbstractNode {
             buffer.append(NbBundle.getMessage(VersionNode.class, "TXT_Version")).append("<b>").append(record.getVersion().toString()).append("</b><p>");//NOI18N
             buffer.append(NbBundle.getMessage(VersionNode.class, "TXT_Packaging")).append("<b>").append(record.getPackaging()).append("</b><p>");//NOI18N
             buffer.append(NbBundle.getMessage(VersionNode.class, "TXT_Name")).append(record.getProjectName()).append("<p>");//NOI18N
-            buffer.append(NbBundle.getMessage(VersionNode.class, "TXT_HasJavadoc")).append(hasJavadoc ? NbBundle.getMessage(VersionNode.class, "TXT_true") : NbBundle.getMessage(VersionNode.class, "TXT_false")).append("<p>");//NOI18N
-            buffer.append(NbBundle.getMessage(VersionNode.class, "TXT_HasSources")).append(hasSources ? NbBundle.getMessage(VersionNode.class, "TXT_true") : NbBundle.getMessage(VersionNode.class, "TXT_false"));//NOI18N
-            buffer.append("</html>");//NOI18N
+//            buffer.append(NbBundle.getMessage(VersionNode.class, "TXT_HasJavadoc")).append(hasJavadoc ? NbBundle.getMessage(VersionNode.class, "TXT_true") : NbBundle.getMessage(VersionNode.class, "TXT_false")).append("<p>");//NOI18N
+//            buffer.append(NbBundle.getMessage(VersionNode.class, "TXT_HasSources")).append(hasSources ? NbBundle.getMessage(VersionNode.class, "TXT_true") : NbBundle.getMessage(VersionNode.class, "TXT_false"));//NOI18N
+//            buffer.append("</html>");//NOI18N
         }
         return buffer.toString();
     }

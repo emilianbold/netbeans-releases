@@ -40,6 +40,7 @@
  */
 package org.openide.awt;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import java.awt.*;
@@ -69,7 +70,7 @@ public class JInlineMenu extends JMenuItem implements DynamicMenuContent {
     /** generated Serialized Version UID */
     static final long serialVersionUID = -2310488127953523571L;
     private static final Icon BLANK_ICON = new ImageIcon(
-            Utilities.loadImage("org/openide/resources/actions/empty.gif")
+            ImageUtilities.loadImage("org/openide/resources/actions/empty.gif")
         ); // NOI18N            
 
 //    /** north separator */

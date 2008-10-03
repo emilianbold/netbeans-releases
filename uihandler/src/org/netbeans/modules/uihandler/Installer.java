@@ -257,6 +257,11 @@ public class Installer extends ModuleInstall implements Runnable {
                 for (LogRecord rec : disabledRec) {
                     LogRecords.write(logStreamMetrics(), rec);
                 }
+                List<LogRecord> clusterRec = new ArrayList<LogRecord>();
+                getClusterList(log, clusterRec);
+                for (LogRecord rec : clusterRec) {
+                    LogRecords.write(logStreamMetrics(), rec);
+                }
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -412,12 +417,36 @@ public class Installer extends ModuleInstall implements Runnable {
                     RP.post(new Auto()).waitFinished();
                 }
                 File f = logFile(0);
-                f.renameTo(new File(f.getParentFile(), f.getName() + ".1"));
+                File f1 = logFile(1);
+                if (f1.exists()) {
+                    f1.delete();
+                }
+                f.renameTo(f1);
                 logsSize = 0;
             } else {
                 logsSize++;
                 if (prefs.getInt("count", 0) < logsSize && preferencesWritable) {
                     prefs.putInt("count", logsSize);
+                }
+            }
+            if ((logsSize % 100) == 0) {
+                //This is fallback to avoid growing log file over any limit.
+                File f = logFile(0);
+                File f1 = logFile(1);
+                if (f.exists() && (f.length() > UIHandler.MAX_LOGS_SIZE)) {
+                    LOG.log(Level.INFO, "UIGesture Collector log file size is over limit. It will be deleted."); // NOI18N
+                    LOG.log(Level.INFO, "Log file:" + f + " Size:" + f.length() + " Bytes"); // NOI18N
+                    closeLogStream();
+                    logsSize = 0;
+                    if (prefs.getInt("count", 0) < logsSize && preferencesWritable) {
+                        prefs.putInt("count", logsSize);
+                    }
+                    f.delete();
+                }
+                if (f1.exists() && (f1.length() > UIHandler.MAX_LOGS_SIZE)) {
+                    LOG.log(Level.INFO, "UIGesture Collector backup log file size is over limit. It will be deleted."); // NOI18N
+                    LOG.log(Level.INFO, "Log file:" + f1 + " Size:" + f1.length() + " Bytes"); // NOI18N
+                    f1.delete();
                 }
             }
         } catch (IOException ex) {
@@ -569,6 +598,20 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
+    static void getClusterList (Logger logger, List<LogRecord> clusterRec) {
+        LogRecord rec = new LogRecord(Level.INFO, "USG_INSTALLED_CLUSTERS");
+        String dirs = System.getProperty("netbeans.dirs");
+        String [] k = dirs.split(File.pathSeparator);
+        String [] l = new String[k.length];
+        for (int i = 0; i < k.length; i++) {
+            File f = new File(k[i]);
+            l[i] = f.getName();
+        }
+        rec.setParameters(l);
+        rec.setLoggerName(logger.getName());
+        clusterRec.add(rec);
+    }
+    
     public static URL hintsURL() {
         return hintURL;
     }
@@ -1218,7 +1261,12 @@ public class Installer extends ModuleInstall implements Runnable {
 
     private static String findIdentity() {
         Preferences p = NbPreferences.root().node("org/netbeans/modules/autoupdate"); // NOI18N
-        String id = p.get("ideIdentity", null);
+        String id = p.get("qualifiedId", null);
+        //Strip id prefix
+        int ind = id.indexOf("0");
+        if (ind != -1) {
+            id = id.substring(ind + 1);
+        }
         LOG.log(Level.INFO, "findIdentity: {0}", id);
         return id;
     }

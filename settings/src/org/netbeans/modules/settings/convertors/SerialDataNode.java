@@ -84,6 +84,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
@@ -307,7 +308,7 @@ public final class SerialDataNode extends DataNode {
                 if (beanInfoIcon == null) {
                     Icon icon = action.getIcon ();
                     if (icon != null) {
-                        beanInfoIcon = Utilities.icon2Image(icon);
+                        beanInfoIcon = ImageUtilities.icon2Image(icon);
                     }
                 }
             }

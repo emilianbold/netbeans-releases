@@ -56,6 +56,7 @@ import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -147,8 +148,8 @@ public final class GrailsProject implements Project {
     private final class Info implements ProjectInformation {
 
         public Icon getIcon() {
-            Image image = Utilities.loadImage(GrailsConstants.GRAILS_ICON_16x16);
-            return new ImageIcon(image);
+            Image image = ImageUtilities.loadImage(GrailsConstants.GRAILS_ICON_16x16);
+            return image == null ? null : new ImageIcon(image);
         }
 
         public String getName() {

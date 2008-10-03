@@ -998,7 +998,7 @@ public final class GemManager {
                             if (f.getName().indexOf('-') != -1) {
                                 File lib = new File(f, "lib"); // NOI18N
 
-                                if (lib.exists() && lib.isDirectory()) {
+                                if (lib.exists() && lib.isDirectory() && lib.list().length > 0) {
                                     URL url = lib.toURI().toURL();
                                     nonGemUrls.add(url);
                                 }

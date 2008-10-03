@@ -41,6 +41,8 @@ package org.netbeans.modules.glassfish.spi;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.Manifest;
@@ -57,8 +59,6 @@ public abstract class ServerCommand {
 
     public static final char QUERY_SEPARATOR = '?'; // NOI18N
     public static final char PARAM_SEPARATOR = '&'; // NOI18N
-    public static final String EQUAL_NONQUOTED = "____EQUAL____"; // NOI18N
-    public static final String EQUAL_QUOTED = "%3D"; // NOI18N
 
     protected final String command;
     protected String query = null;
@@ -231,7 +231,11 @@ public abstract class ServerCommand {
             for (String key : info.getEntries().keySet()) {
                 int equalsIndex = key.indexOf('=');
                 if(equalsIndex >= 0) {
-                    propertyMap.put(key.substring(0, equalsIndex), key.substring(equalsIndex+1));
+                    try {
+                        propertyMap.put(key.substring(0, equalsIndex), URLDecoder.decode(URLDecoder.decode(key.substring(equalsIndex + 1), "UTF-8"),"UTF-8"));
+                    } catch (UnsupportedEncodingException ex) {
+                        ///Exceptions.printStackTrace(ex);
+                    }
                 } else {
                     propertyMap.put(key, "");
                 }

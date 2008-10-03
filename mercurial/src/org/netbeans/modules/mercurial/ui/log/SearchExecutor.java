@@ -84,12 +84,12 @@ class SearchExecutor implements Runnable {
         
         pathToRoot = new HashMap<String, File>(); 
         if (searchingUrl()) {
-            String rootPath = Mercurial.getInstance().getTopmostManagedParent(master.getRoots()[0]).toString();
+            String rootPath = Mercurial.getInstance().getRepositoryRoot(master.getRoots()[0]).toString();
             pathToRoot.put(rootPath, master.getRoots()[0]);
         } else {
              workFiles = new HashMap<String, Set<File>>();
             for (File file : master.getRoots()) {
-                String rootPath = Mercurial.getInstance().getTopmostManagedParent(file).toString();
+                String rootPath = Mercurial.getInstance().getRepositoryRoot(file).toString();
 
                 Set<File> set = workFiles.get(rootPath);
                 if (set == null) {

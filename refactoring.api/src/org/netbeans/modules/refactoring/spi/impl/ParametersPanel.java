@@ -83,6 +83,8 @@ import org.openide.awt.Mnemonics;
  */
 public class ParametersPanel extends JPanel implements ProgressListener, ChangeListener, InvalidationListener {
     private static final Logger LOGGER = Logger.getLogger(ParametersPanel.class.getName());
+    /** @see #result */
+    private final Object RESULT_LOCK = new Object();
     // refactoring elements that will be returned as a result of showDialog method
     private RefactoringSession result;
     
@@ -293,11 +295,11 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     private void cancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelActionPerformed
         synchronized (this) {
             if (evt!=null && evt.getSource() instanceof Cancellable) {
-                result=null;
+                putResult(null);
                 dialog.setVisible(false);
             } else {
                 rui.getRefactoring().cancelRequest();
-                result = null;
+                putResult(null);
                 dialog.setVisible(false);
                 cancelRequest = true;
             }
@@ -350,7 +352,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                     return;
                 }
             } else if (currentState != POST_CHECK && currentState != CHECK_PARAMETERS) {
-                result = RefactoringSession.create(rui.getName());
+                putResult(RefactoringSession.create(rui.getName()));
                 //setParameters and prepare is done asynchronously
                 rp.post(new Prepare());
             } else if(currentState == CHECK_PARAMETERS) {
@@ -366,15 +368,16 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 LOGGER.finest("refactor - inputState=" + inputState + ", currentState=" + currentState);
                 if (inputState == currentState) {
                     try {
-                          if (!previewAll && result!=null) {
-                            UndoWatcher.watch(result, ParametersPanel.this);
-                            result.addProgressListener(ParametersPanel.this);
-                            result.doRefactoring(true);
+                        RefactoringSession session = getResult();
+                        if (!previewAll && session != null) {
+                            UndoWatcher.watch(session, ParametersPanel.this);
+                            session.addProgressListener(ParametersPanel.this);
+                            session.doRefactoring(true);
                             UndoWatcher.stopWatching(ParametersPanel.this);
                         }
                     } finally {
                         if (!previewAll) {
-                            result = null;
+                            putResult(null);
                         }
                         if (inputState == currentState) {
                             setVisibleLater(false);
@@ -501,9 +504,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                             }
                         });
                     if (!rui.hasParameters()) {
-                        result = RefactoringSession.create(rui.getName());
+                        RefactoringSession session = putResult(RefactoringSession.create(rui.getName()));
                         try {
-                            rui.getRefactoring().prepare(result);
+                            rui.getRefactoring().prepare(session);
                         } finally {
                             setVisibleLater(false);
                         }
@@ -522,8 +525,8 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         }
         if (!cancelRequest)
             task.waitFinished(); 
-        RefactoringSession temp = result;
-        result=null;
+        RefactoringSession temp = getResult();
+        putResult(null);
         return temp;
     }
     
@@ -781,7 +784,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             }
             
             try {
-                problem = rui.getRefactoring().prepare(result);
+                problem = rui.getRefactoring().prepare(getResult());
             } catch (RuntimeException e) {
                 setVisibleLater(false);
                 throw e;
@@ -809,6 +812,19 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     }
     
     public void invalidateObject() {
+    }
+
+    private RefactoringSession getResult() {
+        synchronized (RESULT_LOCK) {
+            return result;
+        }
+    }
+
+    private RefactoringSession putResult(RefactoringSession session) {
+        synchronized (RESULT_LOCK) {
+            this.result = session;
+        }
+        return session;
     }
     
     private static class ProgressBar extends JPanel {

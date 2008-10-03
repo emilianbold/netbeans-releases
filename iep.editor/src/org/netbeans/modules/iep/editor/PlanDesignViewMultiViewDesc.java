@@ -27,6 +27,7 @@ import java.io.Serializable;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -87,7 +88,7 @@ public class PlanDesignViewMultiViewDesc extends Object
      *
      */
     public java.awt.Image getIcon() {
-        return Utilities.loadImage(PlanDataObject.IEP_ICON_BASE_WITH_EXT);
+        return ImageUtilities.loadImage(PlanDataObject.IEP_ICON_BASE_WITH_EXT);
     }
 
 

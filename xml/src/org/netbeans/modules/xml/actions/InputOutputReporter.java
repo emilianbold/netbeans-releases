@@ -60,7 +60,7 @@ import org.openide.util.WeakSet;
 
 
 import org.netbeans.api.xml.cookies.*;
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 import org.openide.text.Annotatable;
 import org.openide.text.Annotation;
 

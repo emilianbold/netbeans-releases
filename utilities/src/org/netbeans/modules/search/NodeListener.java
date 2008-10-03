@@ -410,8 +410,13 @@ final class NodeListener implements MouseListener, KeyListener,
         final boolean autocollapse = willBeSelected
                                      ? COLLAPSE_FILE_ON_SELECTION
                                      : COLLAPSE_FILE_ON_UNSELECTION;
+        
+        // issue 147983 fix - no search executed yet,
+        // only result window was opended and spacebar was pressed
+        if (resultModel == null)
+            return;
 
-        final MatchingObject[] matchingObjects
+         final MatchingObject[] matchingObjects
                                     = resultModel.getMatchingObjects();
 
         int[] toggledIndices = null;

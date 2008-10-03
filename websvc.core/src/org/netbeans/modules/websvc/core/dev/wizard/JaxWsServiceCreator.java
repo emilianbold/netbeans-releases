@@ -272,8 +272,9 @@ public class JaxWsServiceCreator implements ServiceCreator {
                         }
                     }
                 });
-            }
+            }            
             JaxWsUtils.openFileInEditor(dobj);
+            displayDuplicityWarning(createdFile);
         }
 
         return createdFile;
@@ -433,8 +434,25 @@ public class JaxWsServiceCreator implements ServiceCreator {
                     }
                 }
                 JaxWsUtils.openFileInEditor(dobj);
+                displayDuplicityWarning(createdFile);
             }
         }
+    }
+    
+    private void displayDuplicityWarning(final FileObject createdFile) {
+        final String serviceName = createdFile.getName()+"Service"; //NOI18N
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                Service serv = JaxWsUtils.findServiceForServiceName(createdFile, serviceName);
+                if (serv != null) {
+                    DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(
+                            NbBundle.getMessage(JaxWsServiceCreator.class,"MSG_ServiceNameExists", serviceName, serv.getImplementationClass()), 
+                            NotifyDescriptor.WARNING_MESSAGE));
+                }
+            }
+
+        });        
     }
 
     private void generateDelegateMethods(final FileObject targetFo, final EjbReference ref) throws IOException {

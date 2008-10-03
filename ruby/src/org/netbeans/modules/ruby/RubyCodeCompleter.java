@@ -2063,7 +2063,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
         final Document document = info.getDocument();
         if (document == null) {
-            return null;
+            return CodeCompletionResult.NONE;
         }
 
         // TODO - move to LexUtilities now that this applies to the lexing offset?
@@ -2153,7 +2153,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             astLineEnd = AstUtilities.getAstOffset(info, Utilities.getRowEnd(doc, lexOffset));
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
-            return null;
+            return CodeCompletionResult.NONE;
         }
 
         final AstPath path = new AstPath(root, astOffset);
@@ -2683,11 +2683,11 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             ArgsNode an = (ArgsNode)node;
 
             if (an.getRequiredArgsCount() > 0) {
-                List<Node> args = (List<Node>)an.childNodes();
+                List<Node> args = an.childNodes();
 
                 for (Node arg : args) {
                     if (arg instanceof ListNode) {
-                        List<Node> args2 = (List<Node>)arg.childNodes();
+                        List<Node> args2 = arg.childNodes();
 
                         for (Node arg2 : args2) {
                             if (arg2 instanceof ArgumentNode) {
@@ -2763,12 +2763,12 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             //    ArgsNode an = (ArgsNode)node;
             //
             //    if (an.getArgsCount() > 0) {
-            //        List<Node> args = (List<Node>)an.childNodes();
+            //        List<Node> args = an.childNodes();
             //        List<String> parameters = null;
             //
             //        for (Node arg : args) {
             //            if (arg instanceof ListNode) {
-            //                List<Node> args2 = (List<Node>)arg.childNodes();
+            //                List<Node> args2 = arg.childNodes();
             //                parameters = new ArrayList<String>(args2.size());
             //
             //                for (Node arg2 : args2) {

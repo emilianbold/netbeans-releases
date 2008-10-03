@@ -52,6 +52,7 @@ import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.SelectCodeElementAction;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
+import org.netbeans.modules.html.editor.HTMLAutoCompletion;
 import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
@@ -88,6 +89,7 @@ import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.web.core.syntax.formatting.JSPLexerFormatter;
 import org.netbeans.spi.lexer.MutableTextInput;
+import org.openide.util.Mutex;
 
 /**
  * Editor kit implementation for JSP content type
@@ -451,6 +453,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             currentTarget = null;
         }
         
+        /** called under document atomic lock */
         @Override
         protected void insertString(BaseDocument doc, int dotPos,
                 Caret caret, String str,
@@ -476,7 +479,10 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             }
             
             super.insertString(doc, dotPos, caret, str, overwrite);
+            //handle reformat
             handleTagClosingSymbol(doc, dotPos, str.charAt(0));
+            //handle html quotations completion
+            HTMLAutoCompletion.charInserted(doc, dotPos, caret, str.charAt(0));
         }
         
         @Override
@@ -526,6 +532,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             super.replaceSelection(target, dotPos, caret, str, overwrite);
         }
 
+        /** called under document atomic lock */
         private void handleTagClosingSymbol(final BaseDocument doc, final int dotPos, char lastChar) throws BadLocationException {
             if (lastChar == '>') {
                 LanguagePath jspLanguagePath = LanguagePath.get(JspTokenId.language());
@@ -533,34 +540,41 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                 HTMLLexerFormatter htmlFormatter = new HTMLLexerFormatter(htmlInJSPPath);
 
                 if (htmlFormatter.isJustAfterClosingTag(doc, dotPos)) {
-                    doc.runAtomic(new Runnable() {
-
-                        public void run() {
-                            HtmlIndenter.indentEndTag(doc, htmlInJSPPath, dotPos, null);
-                        }
-                    });
+                      HtmlIndenter.indentEndTag(doc, htmlInJSPPath, dotPos, null);
 //                    reformat(doc, dotPos);
                 } else {
+                    //We cannot run the jsp reformatter from this thread since the document
+                    //is already atomically locked so doing the source lock here is deadlock prone.
+                    //There doesn't seem to be an elegant way how to do this so usign a workaround
                     JSPLexerFormatter jspFormatter = new JSPLexerFormatter();
-
                     if (jspFormatter.isJustAfterClosingTag(doc, dotPos)) {
-                        reformat(doc, dotPos);
+                        
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                try {
+                                    reformat(doc, doc.createPosition(dotPos));
+                                } catch (BadLocationException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        });
+                        
                     }
                 }
             }
         }
         
-        private void reformat(final BaseDocument doc, final int dotPos) throws BadLocationException {
+        private void reformat(final BaseDocument doc, final Position dotPos) {
             final Reformat reformat = Reformat.get(doc);
             reformat.lock();
 
             try {
                 doc.runAtomic(new Runnable() {
-
                     public void run() {
                         try {
-                            int startOffset = org.netbeans.editor.Utilities.getRowStart(doc, dotPos);
-                            int endOffset = org.netbeans.editor.Utilities.getRowEnd(doc, dotPos);
+                            int offset = dotPos.getOffset();
+                            int startOffset = org.netbeans.editor.Utilities.getRowStart(doc, offset);
+                            int endOffset = org.netbeans.editor.Utilities.getRowEnd(doc, offset);
                             reformat.reformat(startOffset, endOffset);
                         } catch (BadLocationException ex) {
                             Exceptions.printStackTrace(ex);

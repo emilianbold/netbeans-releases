@@ -22,6 +22,7 @@ import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.actions.SortActionSupport;
 import org.netbeans.modules.java.navigation.base.FiltersDescription;
 import org.netbeans.modules.java.navigation.base.FiltersManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -127,28 +128,28 @@ public final class ClassMemberFilters {
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInherited"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInheritedTip"),     //NOI18N
                 false,
-                new ImageIcon (Utilities.loadImage("org/netbeans/modules/java/navigation/resources/filterHideInherited.png")), //NOI18N
+                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/java/navigation/resources/filterHideInherited.png")), //NOI18N
                 null
         );
         desc.addFilter(SHOW_FIELDS,
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowFields"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowFieldsTip"),     //NOI18N
                 true,
-                new ImageIcon (Utilities.loadImage("org/netbeans/modules/java/navigation/resources/filterHideFields.gif")), //NOI18N
+                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/java/navigation/resources/filterHideFields.gif")), //NOI18N
                 null
         );
         desc.addFilter(SHOW_STATIC,
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowStatic"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowStaticTip"),     //NOI18N
                 true,
-                new ImageIcon (Utilities.loadImage("org/netbeans/modules/java/navigation/resources/filterHideStatic.png")), //NOI18N
+                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/java/navigation/resources/filterHideStatic.png")), //NOI18N
                 null
         );
         desc.addFilter(SHOW_NON_PUBLIC,
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowNonPublic"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowNonPublicTip"),     //NOI18N
                 true,
-                new ImageIcon (Utilities.loadImage("org/netbeans/modules/java/navigation/resources/filterHideNonPublic.png")), //NOI18N
+                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/java/navigation/resources/filterHideNonPublic.png")), //NOI18N
                 null
         );
         

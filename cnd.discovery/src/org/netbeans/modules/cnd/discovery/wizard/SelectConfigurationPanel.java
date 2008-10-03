@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.discovery.wizard.tree.IncludesListModel;
 import org.netbeans.modules.cnd.discovery.wizard.tree.MacrosListModel;
 import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationImpl;
 import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationNode;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -308,7 +309,7 @@ public final class SelectConfigurationPanel extends JPanel {
     
     private Icon getLoadingIcon() {
         String path = "org/netbeans/modules/cnd/discovery/wizard/resources/waitNode.gif"; // NOI18N
-        Image image = Utilities.loadImage(path);
+        Image image = ImageUtilities.loadImage(path);
         if (image != null) {
             return new ImageIcon(image);
         } else {

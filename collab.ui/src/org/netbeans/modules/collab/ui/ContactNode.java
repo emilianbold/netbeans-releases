@@ -100,15 +100,15 @@ public class ContactNode extends AbstractNode implements CollabSessionCookie, Co
     private CollabPrincipal contact;
     private ContactGroup group;
     private Image currentIcon = null;
-    private Image baseIcon = Utilities.loadImage(USER_ICON);
-    private Image openIcon = Utilities.loadImage(OPEN_ICON);
-    private Image closedIcon = Utilities.loadImage(CLOSED_ICON);
-    private Image awayIcon = Utilities.loadImage(AWAY_ICON);
-    private Image chatIcon = Utilities.loadImage(CHAT_ICON);
-    private Image busyIcon = Utilities.loadImage(BUSY_ICON);
-    private Image pendingIcon = Utilities.loadImage(PENDING_ICON);
-    private Image idleIcon = Utilities.loadImage(IDLE_ICON);
-    private Image watchedIcon = Utilities.loadImage(WATCHED_ICON);
+    private Image baseIcon = ImageUtilities.loadImage(USER_ICON);
+    private Image openIcon = ImageUtilities.loadImage(OPEN_ICON);
+    private Image closedIcon = ImageUtilities.loadImage(CLOSED_ICON);
+    private Image awayIcon = ImageUtilities.loadImage(AWAY_ICON);
+    private Image chatIcon = ImageUtilities.loadImage(CHAT_ICON);
+    private Image busyIcon = ImageUtilities.loadImage(BUSY_ICON);
+    private Image pendingIcon = ImageUtilities.loadImage(PENDING_ICON);
+    private Image idleIcon = ImageUtilities.loadImage(IDLE_ICON);
+    private Image watchedIcon = ImageUtilities.loadImage(WATCHED_ICON);
 
     /**
      *
@@ -305,7 +305,7 @@ public class ContactNode extends AbstractNode implements CollabSessionCookie, Co
         setShortDescription(description);
 
         //		currentIcon=Utilities.mergeImages(statusIcon,baseIcon,16,0);
-        currentIcon = Utilities.mergeImages(baseIcon, statusIcon, 0, 0);
+        currentIcon = ImageUtilities.mergeImages(baseIcon, statusIcon, 0, 0);
         fireIconChange();
     }
 

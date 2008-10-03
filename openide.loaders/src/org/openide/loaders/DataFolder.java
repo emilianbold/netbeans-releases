@@ -1126,7 +1126,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
 
         if (obj instanceof Icon) {
             Icon icon = (Icon)obj;
-            return Utilities.icon2Image(icon);
+            return ImageUtilities.icon2Image(icon);
         }
 
         return null;
@@ -1725,7 +1725,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     private final class ListPCL extends Object implements PropertyChangeListener {
         ListPCL() {}
         public void propertyChange(java.beans.PropertyChangeEvent ev) {
-            if (this == DataFolder.this.pcl) {
+            if (this == DataFolder.this.pcl && !"refresh".equals(ev.getPropertyName())) { // NOI18N
                 // if I am still folder's correct listener
                 DataFolder.this.firePropertyChange (PROP_CHILDREN, null, null);
             }

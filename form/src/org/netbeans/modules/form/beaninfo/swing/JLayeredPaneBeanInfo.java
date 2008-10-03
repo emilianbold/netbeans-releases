@@ -42,6 +42,7 @@
 package org.netbeans.modules.form.beaninfo.swing;
 
 import java.beans.*;
+import org.openide.util.ImageUtilities;
 
 /** BeanInfo for JLayeredPane - defines only the icons for now.
 *
@@ -58,10 +59,10 @@ public class JLayeredPaneBeanInfo extends SimpleBeanInfo {
     @Override
     public java.awt.Image getIcon(int type) {
         if (type == ICON_COLOR_32x32 || type == ICON_MONO_32x32)
-            return org.openide.util.Utilities.loadImage(
+            return ImageUtilities.loadImage(
                 "javax/swing/beaninfo/images/JLayeredPaneColor32.gif"); // NOI18N
         else
-            return org.openide.util.Utilities.loadImage(
+            return ImageUtilities.loadImage(
                 "javax/swing/beaninfo/images/JLayeredPaneColor16.gif"); // NOI18N
     }
 }

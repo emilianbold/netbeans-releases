@@ -71,6 +71,7 @@ import javax.swing.KeyStroke;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.nodes.Node;
 
+import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.HelpCtx;
@@ -503,7 +504,7 @@ public class DesignCenterComponent extends TopComponent {
    
     public Image getIcon()
     {
-        return Utilities.loadImage(ImageUtil.instance().IMAGE_FOLDER + 
+        return ImageUtilities.loadImage(ImageUtil.instance().IMAGE_FOLDER +
             "designcenter.gif"); // NOI18N
     }
 

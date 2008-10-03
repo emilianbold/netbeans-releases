@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.navigation.services.IncludedModel;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -103,13 +104,13 @@ public class IncludeNode extends AbstractCsmNode {
 
     private Image mergeBadge(Image original) {
         if (model.isDownDirection()) {
-            return Utilities.mergeImages(original, downBadge, 0, 0);
+            return ImageUtilities.mergeImages(original, downBadge, 0, 0);
         } else {
             if (isRoot){
                 return original;
             }
-            Image res = Utilities.mergeImages(emptyBadge, original, 4, 0);
-            return Utilities.mergeImages(res, upBadge, 0, 0);
+            Image res = ImageUtilities.mergeImages(emptyBadge, original, 4, 0);
+            return ImageUtilities.mergeImages(res, upBadge, 0, 0);
         }
     }
     
@@ -171,7 +172,7 @@ public class IncludeNode extends AbstractCsmNode {
         return super.getShortDescription();
     }
 
-    private static Image downBadge = Utilities.loadImage( "org/netbeans/modules/cnd/navigation/includeview/resources/down_20.png" ); // NOI18N
-    private static Image upBadge = Utilities.loadImage( "org/netbeans/modules/cnd/navigation/includeview/resources/up_8.png" ); // NOI18N
-    private static Image emptyBadge = Utilities.loadImage( "org/netbeans/modules/cnd/navigation/includeview/resources/empty_20.png" ); // NOI18N
+    private static Image downBadge = ImageUtilities.loadImage( "org/netbeans/modules/cnd/navigation/includeview/resources/down_20.png" ); // NOI18N
+    private static Image upBadge = ImageUtilities.loadImage( "org/netbeans/modules/cnd/navigation/includeview/resources/up_8.png" ); // NOI18N
+    private static Image emptyBadge = ImageUtilities.loadImage( "org/netbeans/modules/cnd/navigation/includeview/resources/empty_20.png" ); // NOI18N
 }

@@ -49,6 +49,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -83,7 +84,7 @@ public class FolderNode extends AbstractNode {
         } else {
             String url = NbBundle.getMessage(FolderNode.class,
                     "IMG_FolderNode_Closed");
-            return org.openide.util.Utilities.loadImage(url);
+            return ImageUtilities.loadImage(url);
         }
     }
 
@@ -93,7 +94,7 @@ public class FolderNode extends AbstractNode {
         } else {
             String url = NbBundle.getMessage(FolderNode.class,
                     "IMG_FolderNode_Opened");
-            return org.openide.util.Utilities.loadImage(url);
+            return ImageUtilities.loadImage(url);
         }
     }
 }

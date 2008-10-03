@@ -163,8 +163,10 @@ public class ServerTest extends NbTestCase {
                 addTest(AdminObjectResourceMethods.class, new String[] {"registerJMSQueueResource","registerJMSTopicResource","unregisterJMSQueueResource","unregisterJMSTopicResource"}).
                 addTest(JDBCResourceMethods.class, new String[] {"registerConnectionPool","registerDataResource","unregisterDataResource","unregisterConnectionPool"}).
                 addTest(MailResourceMethods.class, new String[] {"registerMailResource","unregisterMailResource"}).
-                //addTest(WebModuleMethods.class,new String[] {
-            //"openProject", "deployWebModule", "undeployWebModule", "closeProject" }).
+                addTest(WebModuleMethods.class,new String[]
+                    {"openProject",
+                     "deployWebModule", "undeployWebModule", "closeProject" }).
+                addTest(ServerTest.class, new String[] { "stopServer"}).
                 addTest(AddRemoveSjsasInstanceMethods.class, new String[] {"removeSjsasInstance"}).enableModules(".*").clusters(".*"));
 //        NbTestSuite suite = new NbTestSuite("ServerTest");
 //        suite.addTest(new AddRemoveSjsasInstanceMethods("addSjsasInstance"));

@@ -326,7 +326,8 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
         // (in that case we'd notice the brace imbalance, and insert the closing
         // brace on the line below the insert position, and indent properly.
         // Catch this scenario and handle it properly.
-        if ((id == PHPTokenId.PHP_CURLY_CLOSE || LexUtilities.textEquals(token.text(), ']')) && (Utilities.getRowLastNonWhite(doc, offset) == offset)) {
+        if ((id == PHPTokenId.PHP_CURLY_CLOSE || LexUtilities.textEquals(token.text(), ']') || LexUtilities.textEquals(token.text(), ')')) // NOI18N
+                && (Utilities.getRowLastNonWhite(doc, offset) == offset)) {
             int indent = GsfUtilities.getLineIndent(doc, offset);
             StringBuilder sb = new StringBuilder();
             sb.append("\n"); // NOI18N
@@ -1613,7 +1614,8 @@ public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.Keystro
             // not in PHP section
             return false;
         }
-        
+
+        @SuppressWarnings("unchecked")
         TokenSequence<? extends PHPTokenId> ts = (TokenSequence<? extends PHPTokenId>)result[0];
         int sectionStart = (Integer) result[1];
         int sectionEnd = (Integer) result[2];

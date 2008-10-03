@@ -78,6 +78,7 @@ import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.CloneableTopComponent;
@@ -90,7 +91,7 @@ import org.openide.windows.TopComponent;
 @SuppressWarnings({"unchecked"})
 public final class SVGDataObject extends XmlMultiViewDataObject {
     private static final long  serialVersionUID = 123471457562776148L;
-    private static final Image SVGFILE_ICON     = Utilities.loadImage("org/netbeans/modules/mobility/svgcore/resources/svg.png"); // NOI18N
+    private static final Image SVGFILE_ICON     = ImageUtilities.loadImage("org/netbeans/modules/mobility/svgcore/resources/svg.png"); // NOI18N
 
     public static final int    XML_VIEW_INDEX   = 0;
     public static final int    SVG_VIEW_INDEX   = 1;

@@ -62,6 +62,7 @@ import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 
 /**
  * YAML code completion.
@@ -279,7 +280,7 @@ public class YamlCompletion implements CodeCompletionHandler {
 
         public ImageIcon getIcon() {
             if (keywordIcon == null) {
-                keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(YAML_KEYWORD));
+                keywordIcon = new ImageIcon(ImageUtilities.loadImage(YAML_KEYWORD));
             }
 
             return keywordIcon;

@@ -173,7 +173,7 @@ public class FieldBreakpointsTest extends JellyTestCase {
             new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Field_Breakpoint_Type_Access"));
             dialog.ok();
             Utilities.startDebugger();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104.", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -190,7 +190,7 @@ public class FieldBreakpointsTest extends JellyTestCase {
             new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Field_Breakpoint_Type_Modification"));
             dialog.ok();
             Utilities.startDebugger();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:45", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:45");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -211,9 +211,9 @@ public class FieldBreakpointsTest extends JellyTestCase {
             Utilities.toggleBreakpoint(eo, 109);
 
             Utilities.startDebugger();
-            int lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:109", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:109");
             new ContinueAction().perform();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -229,13 +229,13 @@ public class FieldBreakpointsTest extends JellyTestCase {
             dialog.ok();
 
             Utilities.startDebugger();
-            int lines = Utilities.waitDebuggerConsole("Not able to submit breakpoint FieldBreakpoint examples.advanced.MemoryView." + wrongname, 0);
+            Utilities.waitStatusText("Not able to submit breakpoint FieldBreakpoint examples.advanced.MemoryView.");
             dialog = Utilities.newBreakpoint(36, 36);
             setBreakpointType(dialog, "Field");
             wrongname = "wrongname2";
             new JTextFieldOperator(dialog, 0).setText(wrongname);
             dialog.ok();
-            Utilities.waitDebuggerConsole("Not able to submit breakpoint FieldBreakpoint examples.advanced.MemoryView." + wrongname, lines + 1);
+            Utilities.waitStatusText("Not able to submit breakpoint FieldBreakpoint examples.advanced.MemoryView.");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;

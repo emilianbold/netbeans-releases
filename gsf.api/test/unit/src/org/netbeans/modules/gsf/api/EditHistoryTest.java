@@ -40,11 +40,7 @@
 package org.netbeans.modules.gsf.api;
 
 import java.util.Random;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentEvent.ElementChange;
-import javax.swing.event.DocumentEvent.EventType;
 import javax.swing.text.Document;
-import javax.swing.text.Element;
 import javax.swing.text.PlainDocument;
 import junit.framework.TestCase;
 
@@ -53,32 +49,6 @@ import junit.framework.TestCase;
  * @author Tor Norbye
  */
 public class EditHistoryTest extends TestCase {
-    private class TestDocumentEvent implements DocumentEvent {
-        private int offset;
-        private int length;
-
-        public TestDocumentEvent(int offset, int length) {
-            this.offset = offset;
-            this.length = length;
-        }
-
-        public int getOffset() {
-            return offset;
-        }
-        public int getLength() {
-            return length;
-        }
-        public Document getDocument() {
-            return null;
-        }
-        public EventType getType() {
-            return null;
-        }
-        public ElementChange getChange(Element elem) {
-            return null;
-        }
-    }
-    
     public EditHistoryTest(String testName) {
         super(testName);
     }            
@@ -398,7 +368,9 @@ public class EditHistoryTest extends TestCase {
     }
 
     public void testCombined1() throws Exception {
+        EditHistory firstHistory = new EditHistory();
         EditHistory history = new EditHistory();
+        firstHistory.add(history);
         String original = "   HelloWorld";
         Document doc = getDocument(original);
         //012345678901234567890
@@ -456,7 +428,6 @@ public class EditHistoryTest extends TestCase {
             old = history;
         }
 
-        assertNotNull(EditHistory.getCombinedEdits(49, old));
         assertNotNull(EditHistory.getCombinedEdits(48, old));
         assertNotNull(EditHistory.getCombinedEdits(47, old));
         assertNotNull(EditHistory.getCombinedEdits(46, old));

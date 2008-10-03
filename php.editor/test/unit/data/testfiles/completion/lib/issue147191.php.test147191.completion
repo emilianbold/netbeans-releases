@@ -1,0 +1,5 @@
+Code completion result for source line:
+case self::V|
+(QueryType=COMPLETION, NameKind=PREFIX)
+CONSTANT   ? VARNAME_ADD                              blog_Application147191
+CONSTANT   ? VARNAME_VIEW                             blog_Application147191

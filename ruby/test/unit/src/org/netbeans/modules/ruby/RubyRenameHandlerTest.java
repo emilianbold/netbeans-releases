@@ -81,4 +81,9 @@ public class RubyRenameHandlerTest extends RubyTestBase {
     public void testEmpty1() throws Exception {
         checkRenameSections("testfiles/empty.rb", "^");
     }
+
+    public void testRenameDefaultArgs() throws Exception {
+        // Issue 141872
+        checkRenameSections("testfiles/rename1.rb", "c^");
+    }
 }

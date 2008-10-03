@@ -112,6 +112,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Template;
 import org.openide.util.LookupEvent;
@@ -404,8 +405,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         return false;
     }
 
-    private static Image brokenProjectBadge = Utilities.loadImage( "org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif" ); // NOI18N
-    private static Image brokenIncludeBadge = Utilities.loadImage( "org/netbeans/modules/cnd/makeproject/ui/resources/brokenIncludeBadge.gif" ); // NOI18N
+    private static Image brokenProjectBadge = ImageUtilities.loadImage( "org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif" ); // NOI18N
+    private static Image brokenIncludeBadge = ImageUtilities.loadImage( "org/netbeans/modules/cnd/makeproject/ui/resources/brokenIncludeBadge.gif" ); // NOI18N
 
     private static Node getWaitNode() {
         return new LoadingNode();
@@ -422,7 +423,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         @Override
         public Image getIcon(int param) {
             //System.err.println("get icon asked");
-            return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/waitNode.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/waitNode.gif"); // NOI18N
         }
     }
 
@@ -546,9 +547,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         private Image mergeBadge(Image original){
             if (brokenLinks) {
-                return Utilities.mergeImages(original, brokenProjectBadge, 8, 0);
+                return ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0);
             } else if (brokenIncludes) {
-                return Utilities.mergeImages(original, brokenIncludeBadge, 8, 0);
+                return ImageUtilities.mergeImages(original, brokenIncludeBadge, 8, 0);
             }
             return original;
         }
@@ -683,13 +684,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         @Override
         public Image getIcon( int type ) {
             Image original = super.getIcon(type);
-            return Utilities.mergeImages(original, brokenProjectBadge, 8, 0);
+            return ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0);
         }
 
         @Override
         public Image getOpenedIcon( int type ) {
             Image original = super.getOpenedIcon(type);
-            return Utilities.mergeImages(original, brokenProjectBadge, 8, 0);
+            return ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0);
         }
 
         @Override
@@ -840,12 +841,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Image getIcon( int type ) {
-            return annotateIcon(Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/logicalFilesFolder.gif"), type); // NOI18N
+            return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/logicalFilesFolder.gif"), type); // NOI18N
         }
 
         @Override
         public Image getOpenedIcon( int type ) {
-            return annotateIcon(Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/logicalFilesFolderOpened.gif"), type); // NOI18N
+            return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/logicalFilesFolderOpened.gif"), type); // NOI18N
         }
 
         @Override
@@ -1077,12 +1078,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Image getIcon( int type ) {
-            return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/importantFolder.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/importantFolder.gif"); // NOI18N
         }
 
         @Override
         public Image getOpenedIcon( int type ) {
-            return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/importantFolderOpened.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/importantFolderOpened.gif"); // NOI18N
         }
 
         @Override
@@ -1410,14 +1411,14 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             Image original;
             int tool = item.getDefaultTool();
             if (tool == Tool.CCompiler)
-                original = Utilities.loadImage("org/netbeans/modules/cnd/loaders/CSrcIcon.gif"); // NOI18N
+                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/CSrcIcon.gif"); // NOI18N
             else if (tool == Tool.CCCompiler)
-                original = Utilities.loadImage("org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"); // NOI18N
+                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"); // NOI18N
             else if (tool == Tool.FortranCompiler)
-                original = Utilities.loadImage("org/netbeans/modules/cnd/loaders/FortranSrcIcon.gif"); // NOI18N
+                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/FortranSrcIcon.gif"); // NOI18N
             else
-                original = Utilities.loadImage("org/netbeans/modules/cnd/loaders/unknown.gif"); // NOI18N
-            return broken ? Utilities.mergeImages(original, brokenProjectBadge, 11, 0) : original;
+                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/unknown.gif"); // NOI18N
+            return broken ? ImageUtilities.mergeImages(original, brokenProjectBadge, 11, 0) : original;
         }
 
         @Override

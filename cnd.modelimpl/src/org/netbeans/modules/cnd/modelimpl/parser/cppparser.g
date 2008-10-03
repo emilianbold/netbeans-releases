@@ -994,7 +994,7 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 		// FIXUP: Function definition without return value
                 // till not correct hanlding in function_definition (external_declaration_7)
                 // functions without return type
-		(function_declarator[true, false] LCURLY)=> 
+		(function_declarator[true, false] (function_K_R_parameter_list)? LCURLY)=>
 		{if (statementTrace>=1) 
 			printf("external_declaration_8a[%d]: Function definition without ret value\n",
 				LT(1).getLine());
@@ -1424,7 +1424,7 @@ function_definition_no_ret_type
 			//(declaration)*	// Possible for K & R definition
                         (function_K_R_parameter_list)?
 			{in_parameter_list = false;}
-		)?
+		)
 		compound_statement
 	)
 	//{endFunctionDefinition();}
@@ -2049,9 +2049,9 @@ function_direct_declarator [boolean definition]
 
 		(options{warnWhenFollowAmbig = false;}:
 		 tq = cv_qualifier)*                
-		(ASSIGNEQUAL OCTALINT)?	// The value of the octal must be 0
 		//{functionEndParameterList(definition);}
 		(exception_specification)?
+		(ASSIGNEQUAL OCTALINT)?	// The value of the octal must be 0
                 (options {greedy=true;} :function_attribute_specification)?
                 (asm_block!)?
                 (options {greedy=true;} :function_attribute_specification)?
@@ -2678,7 +2678,7 @@ statement
 	;
 
 labeled_statement
-	:	label COLON statement 
+	:	label COLON (options {greedy = true;} : attribute_specification!)? statement
 	;
 
 protected

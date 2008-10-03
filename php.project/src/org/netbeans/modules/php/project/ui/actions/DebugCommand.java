@@ -44,6 +44,8 @@ import java.net.MalformedURLException;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
+import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
+import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.ActionProvider;
@@ -72,15 +74,14 @@ public class DebugCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
+        if (!isRunConfigurationSet()) {
+            // property not set yet
+            return;
+        }
         boolean scriptSelected = isScriptSelected();
         if (scriptSelected) {
-            // we don't need to check anything here, because if the customizer show, then scriptSelected == false
             debugLocalCommand.invokeAction(null);
         } else {
-            if (!isIndexFileSet() || !isUrlSet()) {
-                // property not set yet
-                return;
-            }
             eventuallyUploadFiles();
             Runnable runnable = new Runnable() {
                 public void run() {
@@ -119,6 +120,7 @@ public class DebugCommand extends Command implements Displayable {
                             final Message messageDecriptor = new NotifyDescriptor.Message(err,
                                     NotifyDescriptor.WARNING_MESSAGE);
                             DialogDisplayer.getDefault().notify(messageDecriptor);
+                            getProject().getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
                         }
                     }
                 }

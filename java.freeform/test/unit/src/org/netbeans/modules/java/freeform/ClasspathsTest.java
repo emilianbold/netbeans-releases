@@ -108,6 +108,9 @@ public class ClasspathsTest extends TestBase {
         super.setUp();
         assertNotNull("Must have built ant/freeform unit tests first, INCLUDING copying non-*.java resources to the classes build directory",
             ClasspathsTest.class.getResource("/META-INF/services/org.openide.modules.InstalledFileLocator"));
+        Method m = GlobalPathRegistry.class.getDeclaredMethod("clear");
+        m.setAccessible(true);
+        m.invoke(GlobalPathRegistry.getDefault());
     }
     
     public void testSourcePath() throws Exception {
@@ -191,7 +194,7 @@ public class ClasspathsTest extends TestBase {
             return null;
         }
     }
-    
+
     public void testGlobalPathRegistryUsage() throws Exception {
         GlobalPathRegistry gpr = GlobalPathRegistry.getDefault();
         assertEquals("no BOOT classpaths yet", Collections.EMPTY_SET, gpr.getPaths(ClassPath.BOOT));
@@ -282,6 +285,7 @@ public class ClasspathsTest extends TestBase {
          */
     }
 
+    @RandomlyFails // NB-Core-Build #1440, 1447
     public void testCompilationUnitChanges() throws Exception {
         clearWorkDir();
         FreeformProject simple2 = copyProject(simple);
@@ -312,6 +316,7 @@ public class ClasspathsTest extends TestBase {
         Set<ClassPath> expected = new HashSet<ClassPath>();
         expected.add(cpSrc);
         expected.add(cpAnt);
+        // randomly fails here; same path elements but different ClassPath objects?
         assertEquals("correct set of COMPILE classpaths", expected, compile);
         
         AuxiliaryConfiguration aux = Util.getAuxiliaryConfiguration(helper2);

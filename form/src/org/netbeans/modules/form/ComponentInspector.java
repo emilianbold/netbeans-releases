@@ -157,7 +157,7 @@ public class ComponentInspector extends TopComponent
         setLayout(new java.awt.BorderLayout());
         createComponents();
 
-        setIcon(Utilities.loadImage(iconURL));
+        setIcon(ImageUtilities.loadImage(iconURL));
         setName(FormUtils.getBundleString("CTL_InspectorTitle")); // NOI18N
         setToolTipText(FormUtils.getBundleString("HINT_ComponentInspector")); // NOI18N
     }

@@ -73,8 +73,8 @@ public class BDJPropertiesDescriptor implements ProjectPropertiesDescriptor {
         Set<PropertyDescriptor> set = ref.get();
         if (set == null) {
             set = new HashSet();
-            set.add(new PropertyDescriptor(PROP_ORGANIZATION_ID, true, DefaultPropertyParsers.STRING_PARSER,  "00000000")); //NOI18N
-            set.add(new PropertyDescriptor(PROP_APPLICATION_ID, true, DefaultPropertyParsers.STRING_PARSER,  "00000000")); //NOI18N
+            set.add(new PropertyDescriptor(PROP_ORGANIZATION_ID, true, DefaultPropertyParsers.STRING_PARSER,  "56789abc")); //NOI18N
+            set.add(new PropertyDescriptor(PROP_APPLICATION_ID, true, DefaultPropertyParsers.STRING_PARSER,  "00004001")); //NOI18N
             set.add(new PropertyDescriptor(PROP_FILE_ACCESS, true, DefaultPropertyParsers.BOOLEAN_PARSER,  "false")); //NOI18N
             set.add(new PropertyDescriptor(PROP_LIFECYCLE, true, DefaultPropertyParsers.BOOLEAN_PARSER,  "false")); //NOI18N
             set.add(new PropertyDescriptor(PROP_SERVICE_SELECT, true, DefaultPropertyParsers.BOOLEAN_PARSER,  "false")); //NOI18N

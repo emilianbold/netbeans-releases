@@ -23,6 +23,7 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
@@ -158,8 +159,7 @@ public class ExportDiffPatchTest extends JellyTestCase {
             log.addHandler(mh);
             node.performMenuActionNoBlock("Versioning|Export Diff Patch...");
             //Operator.setDefaultStringComparator(oldOperator);
-            TestKit.waitText(mh);
-            Thread.sleep(1000);
+            
             nbdialog = new NbDialogOperator("Export Diff");
             JButtonOperator btn = new JButtonOperator(nbdialog, "Export");
             JTextFieldOperator tf = new JTextFieldOperator(nbdialog, 0);
@@ -167,6 +167,9 @@ public class ExportDiffPatchTest extends JellyTestCase {
             File file = new File(patchFile);
             tf.setText(file.getCanonicalFile().toString());
             btn.push();
+
+            TestKit.waitText(mh);
+            new EventTool().waitNoEvent(3000);
 
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line = br.readLine();

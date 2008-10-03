@@ -62,6 +62,7 @@ import org.netbeans.modules.groovy.editor.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.elements.GroovyElement;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.modules.gsf.spi.DefaultCompletionProposal;
+import org.openide.util.ImageUtilities;
 
 
 /**
@@ -310,7 +311,7 @@ import org.netbeans.modules.gsf.spi.DefaultCompletionProposal;
             }
 
             if (groovyIcon == null) {
-                groovyIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
+                groovyIcon = new ImageIcon(ImageUtilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
             }
 
             return groovyIcon;
@@ -373,12 +374,12 @@ import org.netbeans.modules.gsf.spi.DefaultCompletionProposal;
             
             if (isGroovy) {
                 if (groovyIcon == null) {
-                    groovyIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
+                    groovyIcon = new ImageIcon(ImageUtilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
                 }
                 return groovyIcon;
             } else {
                 if (javaIcon == null) {
-                    javaIcon = new ImageIcon(org.openide.util.Utilities.loadImage(JAVA_KEYWORD));
+                    javaIcon = new ImageIcon(ImageUtilities.loadImage(JAVA_KEYWORD));
                 }
                 return javaIcon;
             }
@@ -535,7 +536,7 @@ import org.netbeans.modules.gsf.spi.DefaultCompletionProposal;
         public ImageIcon getIcon() {
 
             if (newConstructorIcon == null) {
-                newConstructorIcon = new ImageIcon(org.openide.util.Utilities.loadImage(NEW_CSTR));
+                newConstructorIcon = new ImageIcon(ImageUtilities.loadImage(NEW_CSTR));
             }
             return newConstructorIcon;
         }

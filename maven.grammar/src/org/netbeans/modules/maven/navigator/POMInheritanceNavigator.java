@@ -54,7 +54,7 @@ import org.openide.util.LookupListener;
 public class POMInheritanceNavigator implements NavigatorPanel {
     private POMInheritancePanel component;
     
-    protected Lookup.Result selection;
+    protected Lookup.Result<DataObject> selection;
 
     protected final LookupListener selectionListener = new LookupListener() {
         public void resultChanged(LookupEvent ev) {
@@ -109,7 +109,7 @@ public class POMInheritanceNavigator implements NavigatorPanel {
      * @param selectedFiles 
      */
 
-    public void navigate(Collection<DataObject> selectedFiles) {
+    public void navigate(Collection<? extends DataObject> selectedFiles) {
         if(selectedFiles.size() == 1) {
             DataObject d = (DataObject) selectedFiles.iterator().next();
             getNavigatorUI().navigate(d);           

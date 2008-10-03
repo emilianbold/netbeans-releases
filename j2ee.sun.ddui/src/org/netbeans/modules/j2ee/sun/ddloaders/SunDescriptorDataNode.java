@@ -50,6 +50,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.xml.sax.SAXException;
@@ -165,14 +166,14 @@ public class SunDescriptorDataNode extends DataNode {
     
     public java.awt.Image getIcon(int type) {
         String iconBase = dataObject.getIconBaseForValidDocument();
-        Image sunDDIcon = Utilities.loadImage(iconBase + ".gif"); //NOI18N
+        Image sunDDIcon = ImageUtilities.loadImage(iconBase + ".gif"); //NOI18N
         
         if(dataObject.getSaxError() == null) {
             return sunDDIcon;
         }
         
-        Image errorBadgeIcon = Utilities.loadImage(Utils.ICON_BASE_ERROR_BADGE + ".gif"); //NOI18N
-        return Utilities.mergeImages(sunDDIcon, errorBadgeIcon, 6, 6);
+        Image errorBadgeIcon = ImageUtilities.loadImage(Utils.ICON_BASE_ERROR_BADGE + ".gif"); //NOI18N
+        return ImageUtilities.mergeImages(sunDDIcon, errorBadgeIcon, 6, 6);
     }
     
 // Dead code?    

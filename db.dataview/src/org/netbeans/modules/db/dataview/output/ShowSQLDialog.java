@@ -44,15 +44,13 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.windows.WindowManager;
 
@@ -66,14 +64,6 @@ class ShowSQLDialog extends javax.swing.JDialog {
     public ShowSQLDialog() {
         super(WindowManager.getDefault().getMainWindow(), true);
         initComponents();
-
-        //jButton1.setFont(new java.awt.Font("Tahoma", 0, 16));
-        //jButton1.setText("TESTING");
-        Font font = jButton1.getFont();
-        FontMetrics metrics = getFontMetrics(font);
-        int width = metrics.stringWidth(jButton1.getText());
-        int height = metrics.getHeight();        
-        jButton1.setSize(width*2,height+height); 
 
         jEditorPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "showsql.editorpane.accessibleName"));
         jEditorPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "ShowSQLDialog.jEditorPane1.AccessibleContext.accessibleDescription"));
@@ -131,7 +121,7 @@ class ShowSQLDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 100, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -149,10 +139,11 @@ class ShowSQLDialog extends javax.swing.JDialog {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         dispose();                                        
-    }                                        
-    // Variables declaration - do not modify                                             
-    private javax.swing.JButton jButton1;//GEN-HEADEREND:event_jButton1ActionPerformed
-    private javax.swing.JEditorPane jEditorPane1;//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_jButton1ActionPerformed
+                                        
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButton1;
+    private javax.swing.JEditorPane jEditorPane1;
     private javax.swing.JScrollPane jScrollPane1;
-    // End of variables declaration                   
+    // End of variables declaration//GEN-END:variables
 }

@@ -85,6 +85,7 @@ import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -373,7 +374,7 @@ public class FolderNodeFactory implements NodeFactory {
 
          @Override
          public Image getIcon(int type) {
-             return Utilities.icon2Image(info.getIcon());
+             return ImageUtilities.icon2Image(info.getIcon());
          }
 
          @Override

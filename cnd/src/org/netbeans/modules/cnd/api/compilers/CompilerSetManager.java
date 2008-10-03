@@ -256,6 +256,10 @@ public class CompilerSetManager {
         return state == STATE_UNINITIALIZED;
     }
 
+    public boolean isComplete() {
+        return state == STATE_COMPLETE;
+    }
+
     public synchronized void initialize(boolean save) {
         if (isUninitialized()) {
             log.fine("CSM.getDefault: Doing remote setup from EDT?" + SwingUtilities.isEventDispatchThread());

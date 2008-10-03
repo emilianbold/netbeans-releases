@@ -392,13 +392,7 @@ made subject to such option by the copyright holder.
     <macrodef name="test-dep-build">
         <attribute name="test.type"/>
         <sequential>
-            <pathconvert property="test.modules.fullpath" >
-                <path>
-                    <dirset dir="${nb_all}" includes="${test.@{test.type}.testdep}" />
-                </path>
-                <mapper type="identity" />
-            </pathconvert>
-            <sortsuitemodules unsortedmodules="${test.modules.fullpath}" sortedmodulesproperty="mods.sorted" sorttests="true"/>
+            <sortsuitemodules unsortedmodules="${test.@{test.type}.testdep}" sortedmodulesproperty="mods.sorted" sorttests="true"/>
             <subant buildpath="${mods.sorted}" target="do-test-build" />
         </sequential>
     </macrodef>
@@ -525,6 +519,7 @@ made subject to such option by the copyright holder.
     </macrodef>
     <macrodef name="test">
         <attribute name="test.type"/>
+        <attribute name="disable.apple.ui" default="false"/>
         <sequential>
             <property name="test.config" value="default"/>
             <property name="test.config.default.includes" value="**/*Test.class"/>
@@ -541,7 +536,7 @@ made subject to such option by the copyright holder.
                 <syspropertyset refid="test.@{test.type}.properties"/>
                 <jvmarg line="${test.run.args}"/>
                 <!--needed to have tests NOT to steal focus when running, works in latest apple jdk update only.-->
-                <sysproperty key="apple.awt.UIElement" value="true"/>
+                <sysproperty key="apple.awt.UIElement" value="@{disable.apple.ui}"/>
                 <formatter type="brief" usefile="false"/>
                 <formatter type="xml"/>
             </junit>
@@ -549,23 +544,34 @@ made subject to such option by the copyright holder.
         </sequential>
     </macrodef>
     <target name="test-unit" depends="init,test-init,test-build" if="exists.test.unit.src.dir">
-        <test test.type="unit"/>
+        <test test.type="unit" disable.apple.ui="true"/>
     </target>
     <target name="test-qa-functional" depends="init,test-init,test-build" if="exists.test.qa-functional.src.dir">
         <test test.type="qa-functional"/>
     </target>
 
-    <target name="test-generate-html" depends="-do-test-generate-html,-test-browse-html"/>
+    <target name="test-generate-html">
+        <subant target="-test-browse-html" genericantfile="${ant.file}" inheritall="false">
+            <dirset dir="build/test" includes="unit/results, qa-functional/results"/>
+        </subant>
+    </target>
+
     <target name="-do-test-generate-html">
-        <junitreport todir="${test.results.dir}">
-            <fileset dir="${test.results.dir}">
+        <junitreport todir=".">
+            <fileset dir=".">
                 <include name="TEST-*.xml"/>
             </fileset>
-            <report format="frames" todir="${test.results.dir}/html"/>
+            <report format="frames" todir="html"/>
         </junitreport>
+        <makeurl file="${basedir}/html/index.html" property="test.report.url"/>
+        <echo>
+
+        Report URL: ${test.report.url}
+        </echo>
     </target>
-    <target name="-test-browse-html" if="netbeans.home">
-        <nbbrowse file="${test.results.dir}/html/index.html"/>
+
+    <target name="-test-browse-html" if="netbeans.home" depends="-do-test-generate-html">
+        <nbbrowse file="html/index.html"/>
     </target>
     <target name="test" depends="test-unit,test-qa-functional"/>
 

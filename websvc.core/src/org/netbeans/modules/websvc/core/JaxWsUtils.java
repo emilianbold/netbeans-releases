@@ -103,6 +103,7 @@ import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -487,8 +488,22 @@ public class JaxWsUtils {
             }
         };
         targetSource.runModificationTask(task).commit();
-        //open in editor
 
+        final FileObject createdFile = implClassFo;
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            public void run() {
+                Service serv = findServiceForServiceName(createdFile, service.getName());
+                if (serv != null) {
+                    DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(
+                            NbBundle.getMessage(JaxWsUtils.class,"MSG_ServiceNameExists", service.getName(), serv.getImplementationClass()), 
+                            NotifyDescriptor.WARNING_MESSAGE));
+                }
+            }
+            
+        });
+        //open in editor
         DataObject dobj = DataObject.find(implClassFo);
         openFileInEditor(dobj);
     }
@@ -1350,5 +1365,85 @@ public class JaxWsUtils {
         }
 
         return false;
+    }
+    
+    public static Service findServiceForServiceName(FileObject createdFile, String serviceName) {
+        JAXWSSupport support = JAXWSSupport.getJAXWSSupport(createdFile);
+        List services = support.getServices();
+        if (services.size()>1) {
+            Project prj = FileOwnerQuery.getOwner(createdFile);
+            for (int i=0;i<services.size()-1;i++) { // check only formerly created services
+                Service service = (Service)services.get(i);
+                if (service.getWsdlUrl() != null) {
+                    // from WSDL
+                    if (serviceName.equals(service.getServiceName())) {
+                        return service;
+                    }
+                } else {
+                    // from Java
+                    if (serviceName.equals(getServiceName(prj, service))) {
+                        return service;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    private static String getServiceName(Project prj, Service service) {
+        SourceGroup[] srcGroups = ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        FileObject implClassFo = null;
+        String implClassResource = service.getImplementationClass().replace('.', '/') + ".java"; //NOI18N
+        final String[] serviceName = new String[1];
+        if (srcGroups != null) {
+            for (SourceGroup srcGroup: srcGroups) {
+                FileObject root = srcGroup.getRootFolder();
+                implClassFo = root.getFileObject(implClassResource);
+                if (implClassFo != null) break;
+            }
+        }
+        if (implClassFo != null) {
+            JavaSource javaSource = JavaSource.forFileObject(implClassFo);
+            if (javaSource != null) {
+                CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+
+                    public void run(CompilationController controller) throws IOException {
+                        controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                        TypeElement classElement = SourceUtils.getPublicTopLevelElement(controller);
+                        TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
+                        if (classElement != null && wsElement != null) {
+                            List<? extends AnnotationMirror> annotations = classElement.getAnnotationMirrors();
+
+                            for (AnnotationMirror anMirror : annotations) {
+                                if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
+                                    Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
+                                    for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : expressions.entrySet()) {
+                                        if (entry.getKey().getSimpleName().contentEquals("serviceName")) { //NOI18N
+                                            serviceName[0] = (String) expressions.get(entry.getKey()).getValue();
+                                        }
+                                        if (serviceName[0] != null) {
+                                            break;
+                                        }
+                                    }
+                                    break;
+                                } // end if
+                            } // end for
+                        }
+                    }
+
+                    public void cancel() {
+                    }
+                };
+                try {
+                    javaSource.runUserActionTask(task, true);
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            }
+            if (serviceName[0] == null) {
+                serviceName[0] = implClassFo.getName()+"Service"; //NOI18N
+            }
+        }
+        return serviceName[0];
     }
 }

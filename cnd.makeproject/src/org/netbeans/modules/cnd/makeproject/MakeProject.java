@@ -61,6 +61,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.loaders.CCDataLoader;
@@ -97,10 +99,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.ExtensionList;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openidex.search.SearchInfo;
 import org.w3c.dom.Element;
@@ -113,7 +115,7 @@ import org.w3c.dom.Text;
  */
 public final class MakeProject implements Project, AntProjectListener {
 
-    private static final Icon MAKE_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif")); // NOI18N
+    private static final Icon MAKE_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif")); // NOI18N
     private static final String HEADER_EXTENSIONS = "header-extensions"; // NOI18N
     private static final String C_EXTENSIONS = "c-extensions"; // NOI18N
     private static final String CPP_EXTENSIONS = "cpp-extensions"; // NOI18N
@@ -230,7 +232,8 @@ public final class MakeProject implements Project, AntProjectListener {
             new FolderSearchInfo(projectDescriptorProvider),
             new MakeProjectType(),
             new MakeProjectEncodingQueryImpl(this),
-            new RemoteProjectImpl()
+            new RemoteProjectImpl(),
+            new ToolchainProjectImpl()
         });
     }
 
@@ -837,5 +840,17 @@ public final class MakeProject implements Project, AntProjectListener {
             return conf.getDevelopmentHost().getName();
         }
 
+    }
+
+    class ToolchainProjectImpl implements ToolchainProject {
+
+        public CompilerSet getCompilerSet() {
+            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
+            MakeConfiguration conf = (MakeConfiguration)projectDescriptor.getConfs().getActive();
+            if (conf != null) {
+                return conf.getCompilerSet().getCompilerSet();
+            }
+            return null;
+        }
     }
 }

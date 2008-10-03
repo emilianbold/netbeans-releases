@@ -58,6 +58,7 @@ import javax.swing.table.*;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
@@ -708,13 +709,13 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
             if (ascending) {
                 if (iconSortAsc == null) {
                     iconSortAsc = new ImageIcon(
-                            org.openide.util.Utilities.loadImage(SORT_ASC_ICON));
+                            ImageUtilities.loadImage(SORT_ASC_ICON));
                 }
                 return iconSortAsc;
             } else {
                 if (iconSortDesc == null) {
                     iconSortDesc = new ImageIcon(
-                            org.openide.util.Utilities.loadImage(SORT_DESC_ICON));
+                            ImageUtilities.loadImage(SORT_DESC_ICON));
                 }
                 return iconSortDesc;
             }

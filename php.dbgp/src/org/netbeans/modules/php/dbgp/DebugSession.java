@@ -158,7 +158,9 @@ public class DebugSession implements Runnable {
     }
 
     public DbgpResponse sendSynchronCommand(DbgpCommand command) {
-        if (getSessionThread() != Thread.currentThread()) {
+        Thread sessionThread = getSessionThread();
+        if (sessionThread == null) return null;
+        if (sessionThread != Thread.currentThread()) {
             throw new IllegalStateException("Method incorrect usage. " +
                     "It should be called in handler thread only");  // NOI18N
 
@@ -203,6 +205,7 @@ public class DebugSession implements Runnable {
                 myEngine.set(engine);
             }
         }
+        assert myEngine.get() != null;
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
         for (Session session : sessions) {
             SessionId id = (SessionId) session.lookupFirst(null, SessionId.class);
@@ -276,7 +279,7 @@ public class DebugSession implements Runnable {
         }
     }
 
-    private Thread getSessionThread() {
+    private synchronized Thread getSessionThread() {
         return mySessionThread;
     }
 

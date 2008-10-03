@@ -48,6 +48,7 @@ import org.netbeans.modules.j2ee.jboss4.nodes.actions.OpenServerLogAction;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.ShowAdminToolAction;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.ShowJMXConsoleAction;
 import org.openide.nodes.*;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import java.awt.Image;
@@ -191,7 +192,7 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
     
     public Image getIcon(int type) {
         if (type == BeanInfo.ICON_COLOR_16x16) {
-            return Utilities.loadImage("org/netbeans/modules/j2ee/jboss4/resources/16x16.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/jboss4/resources/16x16.gif"); // NOI18N
         }
         return super.getIcon(type);
     }

@@ -246,7 +246,7 @@ public abstract class Command {
         if (useWebRoot) {
             return getCommandUtils().getRelativeWebRootPath(fileForContext);
         }
-        return getCommandUtils().getRelativeWebRootPath(fileForContext);
+        return getCommandUtils().getRelativeSrcPath(fileForContext);
     }
 
     //or null
@@ -268,23 +268,25 @@ public abstract class Command {
     }
 
     /** eventually show the customizer */
-    protected boolean isScriptSelected() {
-        return isScriptSelected(true);
+    protected boolean isRunConfigurationSet() {
+        return ProjectPropertiesSupport.getRunAs(project, true) != null;
     }
 
-    protected boolean isScriptSelected(boolean showCustomizer) {
-        PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(project, showCustomizer);
+    protected boolean isScriptSelected() {
+        PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(project);
         return PhpProjectProperties.RunAsType.SCRIPT.equals(runAs);
     }
 
-    /** eventually show the customizer */
     protected boolean isRemoteConfigSelected() {
-        return isRemoteConfigSelected(true);
+        PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(project);
+        return PhpProjectProperties.RunAsType.REMOTE.equals(runAs);
     }
 
-    protected boolean isRemoteConfigSelected(boolean showCustomizer) {
-        PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(project, showCustomizer);
-        return PhpProjectProperties.RunAsType.REMOTE.equals(runAs);
+    protected boolean isPhpFileSelected(FileObject file) {
+        if (file == null) {
+            return false;
+        }
+        return CommandUtils.isPhpFile(file);
     }
 
     protected String getRemoteConfigurationName() {
@@ -298,7 +300,7 @@ public abstract class Command {
     //or null
     protected final FileObject fileForContext(Lookup context) {
         CommandUtils utils = getCommandUtils();
-        boolean scriptSelected = isScriptSelected(false);
+        boolean scriptSelected = isScriptSelected();
         FileObject[] files = utils.phpFilesForContext(context, scriptSelected);
         if (files == null || files.length == 0) {
             files = utils.phpFilesForSelectedNodes(scriptSelected);
@@ -383,7 +385,7 @@ public abstract class Command {
     }
 
     protected void eventuallyUploadFiles(FileObject... preselectedFiles) {
-        if (!isRemoteConfigSelected(false)) {
+        if (!isRemoteConfigSelected()) {
             return;
         }
         UploadCommand uploadCommand = (UploadCommand) getOtherCommand(UploadCommand.ID);
@@ -397,14 +399,6 @@ public abstract class Command {
         if (PhpProjectProperties.UploadFiles.ON_RUN.equals(uploadFiles)) {
             uploadCommand.uploadFiles(new FileObject[] {ProjectPropertiesSupport.getSourcesDirectory(getProject())}, preselectedFiles);
         }
-    }
-
-    protected boolean isIndexFileSet() {
-        return ProjectPropertiesSupport.getIndexFile(getProject()) != null;
-    }
-
-    protected boolean isUrlSet() {
-        return ProjectPropertiesSupport.getUrl(getProject()) != null;
     }
 
     private static class DebugInfo {

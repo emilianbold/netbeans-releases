@@ -41,7 +41,7 @@
 package org.netbeans.modules.xml;
 
 
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 import org.netbeans.modules.xml.text.syntax.DTDKit;
 import org.openide.loaders.*;
 import org.openide.filesystems.FileObject;

@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import org.openide.nodes.Node.Cookie;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -145,7 +146,7 @@ public class PageContentItem {
         }
         return bufferedIcon;
     }
-     private static final Image UNKONWN_ICON = org.openide.util.Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/question.png"); // NOI18N
+     private static final Image UNKONWN_ICON = ImageUtilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/question.png"); // NOI18N
      private static final Logger LOG = Logger.getLogger(PageContentItem.class.toString());
      // private final Image backupImage = new ImageIcon
     

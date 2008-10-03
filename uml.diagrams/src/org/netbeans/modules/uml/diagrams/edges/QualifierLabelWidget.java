@@ -57,7 +57,6 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
 import org.netbeans.modules.uml.diagrams.nodes.AttributeWidget;
 import org.netbeans.modules.uml.drawingarea.util.Util;
-import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 
 /**
  *
@@ -84,27 +83,7 @@ public class QualifierLabelWidget extends Widget
     public void propertyChange(PropertyChangeEvent evt)
     {
         IAssociationEnd end = (IAssociationEnd) evt.getSource();
-            
-        removeChildren();
-        
-        Scene scene = getScene();
-        WidgetAction selectAction = ActionFactory.createSelectAction(new QualifierSelectAction());
-        
-//        if (scene instanceof ObjectScene)
-//        {
-//            ObjectScene objScene = (ObjectScene) scene;
-//            selectAction = objScene.createSelectAction();
-//        }
-        
-        for(IAttribute attr : end.getQualifiers())
-        {
-            AttributeWidget attrWidget = new AttributeWidget(scene);
-            
-//            attrWidget.createActions(DesignerTools.SELECT).addAction(selectAction);
-            attrWidget.initialize(attr);
-            addChild(attrWidget);
-        }
-        revalidate();
+        refreshQualifiers(end);
     }
     
     protected ConnectionWidget getConnection()
@@ -117,6 +96,19 @@ public class QualifierLabelWidget extends Widget
         }
         
         return retVal;
+    }
+
+    public void refreshQualifiers(IAssociationEnd end)
+    {
+        removeChildren();
+        Scene scene = getScene();
+        for (IAttribute attr : end.getQualifiers())
+        {
+            AttributeWidget attrWidget = new AttributeWidget(scene);
+            attrWidget.initialize(attr);
+            addChild(attrWidget);
+        }
+        revalidate();
     }
     
     public class QualifierSelectAction implements SelectProvider

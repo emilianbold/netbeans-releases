@@ -123,6 +123,7 @@ public class IndentationTest extends CompletionTest {
                 eOperator.pushKey(KeyEvent.VK_ENTER);
                 eOperator.waitModified(true);
                 Thread.sleep(1000);
+                CompletionJListOperator.hideAll();
                 int shift = eOperator.txtEditorPane().getCaret().getDot() - invocationPossition;
                 ref("line " + eOperator.getLineNumber() + ": " + shift);
                 if (debugMode) {

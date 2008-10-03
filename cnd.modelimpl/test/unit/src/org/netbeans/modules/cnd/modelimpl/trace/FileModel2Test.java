@@ -112,7 +112,7 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#146560 Internal C++ compiler does not accept 'struct' after 'new'
         performTest("iz146560.cc");
     }
-    
+
     public void testIZ147284isDefined() throws Exception {
         // IZ#147284 APTMacroCallback.isDefined(CharSequence) ignores #undef
         String base = "iz147284_is_defined";
@@ -124,4 +124,15 @@ public class FileModel2Test extends TraceModelTestBase {
         String macro = "MAC";
         assertFalse(macro + " should be undefined!", handlers.iterator().next().getMacroMap().isDefined(macro));
     }
+
+    public void testIZ147574() throws Exception {
+        // IZ#147574 Parser cann't recognize code in yy.tab.c file correctly
+        performTest("iz147574.c");
+    }
+
+    public void testIZ148014() throws Exception {
+        // IZ#148014 Unable to resolve pure virtual method that throws
+        performTest("iz148014.cc");
+    }
+
 }

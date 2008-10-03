@@ -101,7 +101,7 @@ public class StartDebuggerTest extends JellyTestCase {
             new DebugProjectAction().perform(projectNode);
             Utilities.getDebugToolbar().waitComponentVisible(true);
             assertTrue("The debugger toolbar did not show after start of debugging", Utilities.getDebugToolbar().isVisible());
-            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, 0);
+            Utilities.waitStatusText(Utilities.runningStatusBarText);
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -118,7 +118,7 @@ public class StartDebuggerTest extends JellyTestCase {
             EditorOperator eo = new EditorOperator("MemoryView.java");
             new Action(null, null, Utilities.debugFileShortcut).performShortcut();
             Utilities.getDebugToolbar().waitComponentVisible(true);
-            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, 0);
+            Utilities.waitStatusText(Utilities.runningStatusBarText);
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -170,7 +170,7 @@ public class StartDebuggerTest extends JellyTestCase {
             new Action(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, null).perform();
             Utilities.getDebugToolbar().waitComponentVisible(true);
             assertTrue("The debugger toolbar did not show after start of debugging", Utilities.getDebugToolbar().isVisible());
-            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, 0);
+            Utilities.waitStatusText(Utilities.runningStatusBarText);
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;

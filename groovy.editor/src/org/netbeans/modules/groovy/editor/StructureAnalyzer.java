@@ -89,7 +89,7 @@ public class StructureAnalyzer implements StructureScanner {
     private Map<AstClassElement, Set<FieldNode>> fields;
     private List<AstMethodElement> methods;
     
-    private GroovyParserResult result;  
+    private GroovyParserResult result;
     
     Logger LOG = Logger.getLogger(StructureAnalyzer.class.getName());
 
@@ -99,11 +99,11 @@ public class StructureAnalyzer implements StructureScanner {
 
     public List<? extends StructureItem> scan(CompilationInfo info) {
         this.result = AstUtilities.getParseResult(info);
-        
+
         AnalysisResult ar = result.getStructure();
         List<?extends AstElement> elements = ar.getElements();
         List<StructureItem> itemList = new ArrayList<StructureItem>(elements.size());
-        
+
         for (AstElement e : elements) {
             itemList.add(new GroovyStructureItem(e, info));
         }
@@ -178,11 +178,11 @@ public class StructureAnalyzer implements StructureScanner {
     }
 
     private void scan(ASTNode node, AstPath path, String in, Set<String> includes, AstElement parent) {
-        
+
         if (node instanceof ClassNode) {
             AstClassElement co = new AstClassElement(node);
             co.setFqn(((ClassNode)node).getName());
-            
+
             if (parent != null) {
                 parent.addChild(co);
             } else {
@@ -240,59 +240,60 @@ public class StructureAnalyzer implements StructureScanner {
         List<OffsetRange> codefolds = new ArrayList<OffsetRange>();
         folds.put("codeblocks", codefolds); // NOI18N
 
-        BaseDocument doc = (BaseDocument) info.getDocument();
+        final BaseDocument doc = (BaseDocument) info.getDocument();
         if (doc == null) {
             return Collections.emptyMap();
         }
 
-        List<OffsetRange> commentfolds = new ArrayList<OffsetRange>();
+        final OffsetRange[] importsRange = new OffsetRange[1];
+        final List<OffsetRange> commentsRanges = new ArrayList<OffsetRange>();
 
-        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
+        doc.render(new Runnable() {
+            public void run() {
+                TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
 
-        int importStart = 0;
-        int importEnd = 0;
+                int importStart = 0;
+                int importEnd = 0;
 
-        boolean startSet = false;
+                boolean startSet = false;
 
-        while (ts != null && ts.isValid() && ts.moveNext()) {
-            Token t = ts.token();
-            if (t.id() == GroovyTokenId.LITERAL_import) {
-                int offset = ts.offset();
-                if (!startSet) {
-                    importStart = offset;
-                    startSet = true;
+                while (ts != null && ts.isValid() && ts.moveNext()) {
+                    Token t = ts.token();
+                    if (t.id() == GroovyTokenId.LITERAL_import) {
+                        int offset = ts.offset();
+                        if (!startSet) {
+                            importStart = offset;
+                            startSet = true;
+                        }
+                        importEnd = offset;
+                    } else if (t.id() == GroovyTokenId.BLOCK_COMMENT) {
+                        // does this Block comment (GSF_BLOCK_COMMENT) span
+                        // multiple lines? E.g. includes \n ?
+                        StringBuffer sb = new StringBuffer(t.text());
+
+                        if (sb.indexOf("\n") != -1) {
+                            int offset = ts.offset();
+                            commentsRanges.add(new OffsetRange(offset, offset + t.length()));
+                        }
+                    }
                 }
-                importEnd = offset;
-            } else if (t.id() == GroovyTokenId.BLOCK_COMMENT) {
-                // does this Block comment (GSF_BLOCK_COMMENT) span
-                // multiple lines? E.g. includes \n ?
-                StringBuffer sb = new StringBuffer(t.text());
-
-                if (sb.indexOf("\n") != -1) {
-                    int offset = ts.offset();
-                    OffsetRange blockRange = new OffsetRange(offset, offset + t.length());
-                    commentfolds.add(blockRange);
+                try {
+                    importEnd = Utilities.getRowEnd(doc, importEnd);
+                    importsRange[0]  = new OffsetRange(importStart, importEnd);
+                } catch (BadLocationException ble) {
+                    Exceptions.printStackTrace(ble);
                 }
             }
+        });
+
+        if (!commentsRanges.isEmpty()) {
+            folds.put("comments", commentsRanges); // NOI18N
         }
 
         try {
-            // see GsfFoldManager.addTree() for suitable blocknames.
-
-            importEnd = Utilities.getRowEnd(doc, importEnd);
-
-            // same strategy here for the import statements: We have to have
-            // *more* than one line to fold them.
-
-            if (Utilities.getRowCount(doc, importStart, importEnd) > 1) {
-                List<OffsetRange> importfolds = new ArrayList<OffsetRange>();
-                OffsetRange range = new OffsetRange(importStart, importEnd);
-                importfolds.add(range);
-                folds.put("imports", importfolds); // NOI18N
+            if (importsRange[0] != null && Utilities.getRowCount(doc, importsRange[0].getStart(), importsRange[0].getEnd()) > 1) {
+                folds.put("imports", Collections.singletonList(importsRange[0])); // NOI18N
             }
-
-            folds.put("comments", commentfolds); // NOI18N
-
             addFolds(doc, analysisResult.getElements(), folds, codefolds);
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
@@ -300,8 +301,8 @@ public class StructureAnalyzer implements StructureScanner {
 
         return folds;
     }
-    
-    private void addFolds(BaseDocument doc, List<? extends AstElement> elements, 
+
+    private void addFolds(BaseDocument doc, List<? extends AstElement> elements,
             Map<String,List<OffsetRange>> folds, List<OffsetRange> codeblocks) throws BadLocationException {
         for (AstElement element : elements) {
             ElementKind kind = element.getKind();
@@ -313,14 +314,14 @@ public class StructureAnalyzer implements StructureScanner {
             case MODULE:
                 ASTNode node = element.getNode();
                 OffsetRange range = AstUtilities.getRangeFull(node, doc);
-                
+
 //                System.out.println("### range: " + element + ", " + range.getStart() + ", " + range.getLength());
-                
-                if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR || 
+
+                if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR ||
                     (kind == ElementKind.FIELD && ((FieldNode)node).getInitialExpression() instanceof ClosureExpression) ||
                     // Only make nested classes/modules foldable, similar to what the java editor is doing
                     (range.getStart() > Utilities.getRowStart(doc, range.getStart())) && kind != ElementKind.FIELD) {
-                    
+
                     int start = range.getStart();
                     // Start the fold at the END of the line behind last non-whitespace, remove curly brace, if any
                     start = Utilities.getRowLastNonWhite(doc, start);
@@ -335,9 +336,9 @@ public class StructureAnalyzer implements StructureScanner {
                 }
                 break;
             }
-            
+
             List<? extends AstElement> children = element.getChildren();
-            
+
             if (children != null && children.size() > 0) {
                 addFolds(doc, children, folds, codeblocks);
             }
@@ -351,7 +352,7 @@ public class StructureAnalyzer implements StructureScanner {
     public static final class AnalysisResult {
 
         private List<?extends AstElement> elements;
-        
+
         Set<String> getRequires() {
             throw new UnsupportedOperationException("Not yet implemented");
         }
@@ -366,9 +367,9 @@ public class StructureAnalyzer implements StructureScanner {
         private void setElements(List<?extends AstElement> elements) {
             this.elements = elements;
         }
-        
+
     }
-    
+
     private class GroovyStructureItem implements StructureItem {
         AstElement node;
         ElementKind kind;
@@ -457,7 +458,7 @@ public class StructureAnalyzer implements StructureScanner {
                 List<GroovyStructureItem> children = new ArrayList<GroovyStructureItem>(nested.size());
 
                 // FIXME: the same old problem: AstElement != ElementHandle.
-                
+
                 for (AstElement co : nested) {
                     children.add(new GroovyStructureItem(co, info));
                 }
@@ -502,7 +503,7 @@ public class StructureAnalyzer implements StructureScanner {
                 // System.out.println("- name");
                 return false;
             }
-          
+
             return true;
         }
 
@@ -529,5 +530,5 @@ public class StructureAnalyzer implements StructureScanner {
             return null;
         }
     }
-    
+
 }

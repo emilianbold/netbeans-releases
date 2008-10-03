@@ -117,6 +117,7 @@ class CompletionContextFinder {
             );
 
     private static final List<PHPTokenId[]> FUNCTION_TOKENCHAINS = Arrays.asList(
+            new PHPTokenId[]{PHPTokenId.PHP_FUNCTION},
             new PHPTokenId[]{PHPTokenId.PHP_FUNCTION,PHPTokenId.WHITESPACE},
             new PHPTokenId[]{PHPTokenId.PHP_FUNCTION,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING}
             );
@@ -239,6 +240,8 @@ class CompletionContextFinder {
         } else if (isInsideClassIfaceDeclarationBlock(info, caretOffset, tokenSequence)) {
             if (acceptTokenChains(tokenSequence, CLASS_CONTEXT_KEYWORDS_TOKENCHAINS)) {
                 return CompletionContext.CLASS_CONTEXT_KEYWORDS;
+            } else if (acceptTokenChains(tokenSequence, FUNCTION_TOKENCHAINS)) {
+                return CompletionContext.METHOD_NAME;
             }
             return CompletionContext.NONE;
         }
@@ -319,15 +322,15 @@ class CompletionContextFinder {
     }
 
     @CheckForNull
-    private static CompletionContext getClsIfaceDeclContext(Token<PHPTokenId> token, int tokenOffset,TokenSequence tokenSequence) {
+    private static CompletionContext getClsIfaceDeclContext(Token<PHPTokenId> token, int tokenOffset, TokenSequence<PHPTokenId> tokenSequence) {
         boolean isClass = false;
         boolean isIface = false;
         boolean isExtends = false;
         boolean isImplements = false;
         boolean isString = false;
         Token<PHPTokenId> stringToken = null;
-        Token[] preceedingLineTokens = getPreceedingLineTokens(token, tokenOffset, tokenSequence);
-        for (Token cToken : preceedingLineTokens) {
+        List<? extends Token<PHPTokenId>> preceedingLineTokens = getPreceedingLineTokens(token, tokenOffset, tokenSequence);
+        for (Token<PHPTokenId> cToken : preceedingLineTokens) {
             TokenId id = cToken.id();
             boolean nokeywords = !isIface && !isClass && !isExtends && !isImplements;
             if (id.equals(PHPTokenId.PHP_CLASS)) {
@@ -354,7 +357,7 @@ class CompletionContextFinder {
                 return CompletionContext.INTERFACE_NAME;
             } else if (isExtends) {
                 if (isString && isClass && stringToken != null && tokenOffset == 0
-                        && preceedingLineTokens.length > 0 && preceedingLineTokens[0].text().equals(stringToken.text())  ) {
+                        && preceedingLineTokens.size() > 0 && preceedingLineTokens.get(0).text().equals(stringToken.text())) {
                     return CompletionContext.CLASS_NAME;
                 } else if (isString && isClass) {
                     return CompletionContext.IMPLEMENTS;
@@ -373,8 +376,8 @@ class CompletionContextFinder {
         return null;
     }
 
-    static boolean lineContainsAny(Token<PHPTokenId> token,int tokenOffset, TokenSequence tokenSequence, List<PHPTokenId> ids) {
-        Token[] preceedingLineTokens = getPreceedingLineTokens(token, tokenOffset, tokenSequence);
+    static boolean lineContainsAny(Token<PHPTokenId> token,int tokenOffset, TokenSequence<PHPTokenId> tokenSequence, List<PHPTokenId> ids) {
+        List<? extends Token<PHPTokenId>> preceedingLineTokens = getPreceedingLineTokens(token, tokenOffset, tokenSequence);
         for (Token t : preceedingLineTokens) {
             if (ids.contains(t.id())) {
                 return true;
@@ -385,9 +388,9 @@ class CompletionContextFinder {
     /**
      * @return all preceding tokens for current line
      */
-    private static Token[] getPreceedingLineTokens(Token<PHPTokenId> token,int tokenOffset, TokenSequence tokenSequence){
+    private static List<? extends Token<PHPTokenId>> getPreceedingLineTokens(Token<PHPTokenId> token, int tokenOffset, TokenSequence<PHPTokenId> tokenSequence) {
         int orgOffset = tokenSequence.offset();
-        LinkedList<Token> tokens = new LinkedList<Token>();
+        LinkedList<Token<PHPTokenId>> tokens = new LinkedList<Token<PHPTokenId>>();
         if (token.id() != PHPTokenId.WHITESPACE ||
                 token.text().subSequence(0, 
                 Math.min(token.text().length(), tokenOffset)).toString().indexOf("\n") == -1) {//NOI18N
@@ -395,7 +398,7 @@ class CompletionContextFinder {
                 if (!tokenSequence.movePrevious()) {
                     break;
                 }
-                Token cToken = tokenSequence.token();
+                Token<PHPTokenId> cToken = tokenSequence.token();
                 if (cToken.id() == PHPTokenId.WHITESPACE &&
                         cToken.text().toString().indexOf("\n") != -1) {//NOI18N
                     break;
@@ -406,7 +409,8 @@ class CompletionContextFinder {
 
         tokenSequence.move(orgOffset);
         tokenSequence.moveNext();
-        return tokens.toArray(new Token[tokens.size()]);
+        
+        return tokens;
     }
 
     private synchronized static boolean isInsideClassIfaceDeclarationBlock(CompilationInfo info,

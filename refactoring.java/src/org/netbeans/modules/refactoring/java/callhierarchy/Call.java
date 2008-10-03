@@ -67,16 +67,20 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -101,6 +105,8 @@ final class Call implements CallDescriptor {
     private boolean leaf;
     /** collection of references might not be complete */
     private boolean canceled = false;
+    private enum State { CANCELED, BROKEN }
+    private State state;
 
     private Call() {
     }
@@ -138,11 +144,21 @@ final class Call implements CallDescriptor {
     }
 
     public boolean isCanceled() {
-        return canceled;
+        return this.state == State.CANCELED;
     }
 
     void setCanceled(boolean canceled) {
-        this.canceled = canceled;
+        if (canceled) {
+            this.state = State.CANCELED;
+        }
+    }
+
+    void setBroken() {
+        this.state = State.BROKEN;
+    }
+
+    public boolean isBroken() {
+        return this.state == State.BROKEN;
     }
     
     TreePathHandle getSourceToQuery() {
@@ -408,6 +424,9 @@ final class Call implements CallDescriptor {
                 oc.open();                
                 return true;
             }
+        } catch (DataObjectNotFoundException e) {
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
+                    Call.class, "Call.open.warning", FileUtil.getFileDisplayName(fo))); // NOI18N
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }

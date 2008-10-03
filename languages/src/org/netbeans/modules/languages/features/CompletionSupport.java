@@ -67,6 +67,7 @@ import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.openide.ErrorManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /*
@@ -82,9 +83,9 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
         if (resourceName == null)
             resourceName = "org/netbeans/modules/languages/resources/node.gif";
         if (!icons.containsKey (resourceName)) {
-            Image image = Utilities.loadImage (resourceName);
+            Image image = ImageUtilities.loadImage (resourceName);
             if (image == null)
-                image = Utilities.loadImage (
+                image = ImageUtilities.loadImage (
                     "org/netbeans/modules/languages/resources/node.gif"
                 );
             icons.put (

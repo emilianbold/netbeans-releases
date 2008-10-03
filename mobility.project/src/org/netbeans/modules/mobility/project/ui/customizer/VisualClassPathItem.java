@@ -48,6 +48,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** Represents classpath items of various types. Can be used in the model
@@ -84,27 +85,27 @@ public final class VisualClassPathItem {
     
     static {
         Image i;
-        Image broken = Utilities.loadImage(RESOURCE_ICON_BROKEN);
+        Image broken = ImageUtilities.loadImage(RESOURCE_ICON_BROKEN);
         
-        i = Utilities.loadImage(RESOURCE_ICON_JAR);
+        i = ImageUtilities.loadImage(RESOURCE_ICON_JAR);
         ICON_JAR = new ImageIcon(i);
-        ICON_BROKEN_JAR = new ImageIcon(Utilities.mergeImages(i, broken, 8, 0));
+        ICON_BROKEN_JAR = new ImageIcon(ImageUtilities.mergeImages(i, broken, 8, 0));
         
-        i = Utilities.loadImage(RESOURCE_ICON_LIBRARY);
+        i = ImageUtilities.loadImage(RESOURCE_ICON_LIBRARY);
         ICON_LIBRARY = new ImageIcon(i);
-        ICON_BROKEN_LIBRARY = new ImageIcon(Utilities.mergeImages(i, broken, 8, 0));
+        ICON_BROKEN_LIBRARY = new ImageIcon(ImageUtilities.mergeImages(i, broken, 8, 0));
         
-        i = Utilities.loadImage(RESOURCE_ICON_ARTIFACT);
+        i = ImageUtilities.loadImage(RESOURCE_ICON_ARTIFACT);
         ICON_ARTIFACT = new ImageIcon(i);
-        ICON_BROKEN_ARTIFACT = new ImageIcon(Utilities.mergeImages(i, broken, 8, 0));
+        ICON_BROKEN_ARTIFACT = new ImageIcon(ImageUtilities.mergeImages(i, broken, 8, 0));
         
-        i = Utilities.loadImage(RESOURCE_ICON_CLASSPATH);
+        i = ImageUtilities.loadImage(RESOURCE_ICON_CLASSPATH);
         ICON_CLASSPATH = new ImageIcon(i);
-        ICON_BROKEN_CLASSPATH = new ImageIcon(Utilities.mergeImages(i, broken, 8, 0));
+        ICON_BROKEN_CLASSPATH = new ImageIcon(ImageUtilities.mergeImages(i, broken, 8, 0));
         
-        i = Utilities.loadImage(RESOURCE_ICON_FOLDER);
+        i = ImageUtilities.loadImage(RESOURCE_ICON_FOLDER);
         ICON_FOLDER = new ImageIcon(i);
-        ICON_BROKEN_FOLDER = new ImageIcon(Utilities.mergeImages(i, broken, 8, 0));
+        ICON_BROKEN_FOLDER = new ImageIcon(ImageUtilities.mergeImages(i, broken, 8, 0));
     }
     
     private int type;

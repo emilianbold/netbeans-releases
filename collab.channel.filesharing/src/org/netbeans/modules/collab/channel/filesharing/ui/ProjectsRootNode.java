@@ -125,10 +125,10 @@ public class ProjectsRootNode extends AbstractNode implements FilesharingConstan
     // Class variables
     ////////////////////////////////////////////////////////////////////////////
     public static final String URL_SHARE_JAVA_NET = "share.java.net:5222"; //NoI18n
-    public static final Image PROJECTS_ROOT_BADGE = Utilities.loadImage(
+    public static final Image PROJECTS_ROOT_BADGE = ImageUtilities.loadImage(
             "org/netbeans/modules/collab/channel/filesharing/resources/project_png.gif", true
         ); // NOI18N
-    public static final Image GROUP_BADGE = Utilities.loadImage(
+    public static final Image GROUP_BADGE = ImageUtilities.loadImage(
             "org/netbeans/modules/collab/ui/resources/group_png.gif", true
         ); // NOI18N
     public static final List NON_SHAREABLE_NODE_PATTERNS = new ArrayList();
@@ -177,7 +177,7 @@ public class ProjectsRootNode extends AbstractNode implements FilesharingConstan
     private Image computeIcon(boolean opened, int type) {
         //return Utilities.mergeImages(PROJECTS_ROOT_BADGE, GROUP_BADGE, 7, 7);
         //New icons for filesharing
-        Image image = Utilities.loadImage(
+        Image image = ImageUtilities.loadImage(
                 "org/netbeans/modules/collab/channel/filesharing/resources/filesharing_png.gif", true
             ); // NOI18N
 
@@ -1229,7 +1229,7 @@ public class ProjectsRootNode extends AbstractNode implements FilesharingConstan
         // Instance variables
         ////////////////////////////////////////////////////////////////////////////
         private FileObject userFolder = null;
-        private Image USER_BADGE = Utilities.loadImage(
+        private Image USER_BADGE = ImageUtilities.loadImage(
                 "org/netbeans/modules/collab/core/resources/account_png.gif", true
             ); // NOI18N		
 

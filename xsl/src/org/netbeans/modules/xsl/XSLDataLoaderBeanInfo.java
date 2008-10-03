@@ -42,6 +42,7 @@ package org.netbeans.modules.xsl;
 
 import java.beans.*;
 import java.awt.Image;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Exceptions;
@@ -65,7 +66,7 @@ public class XSLDataLoaderBeanInfo extends SimpleBeanInfo {
      */
     public BeanDescriptor getBeanDescriptor() {
         BeanDescriptor beanDescriptor = new BeanDescriptor  ( XSLDataLoader.class , null );
-        beanDescriptor.setDisplayName ( NbBundle.getMessage(XSLDataLoaderBeanInfo.class, "NAME_XSLDataLoader") );//GEN-HEADEREND:BeanDescriptor
+        beanDescriptor.setDisplayName ( NbBundle.getMessage(XSLDataLoaderBeanInfo.class, "NAME_XSLDataLoader") );                              
         
         // Here you can add code for customizing the BeanDescriptor.
         
@@ -131,9 +132,9 @@ public class XSLDataLoaderBeanInfo extends SimpleBeanInfo {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
             (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
 
-            return Utilities.loadImage (ICON_DIR_BASE + "xslObject.gif"); // NOI18N
+            return ImageUtilities.loadImage (ICON_DIR_BASE + "xslObject.gif"); // NOI18N
         } else {
-            return Utilities.loadImage (ICON_DIR_BASE + "xslObject32.gif"); // NOI18N
+            return ImageUtilities.loadImage (ICON_DIR_BASE + "xslObject32.gif"); // NOI18N
         }
     }
 

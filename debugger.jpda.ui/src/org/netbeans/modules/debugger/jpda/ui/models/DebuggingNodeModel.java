@@ -49,6 +49,9 @@ import java.io.IOException;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -58,15 +61,20 @@ import java.util.WeakHashMap;
 import java.util.prefs.Preferences;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.DeadlockDetector;
 import org.netbeans.api.debugger.jpda.DeadlockDetector.Deadlock;
+import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
+import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
@@ -75,6 +83,9 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -229,8 +240,11 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         }
         String name = t.getName();
         JPDABreakpoint breakpoint = t.getCurrentBreakpoint();
+        if (DebuggingTreeModel.isMethodInvoking(t)) {
+            return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_Invoking_Method", name);
+        }
         if (breakpoint != null) {
-            return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_At_Breakpoint", name, breakpoint.toString());
+            return getThreadAtBreakpointDisplayName(name, breakpoint);
         }
         if (t.isSuspended()) {
             if (frame != null) {
@@ -279,6 +293,57 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                 return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Unknown", name);
         }
          */
+    }
+
+    private static String getThreadAtBreakpointDisplayName(String threadName, JPDABreakpoint breakpoint) {
+        if (breakpoint instanceof LineBreakpoint) {
+            LineBreakpoint lb = (LineBreakpoint) breakpoint;
+            String fileName = null;
+            try {
+                FileObject fo = URLMapper.findFileObject(new URL(lb.getURL()));
+                if (fo != null) {
+                    fileName = fo.getNameExt();
+                }
+            } catch (MalformedURLException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+            if (fileName == null) fileName = lb.getURL();
+            return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_At_LineBreakpoint",
+                                       threadName, fileName, lb.getLineNumber());
+        }
+        if (breakpoint instanceof MethodBreakpoint) {
+            MethodBreakpoint mb = (MethodBreakpoint) breakpoint;
+            String classFilters = java.util.Arrays.asList(mb.getClassFilters()).toString();
+            if (mb.getMethodSignature() == null) {
+                return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_At_MethodBreakpoint",
+                                           threadName, classFilters, mb.getMethodName());
+            } else {
+                return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_At_MethodBreakpointSig",
+                                           new Object[] { threadName, classFilters, mb.getMethodName(), mb.getMethodSignature() });
+            }
+        }
+        if (breakpoint instanceof ExceptionBreakpoint) {
+            ExceptionBreakpoint eb = (ExceptionBreakpoint) breakpoint;
+            return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_At_ExceptionBreakpoint",
+                                       threadName, eb.getExceptionClassName());
+        }
+        if (breakpoint instanceof FieldBreakpoint) {
+            FieldBreakpoint fb = (FieldBreakpoint) breakpoint;
+            return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_At_FieldBreakpoint",
+                                       threadName, fb.getClassName(), fb.getFieldName());
+        }
+        if (breakpoint instanceof ThreadBreakpoint) {
+            //ThreadBreakpoint tb = (ThreadBreakpoint) breakpoint;
+            return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_At_ThreadBreakpoint",
+                                       threadName);
+        }
+        if (breakpoint instanceof ClassLoadUnloadBreakpoint) {
+            ClassLoadUnloadBreakpoint cb = (ClassLoadUnloadBreakpoint) breakpoint;
+            String classFilters = java.util.Arrays.asList(cb.getClassFilters()).toString();
+            return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_At_ClassBreakpoint",
+                                       threadName, classFilters);
+        }
+        return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_At_Breakpoint", threadName, breakpoint.toString());
     }
 
     private static RequestProcessor RPFD = new RequestProcessor("Frame Description", 1);
@@ -456,6 +521,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         }
         if (node instanceof CallStackFrame) {
             CallStackFrame sf = (CallStackFrame) node;
+            if (DebuggingTreeModel.isMethodInvoking(sf.getThread())) {
+                return "";
+            }
             return CallStackNodeModel.getCSFToolTipText(sf);
         }
         if (node instanceof JPDAThreadGroup) {
@@ -512,12 +580,20 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         synchronized (listeners) {
             ls = new ArrayList<ModelListener>(listeners);
         }
-        ModelEvent event = new ModelEvent.NodeChanged(this, node,
-                ModelEvent.NodeChanged.DISPLAY_NAME_MASK |
-                ModelEvent.NodeChanged.ICON_MASK |
-                ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK |
-                ModelEvent.NodeChanged.CHILDREN_MASK |
-                ModelEvent.NodeChanged.EXPANSION_MASK);
+        ModelEvent event;
+        if (node instanceof JPDAThread && DebuggingTreeModel.isMethodInvoking((JPDAThread) node)) {
+            event = new ModelEvent.NodeChanged(this, node,
+                    ModelEvent.NodeChanged.DISPLAY_NAME_MASK |
+                    ModelEvent.NodeChanged.ICON_MASK |
+                    ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK);
+        } else {
+            event = new ModelEvent.NodeChanged(this, node,
+                    ModelEvent.NodeChanged.DISPLAY_NAME_MASK |
+                    ModelEvent.NodeChanged.ICON_MASK |
+                    ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK |
+                    ModelEvent.NodeChanged.CHILDREN_MASK |
+                    ModelEvent.NodeChanged.EXPANSION_MASK);
+        }
         for (ModelListener ml : ls) {
             ml.modelChanged (event);
         }
@@ -597,6 +673,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         public void propertyChange(PropertyChangeEvent evt) {
             JPDAThread t = tr.get();
             if (t != null) {
+                //if (DebuggingTreeModel.isMethodInvoking(t)) return ;
                 if (JPDAThread.PROP_BREAKPOINT.equals(evt.getPropertyName()) &&
                     t.isSuspended() && t.getCurrentBreakpoint() != null) {
                     synchronized (this) {

@@ -52,6 +52,7 @@ import org.netbeans.modules.xml.validation.ui.ValidationOutputWindow;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.ErrorManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -69,7 +70,7 @@ public class ValidateAction extends AbstractAction {
     private static final long serialVersionUID = 1L;
     
     public static final String ACCELERATOR = "alt shift F9"; // NOI18N
-    private static final Icon icon = new ImageIcon(Utilities.loadImage(
+    private static final Icon icon = new ImageIcon(ImageUtilities.loadImage(
             "org/netbeans/modules/xml/validation/resources/validation.png")); 
     private static final String label = NbBundle.getMessage(
             ValidateAction.class,"NAME_Validate_XML");

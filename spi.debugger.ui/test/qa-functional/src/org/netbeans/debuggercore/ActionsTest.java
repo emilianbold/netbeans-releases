@@ -350,8 +350,6 @@ public class ActionsTest extends JellyTestCase {
             //wait for breakpoint
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:80");
             new StepIntoAction().performMenu();
-//            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:92", lastLineNumber + 1);
-//            check 80, 92
             assertTrue("CurrentPC annotation is not on line 92", Utilities.checkAnnotation(eo, 92, "CurrentPC"));
             assertTrue("Call Site annotation is not on line 80", Utilities.checkAnnotation(eo, 80, "CallSite"));
         } catch (Throwable th) {
@@ -397,8 +395,6 @@ public class ActionsTest extends JellyTestCase {
             Utilities.setCaret(eo, 109);
             //run to cursor
             new RunToCursorAction().performMenu();
-//            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:109", lastLineNumber + 1);
-            //check line
             assertFalse("Current PC annotation remains on line 80", Utilities.checkAnnotation(eo, 80, "CurrentPC"));
             assertTrue("Current PC annotation is not on line 109", Utilities.checkAnnotation(eo, 109, "CurrentPC"));
         } catch (Throwable th) {
@@ -511,7 +507,7 @@ public class ActionsTest extends JellyTestCase {
                 MainWindowOperator.getDefault().menuBar().closeSubmenus();
                 new EventTool().waitNoEvent(500);
             }
-//            Utilities.waitDebuggerConsole("Thread main stopped at ", lastLineNumber + 1);
+
             eo = new EditorOperator("MemoryView.java");
             boolean found = false;
             for (int i = 79; i < 87; i++) {

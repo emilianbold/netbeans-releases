@@ -56,6 +56,7 @@ import org.openide.DialogDescriptor;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 
 import org.xml.sax.*;
@@ -795,7 +796,7 @@ public class DDDataObject extends  DDMultiViewDataObject
         }
 
         public java.awt.Image getIcon() {
-            return org.openide.util.Utilities.loadImage("org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif"); //NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif"); //NOI18N
         }
 
         public String preferredID() {

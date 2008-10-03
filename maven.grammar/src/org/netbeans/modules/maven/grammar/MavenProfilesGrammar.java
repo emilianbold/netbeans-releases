@@ -49,6 +49,7 @@ import org.jdom.Element;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
+import org.netbeans.modules.xml.api.model.GrammarResult;
 import org.netbeans.modules.xml.api.model.HintContext;
 
 /**
@@ -69,12 +70,12 @@ public class MavenProfilesGrammar extends AbstractSchemaBasedGrammar {
     
 
     @Override
-    protected List getDynamicCompletion(String path, HintContext hintCtx, Element lowestParent) {
-        return Collections.EMPTY_LIST;
+    protected List<GrammarResult> getDynamicCompletion(String path, HintContext hintCtx, Element lowestParent) {
+        return Collections.<GrammarResult>emptyList();
     }
     
     @Override
-    protected Enumeration getDynamicValueCompletion(String path, HintContext virtualTextCtx, Element el) {
+    protected Enumeration<GrammarResult> getDynamicValueCompletion(String path, HintContext virtualTextCtx, Element el) {
         if (path.endsWith("activeProfiles/activeProfile")) { //NOI18N
 
             Project proj = FileOwnerQuery.getOwner(getEnvironment().getFileObject());

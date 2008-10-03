@@ -48,6 +48,7 @@ import java.util.List;
 import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.xml.sax.EntityResolver;
@@ -113,7 +114,7 @@ public class HibernateCatalog implements CatalogReader, CatalogDescriptor,
     }
 
     public Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernate-configuration.png"); //NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/hibernate/resources/hibernate-configuration.png"); //NOI18N
     }
 
     public String getDisplayName() {

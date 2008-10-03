@@ -228,11 +228,11 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel
         updateGUI();
         
         if ("".equals(getNameValue())) {
-            setError(NbBundle.getMessage(
-                    BasicInfoVisualPanel.class, "MSG_NameCannotBeEmpty"));//NOI18N
+            setInfo(NbBundle.getMessage(
+                    BasicInfoVisualPanel.class, "MSG_NameCannotBeEmpty"), false);//NOI18N
         } else if ("".equals(getLocationValue())) {
-            setError(NbBundle.getMessage(
-                    BasicInfoVisualPanel.class, "MSG_LocationCannotBeEmpty"));//NOI18N
+            setInfo(NbBundle.getMessage(
+                    BasicInfoVisualPanel.class, "MSG_LocationCannotBeEmpty"), false);//NOI18N
         } else if (isLibraryWizard() && isNetBeansOrgFolder()) {
             setError(NbBundle.getMessage(
                     BasicInfoVisualPanel.class, "MSG_LibraryWrapperForNBOrgUnsupported"));//NOI18N

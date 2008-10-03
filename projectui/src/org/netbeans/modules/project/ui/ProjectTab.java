@@ -86,6 +86,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -104,8 +105,8 @@ public class ProjectTab extends TopComponent
     public static final String ID_LOGICAL = "projectTabLogical_tc"; // NOI18N                            
     public static final String ID_PHYSICAL = "projectTab_tc"; // NOI18N                        
     
-    private static final Image ICON_LOGICAL = org.openide.util.Utilities.loadImage( "org/netbeans/modules/project/ui/resources/projectTab.png" );
-    private static final Image ICON_PHYSICAL = org.openide.util.Utilities.loadImage( "org/netbeans/modules/project/ui/resources/filesTab.png" );
+    private static final Image ICON_LOGICAL = ImageUtilities.loadImage( "org/netbeans/modules/project/ui/resources/projectTab.png" );
+    private static final Image ICON_PHYSICAL = ImageUtilities.loadImage( "org/netbeans/modules/project/ui/resources/filesTab.png" );
     
     private static Map<String, ProjectTab> tabs = new HashMap<String, ProjectTab>();                            
                             

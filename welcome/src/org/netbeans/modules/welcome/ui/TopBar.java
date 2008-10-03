@@ -46,6 +46,7 @@ import java.awt.Graphics;
 import java.awt.Image;
 import javax.swing.JComponent;
 import org.netbeans.modules.welcome.content.Constants;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -59,9 +60,9 @@ class TopBar extends JComponent implements Constants {
     private Image imgRight;
     
     public TopBar() {
-        imgCenter = Utilities.loadImage(IMAGE_TOPBAR_CENTER, true);
-        imgLeft = Utilities.loadImage(IMAGE_TOPBAR_LEFT, true);
-        imgRight = Utilities.loadImage(IMAGE_TOPBAR_RIGHT, true);
+        imgCenter = ImageUtilities.loadImage(IMAGE_TOPBAR_CENTER, true);
+        imgLeft = ImageUtilities.loadImage(IMAGE_TOPBAR_LEFT, true);
+        imgRight = ImageUtilities.loadImage(IMAGE_TOPBAR_RIGHT, true);
         
         setPreferredSize( new Dimension( imgCenter.getWidth(null), imgCenter.getHeight(null)-14) );
     }

@@ -65,6 +65,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.*;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -290,13 +291,13 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
         public Image getIcon( int type ) {
             Image original = super.getIcon( type );                
             return broken || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? 
-                Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) : original;
+                ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) : original;
         }
 
         public Image getOpenedIcon( int type ) {
             Image original = super.getOpenedIcon(type);                
             return broken || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? 
-                Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) : original;            
+                ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) : original;
         }            
 
         public String getHtmlDisplayName() {

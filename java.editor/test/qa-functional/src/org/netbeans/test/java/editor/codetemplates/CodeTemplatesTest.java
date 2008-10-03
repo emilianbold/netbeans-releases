@@ -62,28 +62,39 @@ public class CodeTemplatesTest extends JavaEditorTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         openProject("java_editor_test");
-        //org.netbeans.junit.Log.enableInstances(Logger.getLogger("TIMER"),null, Level.FINEST);
+        CustomizedLog.enableInstances(Logger.getLogger("TIMER"),"CompilationInfo", Level.FINEST);
     }
 
     @Override
     protected void tearDown() throws Exception {
-        //org.netbeans.junit.Log.assertInstances("All instances are not removed");
+        CustomizedLog.assertInstances("All instances are not removed","CompilationInfo");
         super.tearDown();
+        //throw new OutOfMemoryError("Intentional OOMF");
     }
     EditorOperator oper;
 
     public void testFor() throws IOException {
+        try {
         openSourceFile("org.netbeans.test.java.editor.codetemplates", "Main");
         oper = new EditorOperator("Main");
         JEditorPaneOperator txtOper = oper.txtEditorPane();
         oper.setCaretPosition(6, 9);
         txtOper.typeText("fori");
         txtOper.pressKey(KeyEvent.VK_TAB);
-        compareGoldenFile(oper);
+        oper.setCaretPosition(9, 10);
+        txtOper.typeText("whilen");
+        txtOper.pressKey(KeyEvent.VK_TAB);
+        //compareGoldenFile(oper);
+        } finally {
+            oper.closeDiscardAll();
+        }
     }
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(CodeTemplatesTest.class).addTest("testFor").enableModules(".*").clusters(".*"));
+                NbModuleSuite.createConfiguration(CodeTemplatesTest.class)
+                .addTest("testFor")
+                .enableModules(".*")
+                .clusters(".*"));
     }
 }

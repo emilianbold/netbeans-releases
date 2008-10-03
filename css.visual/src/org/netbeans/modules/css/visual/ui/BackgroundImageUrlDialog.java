@@ -53,8 +53,11 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 //import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -96,6 +99,13 @@ public class BackgroundImageUrlDialog { //extends URLPanel{
             fileChooser.addChoosableFileFilter(new ImageFilter());
             if (fileChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
                 File imageFile = fileChooser.getSelectedFile();
+                if(!imageFile.exists()) {
+                    //non existing file
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                            NbBundle.getMessage(this.getClass(), "MSG_non_existing_file_selected", imageFile.getAbsolutePath()), 
+                            NotifyDescriptor.ERROR_MESSAGE));
+                    return false;
+                }
                 FileObject imageFO = FileUtil.toFileObject(imageFile);
                 if (imageFO == null) {
                     //should not happen with Master FS

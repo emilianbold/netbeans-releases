@@ -204,7 +204,8 @@ public class JspUtils {
      */
     public static Map getTaglibMap(Document doc, FileObject fo) {
         //TODO: assert that the fo really represents a JSP like file
-        return JspContextInfo.getContextInfo (fo).getTaglibMap (doc, fo);
+        JspContextInfo jspci = JspContextInfo.getContextInfo (fo);
+        return jspci == null ? null : jspci.getTaglibMap (doc, fo);
     }
     
     /** This method returns an image, which is displayed for the FileObject in the explorer.

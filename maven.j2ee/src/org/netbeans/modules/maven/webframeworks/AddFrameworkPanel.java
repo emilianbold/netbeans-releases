@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.maven.webframeworks;
 
 import java.awt.Component;
@@ -58,38 +57,37 @@ import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 public class AddFrameworkPanel extends javax.swing.JPanel {
 
     /** Creates new form AddFrameworkPanel */
-    public AddFrameworkPanel(List usedFrameworks) {
-	initComponents();
+    public AddFrameworkPanel(List<WebFrameworkProvider> usedFrameworks) {
+        initComponents();
         jListFrameworks.setCellRenderer(new FrameworksListCellRenderer());
-	createFrameworksList(usedFrameworks);
+        createFrameworksList(usedFrameworks);
         jListFrameworks.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
     }
-    
-    private void createFrameworksList(List usedFrameworks) {
-        List frameworks = WebFrameworks.getFrameworks();
-	DefaultListModel model = new DefaultListModel();
-	jListFrameworks.setModel(model);
-        
-	for (int i = 0; i < frameworks.size(); i++) {
-	    WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
-	    if (usedFrameworks.size() == 0)
-		model.addElement(framework);
-	    else {
-                boolean isUsed = false;
-		for (int j = 0; j < usedFrameworks.size(); j++)
-		    if (((WebFrameworkProvider) usedFrameworks.get(j)).getName().equals(framework.getName())) {
-                        isUsed = true;
-			break;
-		    }
-                if (!isUsed)
-		    model.addElement(framework);
-            }
-	}
 
-	
+    private void createFrameworksList(List<WebFrameworkProvider> usedFrameworks) {
+        List<WebFrameworkProvider> frameworks = WebFrameworks.getFrameworks();
+        DefaultListModel model = new DefaultListModel();
+        jListFrameworks.setModel(model);
+        for (WebFrameworkProvider framework : frameworks) {
+            if (usedFrameworks.size() == 0) {
+                model.addElement(framework);
+            } else {
+                boolean isUsed = false;
+                for (int j = 0; j < usedFrameworks.size(); j++) {
+                    if (((WebFrameworkProvider) usedFrameworks.get(j)).getName().equals(framework.getName())) {
+                        isUsed = true;
+                        break;
+                    }
+                }
+                if (!isUsed) {
+                    model.addElement(framework);
+                }
+            }
+        }
+
+
     }
 
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -124,34 +122,32 @@ public class AddFrameworkPanel extends javax.swing.JPanel {
 
         getAccessibleContext().setAccessibleDescription("null");
     }// </editor-fold>//GEN-END:initComponents
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JLabel jLabel1;
     public javax.swing.JList jListFrameworks;
     public javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
-    
-    public List getSelectedFrameworks() {
-	List selectedFrameworks = new LinkedList();
-	DefaultListModel model = (DefaultListModel) jListFrameworks.getModel();
+
+    public List<WebFrameworkProvider> getSelectedFrameworks() {
+        List<WebFrameworkProvider> selectedFrameworks = new LinkedList<WebFrameworkProvider>();
+        DefaultListModel model = (DefaultListModel) jListFrameworks.getModel();
         int[] indexes = jListFrameworks.getSelectedIndices();
-        for (int i = 0; i < indexes.length; i++)
-	    selectedFrameworks.add(model.get(indexes[i]));
-        
+        for (int i = 0; i < indexes.length; i++) {
+            selectedFrameworks.add((WebFrameworkProvider)model.get(indexes[i]));
+        }
         return selectedFrameworks;
     }
 
     public static class FrameworksListCellRenderer extends DefaultListCellRenderer {
-	
+
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value instanceof WebFrameworkProvider) {
                 WebFrameworkProvider item = (WebFrameworkProvider) value;
                 return super.getListCellRendererComponent(list, item.getName(), index, isSelected, cellHasFocus);
-            } else 
-		return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            } else {
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
         }
     }
-
 }

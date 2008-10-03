@@ -280,11 +280,11 @@ public class RubyRenameHandler implements InstantRenamer {
             ArgsNode an = (ArgsNode)node;
 
             if (an.getRequiredArgsCount() > 0) {
-                List<Node> args = (List<Node>)an.childNodes();
+                List<Node> args = an.childNodes();
 
                 for (Node arg : args) {
                     if (arg instanceof ListNode) {
-                        List<Node> args2 = (List<Node>)arg.childNodes();
+                        List<Node> args2 = arg.childNodes();
 
                         for (Node arg2 : args2) {
                             if (arg2.nodeId == NodeType.ARGUMENTNODE) {
@@ -298,6 +298,8 @@ public class RubyRenameHandler implements InstantRenamer {
                             } else if (arg2.nodeId == NodeType.LOCALASGNNODE) {
                                 if (((LocalAsgnNode)arg2).getName().equals(name)) {
                                     OffsetRange range = AstUtilities.getRange(arg2);
+                                    // Adjust end offset to only include the left hand size
+                                    range = new OffsetRange(range.getStart(), range.getStart() + name.length());
                                     range = LexUtilities.getLexerOffsets(info, range);
                                     if (range != OffsetRange.NONE) {
                                         ranges.add(range);

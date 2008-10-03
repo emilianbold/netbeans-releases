@@ -77,6 +77,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -162,7 +163,7 @@ public class SecurityConfiguration implements WSConfiguration {
     }
 
     public Image getIcon() {
-        return Utilities.loadImage("org/netbeans/modules/websvc/wsitconf/resources/designer-security.gif");
+        return ImageUtilities.loadImage("org/netbeans/modules/websvc/wsitconf/resources/designer-security.gif");
     }
 
     public String getDisplayName() {

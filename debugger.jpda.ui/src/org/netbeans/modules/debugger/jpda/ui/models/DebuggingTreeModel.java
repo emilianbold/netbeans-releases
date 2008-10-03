@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -283,7 +284,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             return true;
         }
         if (node instanceof JPDAThread) {
-            if (!((JPDAThread) node).isSuspended()) {
+            if (!((JPDAThread) node).isSuspended() && !isMethodInvoking((JPDAThread) node)) {
                 return true;
             }
         }
@@ -477,12 +478,13 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(JPDAThread.PROP_SUSPENDED));
             JPDAThread t = tr.get();
-            if (t != null) {
+            if (t != null && (t.isSuspended() || !isMethodInvoking(t))) {
+                boolean suspended = t.isSuspended();
                 synchronized (this) {
                     if (task == null) {
                         task = RP.create(new Refresher());
                     }
-                    task.schedule(200);
+                    task.schedule(suspended ? 200 : 1000);
                 }
             }
         }
@@ -495,6 +497,23 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
                 }
             }
         }
+    }
+
+    static boolean isMethodInvoking(JPDAThread t) {
+        try {
+            return (Boolean) t.getClass().getMethod("isMethodInvoking").invoke(t);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return false;
     }
     
     

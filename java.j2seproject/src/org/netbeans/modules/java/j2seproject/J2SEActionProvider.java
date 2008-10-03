@@ -57,6 +57,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -73,7 +74,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.project.runner.ProjectRunner;
+import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -126,6 +127,7 @@ import org.openide.util.TaskListener;
  * strange things to J2SE actions. E.g. compile-single.
  */
 class J2SEActionProvider implements ActionProvider {
+    public static final String AUTOMATIC_BUILD_TAG = ".netbeans_automatic_build";
 
     // Commands available from J2SE project
     private static final String[] supportedActions = {
@@ -201,7 +203,7 @@ class J2SEActionProvider implements ActionProvider {
     String unitTestingSupport_fixClasses;
     
     private volatile Boolean allowsFileTracking;
-    
+
     public J2SEActionProvider(J2SEProject project, UpdateHelper updateHelper) {
 
         commands = new HashMap<String,String[]>();
@@ -242,20 +244,20 @@ class J2SEActionProvider implements ActionProvider {
             }
         });
     }
-    
-    
+
+
     private boolean allowsFileChangesTracking () {
-        //allowsFileTracking is volatile primitive, fine to do double checking        
+        //allowsFileTracking is volatile primitive, fine to do double checking
         synchronized (this) {
             if (allowsFileTracking != null) {
                 return allowsFileTracking.booleanValue();
             }
         }
-        final String val = evaluator.getProperty(J2SEProjectProperties.TRACK_FILE_CHANGES);                    
+        final String val = evaluator.getProperty(J2SEProjectProperties.TRACK_FILE_CHANGES);
         synchronized (this) {
             if (allowsFileTracking == null) {
                 allowsFileTracking = "true".equals(val) ? Boolean.TRUE : Boolean.FALSE;  //NOI18N
-            }            
+            }
             return allowsFileTracking.booleanValue();
         }
     }
@@ -379,26 +381,30 @@ class J2SEActionProvider implements ActionProvider {
                     return;
                 }
                 if (isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
-                    if (COMMAND_BUILD.equals(command)) {
+                    if (COMMAND_BUILD.equals(command) && !allowAntBuild()) {
                         showBuildActionWarning(context);
                         return ;
                     }
-                    Properties execProperties = new Properties();
+                    Map<String, Object> execProperties = new HashMap<String, Object>();
 
-                    copyValue(J2SEProjectProperties.RUN_JVM_ARGS, execProperties);
-                    copyValue(J2SEProjectProperties.RUN_WORK_DIR, execProperties);
-                    
+                    copyMultiValue(J2SEProjectProperties.RUN_JVM_ARGS, execProperties);
+                    prepareWorkDir(execProperties);
+
+                    execProperties.put(JavaRunner.PROP_PLATFORM, J2SEProjectUtil.getActivePlatform(evaluator.getProperty("platform.active")));
+                    execProperties.put(JavaRunner.PROP_PROJECT_NAME, ProjectUtils.getInformation(project).getDisplayName());
+
                     if (targetNames.length == 1 && ("run-applet".equals(targetNames[0]) || "debug-applet".equals(targetNames[0]))) {
                         try {
                             FileObject file = findSources(context)[0];
                             String url = p.getProperty("applet.url");
-                            execProperties.setProperty("applet.url", url);
+                            execProperties.put("applet.url", url);
+                            execProperties.put(JavaRunner.PROP_EXECUTE_FILE, file);
                             prepareSystemProperties(execProperties, false);
-                            ProjectRunner.execute(targetNames[0], execProperties, file);
+                            JavaRunner.execute(targetNames[0], execProperties);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }
-                        return ;
+                        return;
                     }
                     if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command)) {
                         prepareSystemProperties(execProperties, false);
@@ -411,7 +417,8 @@ class J2SEActionProvider implements ActionProvider {
                         if ((files = findTestSources(context, false)) != null) {
                             try {
                                 prepareSystemProperties(execProperties, true);
-                                ProjectRunner.execute(command.equals(COMMAND_RUN_SINGLE) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, execProperties, files[0]);
+                                execProperties.put(JavaRunner.PROP_EXECUTE_FILE, files[0]);
+                                JavaRunner.execute(command.equals(COMMAND_RUN_SINGLE) ? JavaRunner.QUICK_TEST : JavaRunner.QUICK_TEST_DEBUG, execProperties);
                             } catch (IOException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
@@ -425,7 +432,8 @@ class J2SEActionProvider implements ActionProvider {
                         FileObject[] files = findTestSourcesForSources(context);
                         try {
                             prepareSystemProperties(execProperties, true);
-                            ProjectRunner.execute(COMMAND_TEST_SINGLE.equals(command) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, execProperties, files[0]);
+                            execProperties.put(JavaRunner.PROP_EXECUTE_FILE, files[0]);
+                            JavaRunner.execute(COMMAND_TEST_SINGLE.equals(command) ? JavaRunner.QUICK_TEST : JavaRunner.QUICK_TEST_DEBUG, execProperties);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }
@@ -434,10 +442,10 @@ class J2SEActionProvider implements ActionProvider {
                     if (SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(command) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(command)) {
                         SingleMethod methodSpec = findTestMethods(context)[0];
                         try {
-                            execProperties.setProperty("methodname", methodSpec.getMethodName());//NOI18N
-                            ProjectRunner.execute(command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG,
-                                                  execProperties,
-                                                  methodSpec.getFile());
+                            execProperties.put("methodname", methodSpec.getMethodName());//NOI18N
+                            execProperties.put(JavaRunner.PROP_EXECUTE_FILE, methodSpec.getFile());
+                            JavaRunner.execute(command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) ? JavaRunner.QUICK_TEST : JavaRunner.QUICK_TEST_DEBUG,
+                                                  execProperties);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }
@@ -739,8 +747,8 @@ class J2SEActionProvider implements ActionProvider {
         synchronized (this) {
             if (dirty == null) {
                 if (allowsFileChangesTracking()) {
-                    // #119777: the first time, build everything.                
-                    dirty = new TreeSet<String>();                    
+                    // #119777: the first time, build everything.
+                    dirty = new TreeSet<String>();
                 }
                 return;
             }
@@ -749,7 +757,7 @@ class J2SEActionProvider implements ActionProvider {
                 // (If you make an edit and press F11, the save event happens *after* Ant is launched.)
                 modification(d.getPrimaryFile());
             }
-            boolean wasBuiltAutomatically = new File(buildClassesDir, ".netbeans_automatic_build").canRead(); //NOI18N
+            boolean wasBuiltAutomatically = new File(buildClassesDir,AUTOMATIC_BUILD_TAG).canRead(); //NOI18N
             if (!"true".equalsIgnoreCase(doDepend) && !(isExplicitBuildTarget && dirty.isEmpty()) && !wasBuiltAutomatically) { // NOI18N
                 // #104508: if not using <depend>, try to compile just those files known to have been touched since the last build.
                 // (In case there are none such, yet the user invoked build anyway, probably they know what they are doing.)
@@ -869,13 +877,21 @@ class J2SEActionProvider implements ActionProvider {
         return (compileOnSaveProperty == null || !Boolean.valueOf(compileOnSaveProperty)) && J2SEProjectUtil.isCompileOnSaveSupported(project);
     }
 
+    private boolean allowAntBuild() {
+        String buildClasses = project.evaluator().getProperty(J2SEProjectProperties.BUILD_CLASSES_DIR);
+        File buildClassesFile = this.updateHelper.getAntProjectHelper().resolveFile(buildClasses);
+
+        return !new File(buildClassesFile, AUTOMATIC_BUILD_TAG).exists();
+    }
+
     public boolean isActionEnabled( String command, Lookup context ) {
         FileObject buildXml = findBuildXml();
         if (  buildXml == null || !buildXml.isValid()) {
             return false;
         }
         if (   Arrays.asList(actionsDisabledForQuickRun).contains(command)
-            && isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
+            && isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)
+            && !allowAntBuild()) {
             return false;
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
@@ -1104,42 +1120,20 @@ class J2SEActionProvider implements ActionProvider {
         return srcDir;
     }
 
-    private void bypassAntBuildScript(String command, Lookup context, Properties p) throws IllegalArgumentException {
-        FileObject toRun;
+    private void bypassAntBuildScript(String command, Lookup context, Map<String, Object> p) throws IllegalArgumentException {
         boolean run = true;
 
         if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command)) {
             final String mainClass = project.evaluator().getProperty(J2SEProjectProperties.MAIN_CLASS);
-            final FileObject[] mainClassFile = new FileObject[1];
             ClassPathProviderImpl cpProvider = project.getClassPathProvider();
-            if (cpProvider != null) {
-                ClassPath bootPath = cpProvider.getProjectSourcesClassPath(ClassPath.BOOT);
-                ClassPath compilePath = cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE);
-                ClassPath sourcePath = cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE);
-                try {
-                    JavaSource.create(ClasspathInfo.create(bootPath, compilePath, sourcePath)).runUserActionTask(new org.netbeans.api.java.source.Task<CompilationController>() {
-                        public void run(CompilationController parameter) throws Exception {
-                            TypeElement main = parameter.getElements().getTypeElement(mainClass);
 
-                            if (main != null) {
-                                mainClassFile[0] = SourceUtils.getFile(main, parameter.getClasspathInfo());
-                            }
-                        }
-                    }, true);
-                } catch (IOException e) {
-                    Exceptions.printStackTrace(e);
-                }
-            }
+            assert cpProvider != null;
 
-            if (mainClassFile[0] == null) {
-                //XXX: notify user
-                return;
-            }
-
-            toRun = mainClassFile[0];
+            p.put(JavaRunner.PROP_CLASSNAME, mainClass);
+            p.put(JavaRunner.PROP_EXECUTE_CLASSPATH, cpProvider.getProjectSourcesClassPath(ClassPath.EXECUTE));
             
             if (COMMAND_DEBUG_STEP_INTO.equals(command)) {
-                p.setProperty("stopclassname", mainClass);
+                p.put("stopclassname", mainClass);
             }
         } else {
             //run single:
@@ -1154,29 +1148,51 @@ class J2SEActionProvider implements ActionProvider {
                 return ;//warn the user
             }
 
-            toRun = files[0];
+            p.put(JavaRunner.PROP_EXECUTE_FILE, files[0]);
         }
         boolean debug = COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_SINGLE.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command);
         try {
             if (run) {
-                copyValue(J2SEProjectProperties.APPLICATION_ARGS, p);
-                ProjectRunner.execute(debug ? ProjectRunner.QUICK_DEBUG : ProjectRunner.QUICK_RUN, p, toRun);
+                copyMultiValue(J2SEProjectProperties.APPLICATION_ARGS, p);
+                JavaRunner.execute(debug ? JavaRunner.QUICK_DEBUG : JavaRunner.QUICK_RUN, p);
             } else {
-                ProjectRunner.execute(debug ? ProjectRunner.QUICK_TEST_DEBUG : ProjectRunner.QUICK_TEST, p, toRun);
+                JavaRunner.execute(debug ? JavaRunner.QUICK_TEST_DEBUG : JavaRunner.QUICK_TEST, p);
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
 
-    private void copyValue(String propertyName, Properties properties) {
+    private void prepareWorkDir(Map<String, Object> properties) {
+        String val = evaluator.getProperty(J2SEProjectProperties.RUN_WORK_DIR);
+
+        if (val == null) {
+            val = ".";
+        }
+
+        File file = this.updateHelper.getAntProjectHelper().resolveFile(val);
+        
+        properties.put(JavaRunner.PROP_WORK_DIR, file);
+    }
+
+    private void copyMultiValue(String propertyName, Map<String, Object> properties) {
         String val = evaluator.getProperty(propertyName);
         if (val != null) {
-            properties.setProperty(propertyName, val);
+
+            putMultiValue(properties,propertyName, val);
         }
     }
 
-    private void prepareSystemProperties(Properties properties, boolean test) {
+    private void putMultiValue(Map<String, Object> properties, String propertyName, String val) {
+        @SuppressWarnings(value = "unchecked")
+        Collection<String> it = (Collection<String>) properties.get(propertyName);
+        if (it == null) {
+            properties.put(propertyName, it = new LinkedList<String>());
+        }
+        it.add(val);
+    }
+
+    private void prepareSystemProperties(Map<String, Object> properties, boolean test) {
         String prefix = test ? J2SEProjectProperties.SYSTEM_PROPERTIES_TEST_PREFIX : J2SEProjectProperties.SYSTEM_PROPERTIES_RUN_PREFIX;
         Map<String, String> evaluated = evaluator.getProperties();
 
@@ -1186,7 +1202,7 @@ class J2SEActionProvider implements ActionProvider {
         
         for (Entry<String, String> e : evaluated.entrySet()) {
             if (e.getKey().startsWith(prefix) && e.getValue() != null) {
-                properties.setProperty(e.getKey(), e.getValue());
+                putMultiValue(properties, JavaRunner.PROP_RUN_JVMARGS, "-D" + e.getKey().substring(prefix.length()) + "=" + e.getValue());
             }
         }
     }

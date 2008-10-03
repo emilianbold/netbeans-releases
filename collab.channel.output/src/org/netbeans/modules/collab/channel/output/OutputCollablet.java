@@ -97,7 +97,7 @@ public class OutputCollablet extends MOXCCollablet {
      *
      */
     public Icon getIcon() {
-        Image image = Utilities.loadImage("org/netbeans/core/resources/frames/output.gif"); //NOI18N;
+        Image image = ImageUtilities.loadImage("org/netbeans/core/resources/frames/output.gif"); //NOI18N;
 
         if (image != null) {
             return new ImageIcon(image);

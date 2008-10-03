@@ -47,6 +47,7 @@ import java.beans.SimpleBeanInfo;
 import java.beans.IntrospectionException;
 
 import org.openide.ErrorManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** Description of {@link SunResourceDataLoader}.
@@ -82,9 +83,9 @@ public class SunResourceDataLoaderBeanInfo extends SimpleBeanInfo {
     
     public Image getIcon(int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return Utilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/sun-cluster_16_pad.gif", true); //NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/sun-cluster_16_pad.gif", true); //NOI18N
         } else {
-            return Utilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/sun-cluster_16_pad32.gif", true); //NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/sun-cluster_16_pad32.gif", true); //NOI18N
         }
     }
     

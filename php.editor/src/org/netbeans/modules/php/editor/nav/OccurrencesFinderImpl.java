@@ -73,6 +73,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
@@ -351,15 +352,29 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
 
             @Override
             public void visit(Variable node) {
-                if (el == a.getElement(node)) {
-                    usages.add(node);
+                if (!(node instanceof ArrayAccess)) {
+                    if (el == a.getElement(node)) {
+                        usages.add(node);
+                    }
+                    super.visit(node);
                 }
-                super.visit(node);
             }
             @Override
-            public void visit(ArrayAccess node) {
+            public void visit(ArrayAccess node) {                
                 if (el == a.getElement(node)) {
-                    usages.add(node);
+                    VariableBase varName = node.getName();
+                    String name = (varName instanceof Variable) ? 
+                        CodeUtils.extractVariableName((Variable)varName): null;
+                    if (el.getName().equals(name)) {
+                        usages.add(varName);
+                        return;
+                    } 
+                } else {
+                    Expression index = node.getIndex();
+                    if (index != null && !(index instanceof Scalar) && el == a.getElement(index)) {
+                        usages.add(index);
+                        return;
+                    }
                 }
                 super.visit(node);
             }

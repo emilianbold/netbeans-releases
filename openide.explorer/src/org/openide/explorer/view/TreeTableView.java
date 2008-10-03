@@ -44,6 +44,7 @@ import java.util.logging.Logger;
 import org.openide.awt.MouseUtils;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
@@ -1624,9 +1625,9 @@ public class TreeTableView extends BeanTreeView {
 
         private ImageIcon getProperIcon(boolean descending) {
             if (descending) {
-                return new ImageIcon(org.openide.util.Utilities.loadImage(SORT_DESC_ICON));
+                return new ImageIcon(ImageUtilities.loadImage(SORT_DESC_ICON));
             } else {
-                return new ImageIcon(org.openide.util.Utilities.loadImage(SORT_ASC_ICON));
+                return new ImageIcon(ImageUtilities.loadImage(SORT_ASC_ICON));
             }
         }
     }

@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.rest.projects;
 
 import java.awt.EventQueue;
@@ -76,14 +75,13 @@ import org.openide.util.actions.Presenter;
  * Action for Test RESTful Web Services
  * @author Nam Nguyen
  */
-public class ProjectTestRestServicesAction extends AbstractAction implements Presenter.Menu, ContextAwareAction , LookupListener {
-    
+public class ProjectTestRestServicesAction extends AbstractAction implements Presenter.Menu, ContextAwareAction, LookupListener {
+
     private String command;
     private ProjectActionPerformer performer;
     private String namePattern;
     private String presenterName;
     private JMenuItem menuPresenter;
-    
     private Lookup lookup;
     private Class<?>[] watch;
     private Lookup.Result results[];
@@ -99,38 +97,39 @@ public class ProjectTestRestServicesAction extends AbstractAction implements Pre
     public ProjectTestRestServicesAction() {
         this(null);
     }
+
     private ProjectTestRestServicesAction(Lookup lookup) {
         if (lookup == null) {
             lookup = Utilities.actionsGlobalContext();
         }
         this.lookup = lookup;
-        watch = new Class[] { Project.class, DataObject.class };
+        watch = new Class[]{Project.class, DataObject.class};
         command = RestSupport.COMMAND_TEST_RESTBEANS;
         presenterName = NbBundle.getMessage(ProjectTestRestServicesAction.class, "LBL_TestRestBeansAction_Name");
-        setDisplayName( presenterName );
+        setDisplayName(presenterName);
         putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
     }
-    
-    protected final void setDisplayName( String name ) {
-        putValue( NAME, name );
+
+    protected final void setDisplayName(String name) {
+        putValue(NAME, name);
     }
-    
-    protected void actionPerformed( Lookup context ) {
+
+    protected void actionPerformed(Lookup context) {
         Project[] projects = Utils.getProjectsFromLookup(context);
-        if ( projects.length == 1 ) {
+        if (projects.length == 1) {
             Properties p = setupTestRestBeans(projects[0]);
-                try {
-                    FileObject buildFo = Utils.findBuildXml(projects[0]);
-                    if (buildFo != null) {
-                        ActionUtils.runTarget(buildFo, new String[]{command}, p);
-                    }
-                } catch (IOException e) {
-                    Exceptions.printStackTrace(e);
+            try {
+                FileObject buildFo = Utils.findBuildXml(projects[0]);
+                if (buildFo != null) {
+                    ActionUtils.runTarget(buildFo, new String[]{command}, p);
                 }
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
         }
-        
+
     }
-    
+
     private Properties setupTestRestBeans(Project project) {
         Properties p = new Properties();
         p.setProperty(RestSupport.PROP_BASE_URL_TOKEN, RestSupport.BASE_URL_TOKEN);
@@ -147,122 +146,118 @@ public class ProjectTestRestServicesAction extends AbstractAction implements Pre
             FileObject testFO = rs.generateTestClient(testdir);
             p.setProperty(RestSupport.PROP_RESTBEANS_TEST_URL, testFO.getURL().toString());
             p.setProperty(RestSupport.PROP_RESTBEANS_TEST_FILE, FileUtil.toFile(testFO).getAbsolutePath());
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
         return p;
     }
 
-    protected void refresh( Lookup context ) {
+    protected void refresh(Lookup context) {
         Project[] projects = Utils.getProjectsFromLookup(context);
-        
+
         if (projects.length == 1) {
-            setEnabled(projects[0].getLookup().lookup(RestSupport.class).isRestSupportOn());
+            RestSupport restSupport = projects[0].getLookup().lookup(RestSupport.class);
+            if (restSupport == null) {
+                setEnabled(false);
+            } else {
+                setEnabled(restSupport.isRestSupportOn());
+            }
         } else {
             setEnabled(false);
         }
-        
+
         setLocalizedTextToMenuPresented(presenterName);
         putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
     }
-    
+
     protected final void setLocalizedTextToMenuPresented(String presenterName) {
-        if ( menuPresenter != null ) {
-            Mnemonics.setLocalizedText( menuPresenter, presenterName );
+        if (menuPresenter != null) {
+            Mnemonics.setLocalizedText(menuPresenter, presenterName);
         }
     }
-    
-    
     // Implementation of Presenter.Menu ----------------------------------------
-    
-    public JMenuItem getMenuPresenter () {
-        if ( menuPresenter == null ) {
-            menuPresenter = new JMenuItem( this );
+    public JMenuItem getMenuPresenter() {
+        if (menuPresenter == null) {
+            menuPresenter = new JMenuItem(this);
 
             Icon icon = null;
             // ignore icon if noIconInMenu flag is set
-            if (!Boolean.TRUE.equals( getValue( "noIconInMenu" ) ) ) { 
-                icon = (Icon)getValue( Action.SMALL_ICON );
+            if (!Boolean.TRUE.equals(getValue("noIconInMenu"))) {
+                icon = (Icon) getValue(Action.SMALL_ICON);
             }
-            menuPresenter.setIcon( icon );
-            Mnemonics.setLocalizedText( menuPresenter, presenterName );
+            menuPresenter.setIcon(icon);
+            Mnemonics.setLocalizedText(menuPresenter, presenterName);
         }
-        
-        return menuPresenter;        
+
+        return menuPresenter;
     }
-    
-    
     // Implementation of ContextAwareAction ------------------------------------
-    
-    public Action createContextAwareInstance( Lookup actionContext ) {
-        return new ProjectTestRestServicesAction(actionContext );
+    public Action createContextAwareInstance(Lookup actionContext) {
+        return new ProjectTestRestServicesAction(actionContext);
     }
 
-    private void init () {
+    private void init() {
         if (initialized) {
-            return ;
+            return;
         }
-        assert EventQueue.isDispatchThread () : "Cannot be called outside EQ!";
+        assert EventQueue.isDispatchThread() : "Cannot be called outside EQ!";
         this.results = new Lookup.Result[watch.length];
         // Needs to listen on changes in results
-        for ( int i = 0; i < watch.length; i++ ) {
+        for (int i = 0; i < watch.length; i++) {
             results[i] = lookup.lookupResult(watch[i]);
             results[i].allItems();
             LookupListener resultListener = WeakListeners.create(LookupListener.class, this, results[i]);
-            results[i].addLookupListener( resultListener ); 
+            results[i].addLookupListener(resultListener);
         }
         initialized = true;
     }
-    
+
     /** Needs to override getValue in order to force refresh
      */
-    public Object getValue( String key ) {
-        init ();
-        if ( needsRefresh ) {
+    public Object getValue(String key) {
+        init();
+        if (needsRefresh) {
             doRefresh();
         }
-        return super.getValue( key );
+        return super.getValue(key);
     }
-    
+
     /** Needs to override isEnabled in order to force refresh
      */
     public boolean isEnabled() {
-        init ();
-        if ( needsRefresh ) {
+        init();
+        if (needsRefresh) {
             doRefresh();
         }
         return super.isEnabled();
     }
-    
-    public final void actionPerformed( ActionEvent e ) {
-        init ();
-        actionPerformed( lookup );
+
+    public final void actionPerformed(ActionEvent e) {
+        init();
+        actionPerformed(lookup);
     }
-    
+
     protected final Lookup getLookup() {
         return lookup;
     }
-        
+
     private void doRefresh() {
         refreshing = true;
         try {
-            refresh( lookup );
+            refresh(lookup);
         } finally {
             refreshing = false;
         }
         needsRefresh = false;
     }
-    
-    public void resultChanged( LookupEvent e ) {
-        if ( refreshing ) {
+
+    public void resultChanged(LookupEvent e) {
+        if (refreshing) {
             return;
-        }        
-        else if ( getPropertyChangeListeners().length == 0 ) {        
+        } else if (getPropertyChangeListeners().length == 0) {
             needsRefresh = true;
-        }
-        else {
+        } else {
             doRefresh();
         }
     }
-    
 }

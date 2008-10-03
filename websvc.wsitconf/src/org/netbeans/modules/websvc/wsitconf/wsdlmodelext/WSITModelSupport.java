@@ -365,7 +365,7 @@ public class WSITModelSupport {
     
     private static WSDLModel getModelForServiceFromWsdl(JAXWSSupport supp, Service service) throws IOException, Exception {
         String wsdlLocation = service.getLocalWsdlFile();
-        FileObject wsdlFO = supp.getLocalWsdlFolderForService(service.getName(),false).getFileObject(File.separator + wsdlLocation);
+        FileObject wsdlFO = supp.getLocalWsdlFolderForService(service.getName(),false).getFileObject(wsdlLocation);
         return getModelFromFO(wsdlFO, true);
     }
     
@@ -770,12 +770,16 @@ public class WSITModelSupport {
         for (BindingOperation bo : b.getBindingOperations()) {
             BindingInput bi = bo.getBindingInput();
             BindingOutput bout = bo.getBindingOutput();
-            PolicyModelHelper.removePolicyForElement(bo);
-            PolicyModelHelper.removePolicyForElement(bi);
-            PolicyModelHelper.removePolicyForElement(bout);
+            if (bi != null) {
+                PolicyModelHelper.removePolicyForElement(bi);
+            }
+            if (bout != null) {
+                PolicyModelHelper.removePolicyForElement(bout);
+            }
             for (BindingFault bf : bo.getBindingFaults()) {
                 PolicyModelHelper.removePolicyForElement(bf);
             }
+            PolicyModelHelper.removePolicyForElement(bo);
         }
 
         // --------------------

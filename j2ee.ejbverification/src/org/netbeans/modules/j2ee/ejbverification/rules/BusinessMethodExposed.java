@@ -53,6 +53,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.ejbverification.EJBAPIAnnotations;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
 import org.netbeans.modules.j2ee.ejbverification.EJBVerificationRule;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
@@ -73,6 +74,13 @@ public class BusinessMethodExposed extends EJBVerificationRule {
     public Collection<ErrorDescription> check(EJBProblemContext ctx) {
         if (ctx.getEjb() instanceof Session) {
             Session session = (Session) ctx.getEjb();
+
+            // if an EJB is annotated with "@javax.jws.WebService"
+            // then no business interface is needed, see issue #147512
+            if (JavaUtils.hasAnnotation(ctx.getClazz(), EJBAPIAnnotations.WEB_SERVICE)){
+                return null;
+            }
+            
             Collection<TypeElement> localInterfaces = new ArrayList<TypeElement>();
             Collection<TypeElement> remoteInterfaces = new ArrayList<TypeElement>();
             

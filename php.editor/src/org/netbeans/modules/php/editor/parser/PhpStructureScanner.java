@@ -63,6 +63,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -106,9 +107,10 @@ public class PhpStructureScanner implements StructureScanner {
             if (program.getStatements().size() == 1) {
                 // check whether the ast is broken.
                 if (program.getStatements().get(0) instanceof ASTError) {
-                    Object lastCorrect = info.getDocument().getProperty(LAST_CORRECT_FOLDING_PROPERTY);
+                    @SuppressWarnings("unchecked")
+                    Map<String, List<OffsetRange>> lastCorrect = (Map<String, List<OffsetRange>>) info.getDocument().getProperty(LAST_CORRECT_FOLDING_PROPERTY);
                     if (lastCorrect != null){
-                        return ( Map<String, List<OffsetRange>>)lastCorrect;
+                        return lastCorrect;
                     }
                     else {
                         return Collections.emptyMap();
@@ -284,6 +286,32 @@ public class PhpStructureScanner implements StructureScanner {
                 this.children = Collections.emptyList();
             }
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            boolean thesame = false;
+            if (obj instanceof PHPStructureItem) {
+                PHPStructureItem item = (PHPStructureItem)obj;
+                if (item.getName() != null && this.getName() != null) {
+                    thesame = item.elementHandle.getName().equals(elementHandle.getName())
+                            && item.elementHandle.getASTNode().getStartOffset() == elementHandle.getASTNode().getStartOffset();
+                }
+            }
+            return thesame;
+        }
+
+        @Override
+        public int hashCode() {
+            //int hashCode = super.hashCode();
+            int hashCode = 11;
+            if (getName() != null) {
+                hashCode = 31 * getName().hashCode() + hashCode;
+            }
+            hashCode = (int) (31 * getPosition() + hashCode);
+            return hashCode;
+        }
+
+
 
         public String getName() {
             return elementHandle.getName();
@@ -509,7 +537,7 @@ public class PhpStructureScanner implements StructureScanner {
         @Override
         public ImageIcon getCustomIcon() {
             if (INTERFACE_ICON == null) {
-                INTERFACE_ICON = new ImageIcon(org.openide.util.Utilities.loadImage(PHP_INTERFACE_ICON));
+                INTERFACE_ICON = new ImageIcon(ImageUtilities.loadImage(PHP_INTERFACE_ICON));
             }
             return INTERFACE_ICON;
         }

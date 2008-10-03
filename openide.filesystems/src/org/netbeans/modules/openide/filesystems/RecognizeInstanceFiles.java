@@ -111,7 +111,10 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             return r;
         }
         
-        private void refresh() {
+        private void refresh(FileEvent ev) {
+            if (!(ev.getFile().getPath() + "/").startsWith(path)) {
+                return;
+            }
             List<FOItem> items = new ArrayList<FOItem>();
             Lookup[] delegates = computeDelegates(path, items, lkp);
             this.content.setPairs(order(items));
@@ -139,27 +142,27 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
         }
     
         public void fileFolderCreated(FileEvent fe) {
-            refresh();
+            refresh(fe);
         }
 
         public void fileDataCreated(FileEvent fe) {
-            refresh();
+            refresh(fe);
         }
 
         public void fileChanged(FileEvent fe) {
-            refresh();
+            refresh(fe);
         }
 
         public void fileDeleted(FileEvent fe) {
-            refresh();
+            refresh(fe);
         }
 
         public void fileRenamed(FileRenameEvent fe) {
-            refresh();
+            refresh(fe);
         }
 
         public void fileAttributeChanged(FileAttributeEvent fe) {
-            refresh();
+            refresh(fe);
         }
     } // end of OverFiles
     

@@ -38,6 +38,11 @@
  */
 package org.netbeans.modules.css.gsf;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTree;
 import org.netbeans.modules.css.parser.CssParserResultHolder;
 import java.io.IOException;
 import java.io.StringReader;
@@ -103,6 +108,8 @@ public class CSSGSFParser implements Parser, PositionManager {
 
                 result = new CSSParserResult(this, file, css_result.root());
 
+//                debugParserResult(result);
+                
                 for (Error error : css_result.errors(file)) {
                     job.listener.error(error);
                 }
@@ -144,8 +151,31 @@ public class CSSGSFParser implements Parser, PositionManager {
             return new OffsetRange(AstUtils.documentPosition(handle.node().startOffset(), source), 
                     AstUtils.documentPosition(handle.node().endOffset(), source));
         } else {
-            throw new IllegalArgumentException((("Foreign element: " + object + " of type " +
-                    object) != null) ? object.getClass().getName() : "null"); //NOI18N
+            throw new IllegalArgumentException("Foreign element: " + object + " of type " +
+                    ((object != null) ? object.getClass().getName() : "null")); //NOI18N
         }
     }
+    
+    private static JFrame debugFrame = null;
+    private static JPanel debugPanel = null;
+
+    private void debugParserResult(ParserResult result) {
+        if (debugFrame == null) {
+            debugFrame = new JFrame("css ast view"); //NOI18N
+            debugPanel = new JPanel(new BorderLayout());
+            debugPanel.setPreferredSize(new Dimension(400, 800));
+            debugFrame.setContentPane(debugPanel);
+            debugFrame.setVisible(true);
+        }
+
+        JTree tree = new JTree(result.getAst());
+        debugPanel.removeAll();
+        debugPanel.add(tree, BorderLayout.CENTER);
+        for (int i = 0; i < tree.getRowCount(); i++) {
+            tree.expandRow(i);
+        }
+        debugFrame.pack();
+        
+    }
+    
 }
