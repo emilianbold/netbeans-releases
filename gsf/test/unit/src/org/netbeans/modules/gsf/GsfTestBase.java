@@ -2609,7 +2609,7 @@ public abstract class GsfTestBase extends NbTestCase {
         org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
     }
     
-    public void checkComputeMethodCall(String file, String caretLine, String fqn, String param, boolean expectSuccess) throws Exception {
+    public void checkComputeMethodCall(String file, String caretLine, String param, boolean expectSuccess) throws Exception {
         initializeClassPaths();
         
         QueryType type = QueryType.COMPLETION;
@@ -2629,7 +2629,7 @@ public abstract class GsfTestBase extends NbTestCase {
         assertNotNull(pr);
         
         CodeCompletionHandler cc = getCodeCompleter();
-        assertNotNull("getSemanticAnalyzer must be implemented", cc);
+        assertNotNull("getCodeCompleter must be implemented", cc);
 
         boolean upToOffset = type == QueryType.COMPLETION;
         String prefix = cc.getPrefix(ci, caretOffset, upToOffset);
