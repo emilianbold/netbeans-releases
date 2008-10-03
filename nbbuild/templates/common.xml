@@ -122,11 +122,13 @@ made subject to such option by the copyright holder.
         <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
             <classpath refid="cp"/>
         </depend>
-        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" encoding="UTF-8"
+        <custom-javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" encoding="UTF-8"
                 deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false">
+            <bootclasspath path="${nbjdk.bootclasspath}"/>
             <classpath refid="cp"/>
             <compilerarg line="${javac.compilerargs}"/>
-        </javac>
+            <javacclasspath refid="javacimpl"/>
+        </custom-javac>
         <!-- Sanity check: -->
         <pathconvert pathsep=":" property="class.files.in.src">
             <path>
@@ -158,12 +160,14 @@ made subject to such option by the copyright holder.
         <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
             <classpath refid="cp"/>
         </depend>
-        <javac srcdir="${src.dir}" destdir="${build.classes.dir}"
+        <custom-javac srcdir="${src.dir}" destdir="${build.classes.dir}"
                debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
                source="${javac.source}" target="${javac.target}" includes="${javac.includes}" optimize="${build.compiler.optimize}" includeantruntime="false">
+            <bootclasspath path="${nbjdk.bootclasspath}"/>
             <classpath refid="cp"/>
             <compilerarg line="${javac.compilerargs}"/>
-        </javac>
+            <javacclasspath refid="javacimpl"/>
+        </custom-javac>
     </target>
 
     <target name="jar-prep" depends="init">
@@ -424,12 +428,14 @@ made subject to such option by the copyright holder.
                 <classpath refid="test.@{test.type}.cp"/>
             </depend>
             <property name="test.excludes" value=""/> <!-- # 113770 -->
-            <javac srcdir="${test.@{test.type}.src.dir}" destdir="${build.test.@{test.type}.classes.dir}" excludes="${test.excludes}"
+            <custom-javac srcdir="${test.@{test.type}.src.dir}" destdir="${build.test.@{test.type}.classes.dir}" excludes="${test.excludes}"
                    debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
                    source="${javac.source}" target="${javac.target}" optimize="${build.compiler.optimize}" includeantruntime="false">
+                <bootclasspath path="${nbjdk.bootclasspath}"/>
                 <classpath refid="test.@{test.type}.cp"/>
                 <compilerarg line="${javac.compilerargs}"/>
-            </javac>
+                <javacclasspath refid="javacimpl"/>
+            </custom-javac>
             <copy todir="${build.test.@{test.type}.classes.dir}">
                 <fileset dir="${test.@{test.type}.src.dir}">
                     <exclude name="**/*.java"/>
@@ -488,12 +494,14 @@ made subject to such option by the copyright holder.
                 <depend srcdir="${test.@{test.type}.src.dir}" destdir="${build.test.@{test.type}.classes.dir}" cache="${build.test.@{test.type}.dir}/depcache">
                     <classpath refid="test.@{test.type}.cp"/>
                 </depend>
-                <javac srcdir="${test.@{test.type}.src.dir}" destdir="${build.test.@{test.type}.classes.dir}"
+                <custom-javac srcdir="${test.@{test.type}.src.dir}" destdir="${build.test.@{test.type}.classes.dir}"
                        debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
                        source="${javac.source}" target="${javac.target}" includeantruntime="false" optimize="${build.compiler.optimize}" includes="${javac.includes}">
+                    <bootclasspath path="${nbjdk.bootclasspath}"/>
                     <classpath refid="test.@{test.type}.cp"/>
                     <compilerarg line="${javac.compilerargs}"/>
-                </javac>
+                    <javacclasspath refid="javacimpl"/>
+                </custom-javac>
                 <copy todir="${build.test.@{test.type}.classes.dir}">
                     <fileset dir="${test.@{test.type}.src.dir}">
                         <exclude name="**/*.java"/>

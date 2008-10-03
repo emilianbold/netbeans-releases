@@ -161,6 +161,13 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <property name="locjhindexer.locales" value="${locales}"/>
         <property name="locmakenbm.locales" value="${locales}"/>
         <property name="locmakenbm.brands" value="${brandings}"/>
+        <path id="javacimpl">
+            <fileset dir="${nb_all}">
+                <include name="libs.javacapi/external/javac*.jar"/>
+                <include name="libs.javacimpl/external/javac*.jar"/>
+            </fileset>
+        </path>
+        <taskdef name="custom-javac" classname="org.netbeans.nbbuild.CustomJavac" classpath="${nb_all}/nbbuild/nbantext.jar"/>
     </target>
 
     <!-- See: http://wiki.netbeans.org/wiki/view/DevFaqExternalLibrariesUpdated -->

@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 
     <import file="../nbbuild/templates/projectized.xml"/>
 
-    <target name="nbantext" depends="init">
+    <target name="nbantext" depends="build-init">
         <jar jarfile="${cluster}/tasks.jar" compress="${build.package.compress}" index="${build.package.index}">
             <manifest>
                 <attribute name="NetBeans-Own-Library" value="true"/>
@@ -55,10 +55,22 @@ made subject to such option by the copyright holder.
         </jar>
     </target>
 
-    <target name="netbeans-extra" depends="init,nbantext,jar-jnlp-launcher">
+    <target name="netbeans-extra" depends="nbantext,jar-jnlp-launcher">
         <copy file="${nb_all}/nbbuild/templates/common.xml" tofile="${cluster}/common.xml"/>
         <copy file="${nb_all}/nbbuild/jdk.xml" tofile="${cluster}/jdk.xml"/>
-        <copy file="external/jsearch-2.0_05.jar" todir="${cluster}"/>
+        <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
+            <manifest dir="..">
+                <include name="libs.javacapi/external/binaries-list"/>
+                <include name="libs.javacimpl/external/binaries-list"/>
+            </manifest>
+        </downloadbinaries>
+        <copy todir="${cluster}/antlib">
+            <fileset dir="..">
+                <include name="apisupport.harness/external/jsearch*.jar"/>
+                <include name="libs.javacapi/external/javac*.jar"/>
+                <include name="libs.javacimpl/external/javac*.jar"/>
+            </fileset>
+        </copy>
     </target>
  
     <target name="compile-jnlp-launcher" depends="init,compile">
