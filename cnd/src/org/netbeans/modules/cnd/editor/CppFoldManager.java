@@ -49,22 +49,22 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
-import org.netbeans.api.editor.fold.FoldType;
-import org.netbeans.editor.SettingsChangeEvent;
-import org.netbeans.editor.SettingsChangeListener;
-import org.netbeans.editor.SettingsUtil;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.cnd.editor.parser.CppFile;
 import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
 import org.netbeans.modules.cnd.editor.parser.CppMetaModel;
 import org.netbeans.modules.cnd.editor.parser.ParsingEvent;
 import org.netbeans.modules.cnd.editor.parser.ParsingListener;
+import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldManager;
@@ -83,7 +83,7 @@ import org.openide.util.RequestProcessor;
  */
 
 final class CppFoldManager extends CppFoldManagerBase
-	implements SettingsChangeListener, Runnable, ParsingListener {
+	implements Runnable, ParsingListener {
 
     private FoldOperation operation;
 
@@ -338,9 +338,20 @@ final class CppFoldManager extends CppFoldManagerBase
     // Implementing FoldManager...
     /** Initialize this manager */
     public void init(FoldOperation operation) {
-	this.operation = operation;
-        settingsChange(null);
-        
+        this.operation = operation;
+        EditorKit kit = org.netbeans.editor.Utilities.getKit(operation.getHierarchy().getComponent());
+        if (kit instanceof NbEditorKit) {
+            String contentType = ((NbEditorKit)kit).getContentType();
+            if (contentType != null) {
+                Preferences prefs = MimeLookup.getLookup(contentType).lookup(Preferences.class);
+                if (prefs != null) {
+                    foldInitialCommentsPreset =  prefs.getBoolean(CODE_FOLDING_COLLAPSE_INITIAL_COMMENT, false);
+                    foldIncludesPreset = prefs.getBoolean(CODE_FOLDING_COLLAPSE_IMPORT, false);
+                    foldCodeBlocksPreset = prefs.getBoolean(CODE_FOLDING_COLLAPSE_METHOD, false);
+                    foldCommentPreset = prefs.getBoolean(CODE_FOLDING_COLLAPSE_JAVADOC, false);
+                }
+            }
+        }
     }
 
     public void initFolds(FoldHierarchyTransaction transaction) {
@@ -420,14 +431,6 @@ final class CppFoldManager extends CppFoldManagerBase
 		}
 	    }
 	}
-    }
-
-    public void settingsChange(SettingsChangeEvent evt) {
-        Class kitClass = org.netbeans.editor.Utilities.getKitClass(operation.getHierarchy().getComponent());
-        foldInitialCommentsPreset =  SettingsUtil.getBoolean(kitClass, CODE_FOLDING_COLLAPSE_INITIAL_COMMENT, false);
-        foldIncludesPreset = SettingsUtil.getBoolean(kitClass,CODE_FOLDING_COLLAPSE_IMPORT, false);
-        foldCodeBlocksPreset = SettingsUtil.getBoolean(kitClass,CODE_FOLDING_COLLAPSE_METHOD, false);
-        foldCommentPreset = SettingsUtil.getBoolean(kitClass,CODE_FOLDING_COLLAPSE_JAVADOC, false);     
     }
 
     // Worker classes...

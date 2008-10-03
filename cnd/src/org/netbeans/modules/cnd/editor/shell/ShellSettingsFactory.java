@@ -39,30 +39,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.fortran;
-import java.beans.*;
-import java.awt.Image;
-import java.util.ResourceBundle;
-import org.netbeans.modules.editor.options.*;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.cnd.editor.shell;
 
-/** BeanInfo for plain options
-*/
-public class FPrintOptionsBeanInfo extends BasePrintOptionsBeanInfo {
+import org.netbeans.editor.Acceptor;
 
-    public FPrintOptionsBeanInfo() {
-        super("/org/netbeans/modules/cnd/editor/fortran/FortranIcon"); //NOI18N
+/**
+ * Settings factory for shell files.
+ */
+public class ShellSettingsFactory {
+
+    private static final Acceptor INDENT_HOT_CHARS_ACCEPTOR = new Acceptor() {
+        public boolean accept(char ch) {
+            switch (ch) {
+                case '}':
+                    return true;
+            }
+            return false;
+        }
+    };
+
+    public static Acceptor getIndentHotCharsAcceptor() {
+        return INDENT_HOT_CHARS_ACCEPTOR;
     }
-
-    public FPrintOptionsBeanInfo(String iconPrefix) {
-        super(iconPrefix);
-    }
-
-
-    protected Class getBeanClass() {
-        return FPrintOptions.class;
-    }
-
 
 }
-

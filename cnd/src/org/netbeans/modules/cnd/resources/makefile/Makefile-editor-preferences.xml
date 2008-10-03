@@ -45,6 +45,7 @@ made subject to such option by the copyright holder.
 <editor-preferences>
     <entry name="word-match-match-case" value="true" javaType="java.lang.Boolean" />
     <entry name="word-match-static-words" value="Exception IntrospectionException FileNotFoundException IOException ArrayIndexOutOfBoundsException ClassCastException ClassNotFoundException CloneNotSupportedException NullPointerException NumberFormatException SQLException IllegalAccessException IllegalArgumentException" javaType="java.lang.String" />
-    <entry name="abbrev-reset-acceptor" value="org.netbeans.modules.cnd.editor.makefile.MakefileSettingsInitializer.getAbbrevResetAcceptor" javaType="methodvalue" />
-    <entry name="token-context-list" value="org.netbeans.modules.cnd.editor.makefile.MakefileSettingsInitializer.getTokenContext" javaType="methodvalue" />
+    <entry name="abbrev-reset-acceptor" value="org.netbeans.modules.cnd.editor.makefile.MakefileSettingsFactory.getAbbrevResetAcceptor" javaType="methodvalue" />
+    <entry name="token-context-list" value="org.netbeans.modules.cnd.editor.makefile.MakefileSettingsFactory.getTokenContext" javaType="methodvalue" />
+    <entry name="indentEngine" value="org.netbeans.modules.cnd.editor.makefile.MakefileSettingsFactory.getIndentEngine" javaType="methodvalue" />
 </editor-preferences>

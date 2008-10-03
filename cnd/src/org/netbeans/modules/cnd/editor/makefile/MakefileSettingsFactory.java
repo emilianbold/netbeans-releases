@@ -43,17 +43,26 @@ package org.netbeans.modules.cnd.editor.makefile;
 
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.editor.*;
+import org.netbeans.editor.Acceptor;
+import org.netbeans.editor.AcceptorFactory;
+import org.netbeans.editor.TokenContext;
+import org.openide.text.IndentEngine;
 
 /**
  * Extended settings for Makefile.
  */
-public class MakefileSettingsInitializer {
+public class MakefileSettingsFactory {
+
     public static Acceptor getAbbrevResetAcceptor() {
-        return SettingsDefaults.defaultAbbrevResetAcceptor;
+        return AcceptorFactory.NON_JAVA_IDENTIFIER;
     }
-    
+
     public static List<? extends TokenContext> getTokenContext() {
         return Collections.singletonList(MakefileTokenContext.context);
     }
+
+    public static IndentEngine getIndentEngine() {
+        return new MakefileIndentEngine();
+    }
+
 }
