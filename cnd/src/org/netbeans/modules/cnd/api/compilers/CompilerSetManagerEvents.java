@@ -67,11 +67,12 @@ public class CompilerSetManagerEvents {
 
     public CompilerSetManagerEvents(String hkey) {
         this.hkey = hkey;
+        this.isCodeModelInfoReady = CompilerSetManager.getDefault(hkey).isComplete();
     }
 
     private final String hkey;
 
-    private boolean isCodeModelInfoReady = false;
+    private boolean isCodeModelInfoReady;
     private List<Runnable> tasks = new ArrayList<Runnable>();
 
     public void runOnCodeModelReadiness(Runnable task) {

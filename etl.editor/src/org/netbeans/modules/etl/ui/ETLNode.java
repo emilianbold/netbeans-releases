@@ -47,6 +47,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** A node to represent this object. */
@@ -55,9 +56,9 @@ public class ETLNode extends DataNode implements PropertyChangeListener {
     public static final int VALID = 1;
     public static final int ERROR = 0;
     public static final int WARNING = 2;
-    static Image eTLImg = Utilities.loadImage("org/netbeans/modules/etl/ui/resources/images/ETLDefinition.png");
-    static Image errorImg = Utilities.loadImage("org/netbeans/modules/etl/ui/resources/images/ETLDefinitionError.png");
-    static Image warningImg = Utilities.loadImage("org/netbeans/modules/etl/ui/resources/images/ETLDefinitionWarning.png");
+    static Image eTLImg = ImageUtilities.loadImage("org/netbeans/modules/etl/ui/resources/images/ETLDefinition.png");
+    static Image errorImg = ImageUtilities.loadImage("org/netbeans/modules/etl/ui/resources/images/ETLDefinitionError.png");
+    static Image warningImg = ImageUtilities.loadImage("org/netbeans/modules/etl/ui/resources/images/ETLDefinitionWarning.png");
     private ETLDataObject dObj;
     private int state = VALID;
     private static transient final Logger mLogger = Logger.getLogger(ETLNode.class.getName());
@@ -114,9 +115,9 @@ public class ETLNode extends DataNode implements PropertyChangeListener {
         Image img = eTLImg;
         try {
             if (state == ERROR) {
-                img = Utilities.mergeImages(eTLImg, errorImg, 1, 0);
+                img = ImageUtilities.mergeImages(eTLImg, errorImg, 1, 0);
             } else if (state == WARNING) {
-                img = Utilities.mergeImages(eTLImg, warningImg, 1, 0);
+                img = ImageUtilities.mergeImages(eTLImg, warningImg, 1, 0);
             }
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);

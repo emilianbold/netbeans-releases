@@ -8,11 +8,9 @@ import java.awt.Component;
 import java.awt.Dialog;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -38,11 +36,12 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.api.EncodingUtil;
+import org.netbeans.modules.xml.lib.GuiUtil;
 import org.netbeans.modules.xml.schema.SchemaDataObject;
 import org.netbeans.modules.xml.text.TextEditorSupport;
 import org.netbeans.modules.xml.wizard.AbstractPanel;
 import org.netbeans.modules.xml.wizard.DocumentModel;
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.wizard.SchemaParser;
 import org.netbeans.modules.xml.wizard.XMLContentPanel;
 import org.netbeans.modules.xml.wizard.XMLGeneratorVisitor;
 import org.openide.DialogDisplayer;
@@ -202,7 +201,7 @@ public final class SampleXMLGeneratorWizardIterator implements WizardDescriptor.
                
         Set set = new HashSet(1);                
         DataObject createdObject = DataObject.find(fileObject[0]);        
-        Util.performDefaultAction(createdObject);
+        GuiUtil.performDefaultAction(createdObject);
         set.add(createdObject); 
         
         formatXML(fileObject[0]);
@@ -237,7 +236,7 @@ public final class SampleXMLGeneratorWizardIterator implements WizardDescriptor.
         
         xmlPanel.setObject(model);
         model.setPrefix(PREFIX);
-        String ns = Util.getNamespace(schemaFileObject);
+        String ns = SchemaParser.getNamespace(schemaFileObject);
         model.setNamespace(ns);   
     }
 

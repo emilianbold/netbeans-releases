@@ -50,6 +50,7 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.grammar.AbstractSchemaBasedGrammar.MyTextElement;
 import org.jdom.Element;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
+import org.netbeans.modules.xml.api.model.GrammarResult;
 import org.netbeans.modules.xml.api.model.HintContext;
 
 /**
@@ -69,7 +70,7 @@ public class MavenNbmGrammar extends AbstractSchemaBasedGrammar {
     
 
     @Override
-    protected Enumeration getDynamicValueCompletion(String path, HintContext hintCtx, Element lowestParent) {
+    protected Enumeration<GrammarResult> getDynamicValueCompletion(String path, HintContext hintCtx, Element lowestParent) {
         if ("/nbm/dependencies/dependency/type".equals(path)) { //NOI18N
             return createTextValueList(new String[] {
                 "spec", //NOI18N
@@ -88,12 +89,13 @@ public class MavenNbmGrammar extends AbstractSchemaBasedGrammar {
         if ("/nbm/dependencies/dependency/id".equals(path) || //NOI18N
             "/nbm/libraries/library".equals(path)) { //NOI18N
             //TODO could be nice to filter out the dependencies that are already being used..
-            List<MyTextElement> toRet = new ArrayList<MyTextElement>();
+            List<GrammarResult> toRet = new ArrayList<GrammarResult>();
             MavenProject project = getMavenProject();
             if (project != null) {
-                Iterator it = project.getCompileDependencies().iterator();
+                @SuppressWarnings("unchecked")
+                Iterator<Dependency> it = project.getCompileDependencies().iterator();
                 while (it.hasNext()) {
-                    Dependency elem = (Dependency) it.next();
+                    Dependency elem = it.next();
                     String str = elem.getGroupId() + ":" + elem.getArtifactId(); //NOI18N
                     if (str.startsWith(hintCtx.getCurrentPrefix())) {
                         toRet.add(new MyTextElement(str, hintCtx.getCurrentPrefix()));

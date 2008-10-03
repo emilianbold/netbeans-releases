@@ -14,6 +14,8 @@
     <property name="nbClusterDir" value="nb6.5"/>      
 
     <property name="appversion" value="Development Version"/>
+    <property name="nb.display.version.long"  value="Development Version ${buildnumber}"/>
+    <property name="nb.display.version.short" value="Dev"/>
     
     <!-- Tomcat properties   -->    
     <property name="tomcat.version" value="6.0.18"/>

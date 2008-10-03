@@ -106,7 +106,7 @@ public abstract class AstElement extends RubyElement {
         //        if (children == null) {
         //            children = new ArrayList<AstElement>();
         //
-        //            for (Node child : (List<Node>)node.childNodes()) {
+        //            for (Node child : node.childNodes()) {
         //                addInterestingChildren(this, children, child);
         //            }
         //        }

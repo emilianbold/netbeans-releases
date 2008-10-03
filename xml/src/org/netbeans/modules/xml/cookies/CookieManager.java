@@ -48,7 +48,7 @@ import java.util.Iterator;
 import org.openide.nodes.CookieSet;
 import org.openide.loaders.DataObject;
 
-import org.netbeans.modules.xml.lib.LookupManager;
+import org.netbeans.modules.xml.util.LookupManager;
 
 /**
  * @author Libor Kramolis

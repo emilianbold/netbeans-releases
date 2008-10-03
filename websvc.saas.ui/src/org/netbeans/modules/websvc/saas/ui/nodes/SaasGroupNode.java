@@ -44,6 +44,7 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 import java.awt.datatransfer.Transferable;
 import java.util.List;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction; 
 import java.awt.Image;
 import java.io.File;
@@ -131,7 +132,7 @@ public class SaasGroupNode extends AbstractNode {
         if (standardFolderImage != null) {
             return standardFolderImage;
         }
-        return Utilities.loadImage("org/netbeans/modules/websvc/saas/resources/folder-closed.png");
+        return ImageUtilities.loadImage("org/netbeans/modules/websvc/saas/resources/folder-closed.png");
     }
     
     @Override
@@ -144,7 +145,7 @@ public class SaasGroupNode extends AbstractNode {
         if (standardFolderImage != null) {
             return standardFolderImage;
         }
-        return Utilities.loadImage("org/netbeans/modules/websvc/saas/resources/folder-open.png");
+        return ImageUtilities.loadImage("org/netbeans/modules/websvc/saas/resources/folder-open.png");
     }
 
     @Override

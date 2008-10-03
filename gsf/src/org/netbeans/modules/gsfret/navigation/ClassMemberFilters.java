@@ -54,6 +54,7 @@ import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsfret.navigation.ElementNode.Description;
 import org.netbeans.modules.gsfret.navigation.base.FiltersDescription;
 import org.netbeans.modules.gsfret.navigation.base.FiltersManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -170,21 +171,21 @@ public final class ClassMemberFilters {
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowFields"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowFieldsTip"),     //NOI18N
                 true,
-                new ImageIcon (Utilities.loadImage("org/netbeans/modules/gsfret/navigation/resources/filterHideFields.gif")), //NOI18N
+                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/gsfret/navigation/resources/filterHideFields.gif")), //NOI18N
                 null
         );
         desc.addFilter(SHOW_STATIC,
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowStatic"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowStaticTip"),     //NOI18N
                 true,
-                new ImageIcon (Utilities.loadImage("org/netbeans/modules/gsfret/navigation/resources/filterHideStatic.png")), //NOI18N
+                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/gsfret/navigation/resources/filterHideStatic.png")), //NOI18N
                 null
         );
         desc.addFilter(SHOW_NON_PUBLIC,
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowNonPublic"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowNonPublicTip"),     //NOI18N
                 true,
-                new ImageIcon (Utilities.loadImage("org/netbeans/modules/gsfret/navigation/resources/filterHideNonPublic.png")), //NOI18N
+                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/gsfret/navigation/resources/filterHideNonPublic.png")), //NOI18N
                 null
         );
         

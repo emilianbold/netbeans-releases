@@ -568,6 +568,10 @@ public class Utilities {
             oldTokens.removeAll (newTokens);
             // handle diff
             for (String tok : oldTokens) {
+                // don't care about provider of platform dependency here
+                if (tok.startsWith ("org.openide.modules.os")) { // NOI18N
+                    continue;
+                }
                 Collection<Dependency> deps = new HashSet<Dependency> (Dependency.create (Dependency.TYPE_REQUIRES, tok));
                 deps.addAll (Dependency.create (Dependency.TYPE_NEEDS, tok));
                 for (Dependency d : deps) {

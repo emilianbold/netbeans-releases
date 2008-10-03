@@ -51,6 +51,7 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.Resolver;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -79,7 +80,7 @@ public final class ElementSupport {
         
         private ElementResolver(String propertyName, String iconResource) {
             this.propertyName = propertyName;
-            this.icon = Utilities.loadImage (iconResource);
+            this.icon = ImageUtilities.loadImage (iconResource);
         }
         
         public DesignEventFilter getEventFilter(DesignComponent component) {

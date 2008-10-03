@@ -99,7 +99,7 @@ NodeActionsProviderFilter, TableModel, Constants {
     ) throws UnknownTypeException {
         if (o instanceof ThreadWithBordel) {
             try {
-                JPDAThread t = ((ThreadWithBordel) o).originalThread;
+                JPDAThread t = ((ThreadWithBordel) o).getOriginalThread();
                 ObjectVariable contended = t.getContendedMonitor ();
                 ObjectVariable[] owned = t.getOwnedMonitors ();
                 Object cm = null;
@@ -136,8 +136,7 @@ NodeActionsProviderFilter, TableModel, Constants {
                     if (t.getContendedMonitor () == null &&
                         t.getOwnedMonitors ().length == 0
                     ) continue;
-                    ThreadWithBordel twb = new ThreadWithBordel ();
-                    twb.originalThread = t;
+                    ThreadWithBordel twb = new ThreadWithBordel (t);
                     ch [i] = twb;
                 } catch (ObjectCollectedException e) {
                 } catch (VMDisconnectedException e) {
@@ -178,7 +177,7 @@ NodeActionsProviderFilter, TableModel, Constants {
         }
         if (o instanceof ThreadWithBordel) {
             return model.getChildrenCount (
-                ((ThreadWithBordel) o).originalThread
+                ((ThreadWithBordel) o).getOriginalThread()
             );
         }
         if (o instanceof OwnedMonitors) {
@@ -213,7 +212,7 @@ NodeActionsProviderFilter, TableModel, Constants {
         } else
         if (o instanceof ThreadWithBordel) {
             return model.getDisplayName (
-                ((ThreadWithBordel) o).originalThread
+                ((ThreadWithBordel) o).getOriginalThread()
             );
         }
         if (o instanceof OwnedMonitors) {
@@ -256,7 +255,7 @@ NodeActionsProviderFilter, TableModel, Constants {
                 if (o instanceof ThreadWithBordel) {
                     try {
                         shortDescription = model.getShortDescription (
-                            ((ThreadWithBordel) o).originalThread
+                            ((ThreadWithBordel) o).getOriginalThread()
                         );
                     } catch (UnknownTypeException utex) {
                         shortDescription = utex;
@@ -300,7 +299,7 @@ NodeActionsProviderFilter, TableModel, Constants {
         } else
         if (o instanceof ThreadWithBordel) {
             return model.getIconBase (
-                ((ThreadWithBordel) o).originalThread
+                ((ThreadWithBordel) o).getOriginalThread()
             );
         }
         if (o instanceof OwnedMonitors) {
@@ -347,7 +346,7 @@ NodeActionsProviderFilter, TableModel, Constants {
         } else
         if (o instanceof ThreadWithBordel) {
             return model.getActions (
-                ((ThreadWithBordel) o).originalThread
+                ((ThreadWithBordel) o).getOriginalThread()
             );
         }
         if (o instanceof ObjectVariable) {
@@ -366,7 +365,7 @@ NodeActionsProviderFilter, TableModel, Constants {
         } else
         if (o instanceof ThreadWithBordel) {
             model.performDefaultAction (
-                ((ThreadWithBordel) o).originalThread
+                ((ThreadWithBordel) o).getOriginalThread()
             );
             return;
         }
@@ -432,6 +431,31 @@ NodeActionsProviderFilter, TableModel, Constants {
     }
     
     static class ThreadWithBordel {
-        JPDAThread originalThread;
+        private JPDAThread originalThread;
+
+        ThreadWithBordel(JPDAThread orig) {
+            this.originalThread = orig;
+        }
+
+        public JPDAThread getOriginalThread() {
+            return originalThread;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof ThreadWithBordel)) {
+                return false;
+            }
+            final ThreadWithBordel other = (ThreadWithBordel) obj;
+            return originalThread.equals(other.originalThread);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 59 * hash + (this.originalThread != null ? this.originalThread.hashCode() : 0);
+            return hash;
+        }
+
     }
 }

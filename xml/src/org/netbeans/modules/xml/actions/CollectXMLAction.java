@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.xml.actions;
 
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 import org.openide.util.HelpCtx;
 
 /**

@@ -302,6 +302,10 @@ public class HTMLCompletionQuery  {
                     elem = sup.getElementChain(offset - 1);
                 }
                 
+                if( elem == null ) {
+                    return null;
+                }
+                
                 if( elem.getType() == SyntaxElement.TYPE_TAG ) { // not endTags
                     SyntaxElement.Tag tagElem = (SyntaxElement.Tag)elem;
                     

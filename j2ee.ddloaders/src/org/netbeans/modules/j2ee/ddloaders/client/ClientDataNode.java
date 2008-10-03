@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.ddloaders.client;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.openide.loaders.DataNode;
@@ -61,9 +62,9 @@ public class ClientDataNode extends DataNode {
     
     private static final String DEPLOYMENT = "deployment"; // NOI18N
     private static final java.awt.Image ERROR_BADGE = 
-        org.openide.util.Utilities.loadImage( "org/netbeans/modules/j2ee/ddloaders/client/error-badge.gif" ); //NOI18N
+        ImageUtilities.loadImage( "org/netbeans/modules/j2ee/ddloaders/client/error-badge.gif" ); //NOI18N
     private static final java.awt.Image CLIETN_XML = 
-        org.openide.util.Utilities.loadImage( "org/netbeans/modules/j2ee/ddloaders/client/DDDataIcon.gif" ); //NOI18N
+        ImageUtilities.loadImage( "org/netbeans/modules/j2ee/ddloaders/client/DDDataIcon.gif" ); //NOI18N
  
     private ClientDataObject dataObject;
    
@@ -148,7 +149,7 @@ public class ClientDataNode extends DataNode {
         if (dataObject.getSaxError()==null)
             return CLIETN_XML;
         else 
-            return org.openide.util.Utilities.mergeImages(CLIETN_XML, ERROR_BADGE, 6, 6);
+            return ImageUtilities.mergeImages(CLIETN_XML, ERROR_BADGE, 6, 6);
     }
     
     public String getShortDescription() {

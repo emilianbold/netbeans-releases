@@ -311,6 +311,226 @@ public class OccurrencesFinderImplTest extends TestBase {
                 );
         performTestOccurrences(gotoTypeTest, false);
     }
+    public void testMarkArray() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "private static $static_array = array('', 'thousand ', 'million ', 'billion ');",
+                "private static $^stat|ic_array^ = array('', 'thousand ', 'million ', 'billion ');",
+                "$result .= self::$static_array[$idx++];",
+                "$result .= self::$^static_array^[$idx++];",
+                "$result .= self::$static_array[$instance_array[$idx]];",
+                "$result .= self::$^static_array^[$instance_array[$idx]];"
+                );
+        performTestOccurrences(gotoTypeTest, false);
+    }
+    public void testMarkArray2() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "private static $static_array = array('', 'thousand ', 'million ', 'billion ');",
+                "private static $^static_array^ = array('', 'thousand ', 'million ', 'billion ');",
+                "$result .= self::$static_array[$idx++];",
+                "$result .= self::$^static_array^[$idx++];",
+                "$result .= self::$static_array[$instance_array[$idx]];",
+                "$result .= self::$^st|atic_array^[$instance_array[$idx]];"
+                );
+        performTestOccurrences(gotoTypeTest, false);
+    }
+    public void testMarkArray3() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "private $field_array = array('', 'thousand ', 'million ', 'billion ');",
+                "private $^fi|eld_array^ = array('', 'thousand ', 'million ', 'billion ');",
+                "$result .= $this->field_array[$idx++];",
+                "$result .= $this->^field_array^[$idx++];",
+                "$result .= $this->field_array[$instance_array[$idx]];",
+                "$result .= $this->^field_array^[$instance_array[$idx]];",
+                "$result .= $this->field_array[$instance_array[$GLOBALS['name']]];",
+                "$result .= $this->^field_array^[$instance_array[$GLOBALS['name']]];"
+                );
+        performTestOccurrences(gotoTypeTest, false);
+    }
+    public void testMarkArray4() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "private $field_array = array('', 'thousand ', 'million ', 'billion ');",
+                "private $^field_array^ = array('', 'thousand ', 'million ', 'billion ');",
+                "$result .= $this->field_array[$idx++];",
+                "$result .= $this->^field_array^[$idx++];",
+                "$result .= $this->field_array[$instance_array[$idx]];",
+                "$result .= $this->^fiel|d_array^[$instance_array[$idx]];",
+                "$result .= $this->field_array[$instance_array[$GLOBALS['name']]];",
+                "$result .= $this->^field_array^[$instance_array[$GLOBALS['name']]];"                
+                );
+        performTestOccurrences(gotoTypeTest, false);
+    }
+    public void testMarkArray5() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$instance_array = array('', 'thousand ', 'million ', 'billion ');",
+                "$^instance_a|rray^ = array('', 'thousand ', 'million ', 'billion ');",
+                "$instance_array[$idx];",
+                "$^instance_array^[$idx];",
+                "$result .= self::$static_array[$instance_array[$idx]];",
+                "$result .= self::$static_array[$^instance_array^[$idx]];",
+                "$result .= $this->field_array[$instance_array[$idx]];",
+                "$result .= $this->field_array[$^instance_array^[$idx]];",
+                "$result .= $this->field_array[$instance_array[$GLOBALS['name']]];",
+                "$result .= $this->field_array[$^instance_array^[$GLOBALS['name']]];"
+                );
+        performTestOccurrences(gotoTypeTest, false);
+    }
+    public void testMarkArray6() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$instance_array = array('', 'thousand ', 'million ', 'billion ');",
+                "$^instance_array^ = array('', 'thousand ', 'million ', 'billion ');",
+                "$instance_array[$idx];",
+                "$^instance_array^[$idx];",
+                "$result .= self::$static_array[$instance_array[$idx]];",
+                "$result .= self::$static_array[$^instanc|e_array^[$idx]];",
+                "$result .= $this->field_array[$instance_array[$idx]];",
+                "$result .= $this->field_array[$^instance_array^[$idx]];",
+                "$result .= $this->field_array[$instance_array[$GLOBALS['name']]];",
+                "$result .= $this->field_array[$^instance_array^[$GLOBALS['name']]];"                                
+                );
+        performTestOccurrences(gotoTypeTest, false);
+    }
+    public void testMarkArray7() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$idx = 1;",
+                "$^i|dx^ = 1;",
+                "$result .= self::$static_array[$idx++];",
+                "$result .= self::$static_array[$^idx^++];",
+                "$result .= $this->field_array[$idx++];",
+                "$result .= $this->field_array[$^idx^++];",
+                "$instance_array[$idx];",
+                "$instance_array[$^idx^];",
+                "$result .= self::$static_array[$instance_array[$idx]];",
+                "$result .= self::$static_array[$instance_array[$^idx^]];",
+                "$result .= $this->field_array[$instance_array[$idx]];",
+                "$result .= $this->field_array[$instance_array[$^idx^]];"
+                );
+        performTestOccurrences(gotoTypeTest, false);
+    }
+    public void testMarkArray8() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$idx = 1;",
+                "$^idx^ = 1;",
+                "$result .= self::$static_array[$idx++];",
+                "$result .= self::$static_array[$^idx^++];",
+                "$result .= $this->field_array[$idx++];",
+                "$result .= $this->field_array[$^idx^++];",
+                "$instance_array[$idx];",
+                "$instance_array[$^i|dx^];",
+                "$result .= self::$static_array[$instance_array[$idx]];",
+                "$result .= self::$static_array[$instance_array[$^idx^]];",
+                "$result .= $this->field_array[$instance_array[$idx]];",
+                "$result .= $this->field_array[$instance_array[$^idx^]];"
+                );
+        performTestOccurrences(gotoTypeTest, false);
+    }
+    public void testMarkArray9() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$idx2 = 1;",
+                "$^i|dx2^ = 1;",
+                "$instance_array2[$idx2];",
+                "$instance_array2[$^idx2^];"
+                );
+        performTestOccurrences(gotoTypeTest, false);
+    }
+    public void testMarkArray10() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$idx2 = 1;",
+                "$^idx2^ = 1;",
+                "$instance_array2[$idx2];",
+                "$instance_array2[$^id|x2^];"
+                );
+        performTestOccurrences(gotoTypeTest, false);
+    }
+    public void testMarkArray11() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$idx3 = 1;",
+                "$^i|dx3^ = 1;",
+                "$instance_array3[$idx3];",
+                "$instance_array3[$^idx3^];"
+                );
+        performTestOccurrences(gotoTypeTest, false);
+    }
+    public void testMarkArray12() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$idx3 = 1;",
+                "$^idx3^ = 1;",
+                "$instance_array3[$idx3];",
+                "$instance_array3[$^id|x3^];"
+                );
+        performTestOccurrences(gotoTypeTest, false);
+    }
+    public void testMarkArray13() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$instance_array2 = array('', 'thousand ', 'million ', 'billion ');",
+                "$^instan|ce_array2^ = array('', 'thousand ', 'million ', 'billion ');",
+                "$instance_array2[$idx2];",
+                "$^instance_array2^[$idx2];"
+                );
+        performTestOccurrences(gotoTypeTest, false);
+    }
+    public void testMarkArray14() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$instance_array2 = array('', 'thousand ', 'million ', 'billion ');",
+                "$^instance_array2^ = array('', 'thousand ', 'million ', 'billion ');",
+                "$instance_array2[$idx2];",
+                "$^instan|ce_array2^[$idx2];"
+                );
+        performTestOccurrences(gotoTypeTest, false);
+    }
+    public void testMarkArray15() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$instance_array3 = array('', 'thousand ', 'million ', 'billion ');",
+                "$^instan|ce_array3^ = array('', 'thousand ', 'million ', 'billion ');",
+                "$instance_array3[$idx3];",
+                "$^instance_array3^[$idx3];"
+                );
+        performTestOccurrences(gotoTypeTest, false);
+    }
+    public void testMarkArray16() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$instance_array3 = array('', 'thousand ', 'million ', 'billion ');",
+                "$^instance_array3^ = array('', 'thousand ', 'million ', 'billion ');",
+                "$instance_array3[$idx3];",
+                "$^instan|ce_array3^[$idx3];"
+                );
+        performTestOccurrences(gotoTypeTest, false);
+    }
+    public void testMarkArray17() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$name = \"whatever\";",
+                "$^n|ame^ = \"whatever\";",
+                "$result .= $this->field_array[$instance_array[$GLOBALS['name']]];",
+                "$result .= $this->field_array[$instance_array[$GLOBALS['^name^']]];"
+                );
+        performTestOccurrences(gotoTypeTest, false);
+    }
+    public void testMarkArray18() throws Exception {
+        String gotoTypeTest = prepareTestFile(
+                "testfiles/gotoarray.php",
+                "$name = \"whatever\";",
+                "$^name^ = \"whatever\";",
+                "$result .= $this->field_array[$instance_array[$GLOBALS['name']]];",
+                "$result .= $this->field_array[$instance_array[$GLOBALS['^nam|e^']]];"
+                );
+        performTestOccurrences(gotoTypeTest, false);
+    }
 
     public void testOccurrences1() throws Exception {
         performTestOccurrences("<?php\n$^name^ = \"test\";\n echo \"$^na|me^\";\n?>", true);

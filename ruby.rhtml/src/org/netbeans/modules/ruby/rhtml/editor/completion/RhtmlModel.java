@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.ruby.rhtml.editor.completion;
 import java.util.ArrayList;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -48,9 +49,11 @@ import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
+import org.openide.util.Exceptions;
 
 /**
  * Creates a Ruby model for an RHTML file. Simulates ERB to generate Ruby from
@@ -218,6 +221,27 @@ public class RhtmlModel {
 
                 CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart, generatedEnd);
                 codeBlocks.add(blockData);
+
+                if (tokenSequence.moveNext()) {
+                    Token<RhtmlTokenId> nextToken = tokenSequence.token();
+                    if (nextToken != null && nextToken.id() == RhtmlTokenId.DELIMITER) {
+                        // Insert a semicolon if there is something else on this line
+                        int delimiterEnd = tokenSequence.offset() + nextToken.length();
+                        if (delimiterEnd <= doc.getLength()) {
+                            try {
+                                int lineEnd = Utilities.getRowLastNonWhite((BaseDocument) doc, delimiterEnd);
+                                if (lineEnd+1 > delimiterEnd) { // +1: getRowLastNonWhite returns the position BEFORE the last char
+                                    // Yep, we have more stuff on this line
+                                    buffer.append(";"); // NOI18N
+                                }
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+
+                    }
+                    tokenSequence.movePrevious();
+                }
 
                 skipNewline = false;
             } else if (token.id() == RhtmlTokenId.RUBY_EXPR) {

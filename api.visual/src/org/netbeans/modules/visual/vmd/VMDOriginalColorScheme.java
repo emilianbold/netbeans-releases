@@ -50,6 +50,7 @@ import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.PointShape;
 import org.netbeans.api.visual.anchor.PointShapeFactory;
 import org.netbeans.api.visual.vmd.*;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import java.awt.*;
@@ -80,7 +81,7 @@ public class VMDOriginalColorScheme extends VMDColorScheme {
     static final Border BORDER_PIN = BorderFactory.createOpaqueBorder (2, 8, 2, 8);
     private static final Border BORDER_PIN_HOVERED = BorderFactory.createLineBorder (2, 8, 2, 8, Color.BLACK);
 
-    static final PointShape POINT_SHAPE_IMAGE = PointShapeFactory.createImagePointShape (Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-pin.png")); // NOI18N
+    static final PointShape POINT_SHAPE_IMAGE = PointShapeFactory.createImagePointShape (ImageUtilities.loadImage ("org/netbeans/modules/visual/resources/vmd-pin.png")); // NOI18N
 
     public VMDOriginalColorScheme () {
     }
@@ -118,8 +119,8 @@ public class VMDOriginalColorScheme extends VMDColorScheme {
 
     public Image getMinimizeWidgetImage (VMDNodeWidget widget) {
         return widget.isMinimized ()
-                ? Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-expand.png") // NOI18N
-                : Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-collapse.png"); // NOI18N
+                ? ImageUtilities.loadImage ("org/netbeans/modules/visual/resources/vmd-expand.png") // NOI18N
+                : ImageUtilities.loadImage ("org/netbeans/modules/visual/resources/vmd-collapse.png"); // NOI18N
     }
 
     public Widget createPinCategoryWidget (VMDNodeWidget widget, String categoryDisplayName) {

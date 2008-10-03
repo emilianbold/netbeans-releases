@@ -61,6 +61,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.DefaultTableModel;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.uml.core.support.umlutils.IPropertyElement;
 import org.netbeans.modules.uml.core.support.umlutils.IPropertyDefinition;
@@ -822,7 +823,7 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
             messageArea.setText(text);
             if (text.trim().length() > 0) {
                 errorIcon = new ImageIcon(
-                  Utilities.loadImage("org/netbeans/modules/uml/resources/images/error.png"));
+                  ImageUtilities.loadImage("org/netbeans/modules/uml/resources/images/error.png"));
             }
             iconLabel.setIcon(errorIcon); // NOI18N
         }

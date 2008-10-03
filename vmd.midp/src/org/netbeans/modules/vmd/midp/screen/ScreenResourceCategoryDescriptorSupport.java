@@ -43,6 +43,7 @@ package org.netbeans.modules.vmd.midp.screen;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoryDescriptor;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceOrderingController;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
@@ -53,7 +54,7 @@ public class ScreenResourceCategoryDescriptorSupport {
 
     public static ScreenResourceCategoryDescriptor ASSIGNED_COMMANDS = new ScreenResourceCategoryDescriptor (
             NbBundle.getMessage (ScreenResourceCategoryDescriptorSupport.class, "DISP_AssignedCommands"), // NOI18N
-            Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/command_16.png"), // NOI18N
+            ImageUtilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/command_16.png"), // NOI18N
             NbBundle.getMessage (ScreenResourceCategoryDescriptorSupport.class, "TTIP_AssignedCommands"), // NOI18N
             100,
             ScreenResourceOrderingController.getArrayOrdering(DisplayableCD.PROP_COMMANDS)
@@ -61,7 +62,7 @@ public class ScreenResourceCategoryDescriptorSupport {
 
     public static ScreenResourceCategoryDescriptor ASSIGNED_ITEM_COMMANDS = new ScreenResourceCategoryDescriptor (
             NbBundle.getMessage (ScreenResourceCategoryDescriptorSupport.class, "DISP_AssignedItemCommands"), // NOI18N
-            Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/command_16.png"), // NOI18N
+            ImageUtilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/command_16.png"), // NOI18N
             NbBundle.getMessage (ScreenResourceCategoryDescriptorSupport.class, "TTIP_AssignedItemCommands"), // NOI18N
             200,
             ScreenResourceOrderingController.getDefaultOrdering()
@@ -69,7 +70,7 @@ public class ScreenResourceCategoryDescriptorSupport {
 
     public static ScreenResourceCategoryDescriptor OTHER_DESIGN_RESOURCES = new ScreenResourceCategoryDescriptor (
             NbBundle.getMessage (ScreenResourceCategoryDescriptorSupport.class, "DISP_Resources"), // NOI18N
-            Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/resource_16.png"), // NOI18N
+            ImageUtilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/resource_16.png"), // NOI18N
             NbBundle.getMessage (ScreenResourceCategoryDescriptorSupport.class, "TTIP_Resources"), // NOI18N
             300,
             ScreenResourceOrderingController.getDefaultOrdering()

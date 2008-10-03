@@ -136,10 +136,17 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                     Collections.sort(diffs);
                     for (int i = diffs.size()-1; i >= 0; i--) {
                         Diff diff = diffs.get(i);
+                        if (diff.text != null && diff.text.length() == (diff.end-diff.start) && diff.end > diff.start) {
+                            // See if we're replacing the exact same text we already have there
+                            String s = doc.getText(diff.start, diff.end-diff.start);
+                            if (s.equals(diff.text)) {
+                                continue;
+                            }
+                        }
                         if (diff.end > diff.start) {
                             doc.remove(diff.start, diff.end - diff.start);
                         }
-                        if (diff.text.length() > 0) {
+                        if (diff.text != null && diff.text.length() > 0) {
                             doc.insertString(diff.start, diff.text, null);
                         }
                     }

@@ -48,7 +48,7 @@ import javax.swing.text.Document;
 
 import org.netbeans.modules.xml.XMLDataObjectLook;
 import org.netbeans.modules.xml.cookies.CookieManagerCookie;
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;

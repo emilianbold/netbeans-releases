@@ -45,7 +45,7 @@ import org.openide.loaders.*;
 import org.openide.nodes.*;
 import java.util.Vector;
 import java.util.Arrays;
-import org.netbeans.modules.xml.lib.Util;
+import org.netbeans.modules.xml.util.Util;
 
 /**
  * A generic support for synchronizing text, tree and file representation

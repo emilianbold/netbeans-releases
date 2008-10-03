@@ -117,6 +117,7 @@ class CompletionContextFinder {
             );
 
     private static final List<PHPTokenId[]> FUNCTION_TOKENCHAINS = Arrays.asList(
+            new PHPTokenId[]{PHPTokenId.PHP_FUNCTION},
             new PHPTokenId[]{PHPTokenId.PHP_FUNCTION,PHPTokenId.WHITESPACE},
             new PHPTokenId[]{PHPTokenId.PHP_FUNCTION,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING}
             );
@@ -239,6 +240,8 @@ class CompletionContextFinder {
         } else if (isInsideClassIfaceDeclarationBlock(info, caretOffset, tokenSequence)) {
             if (acceptTokenChains(tokenSequence, CLASS_CONTEXT_KEYWORDS_TOKENCHAINS)) {
                 return CompletionContext.CLASS_CONTEXT_KEYWORDS;
+            } else if (acceptTokenChains(tokenSequence, FUNCTION_TOKENCHAINS)) {
+                return CompletionContext.METHOD_NAME;
             }
             return CompletionContext.NONE;
         }

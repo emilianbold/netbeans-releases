@@ -41,6 +41,7 @@
 
 package org.openide.explorer.propertysheet;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import java.awt.Color;
@@ -199,7 +200,7 @@ class IconPanel extends JComponent implements InplaceEditor {
             FeatureDescriptor fd = env.getFeatureDescriptor();
 
             if (env.getState() == env.STATE_INVALID) {
-                ic = new ImageIcon(Utilities.loadImage("org/openide/resources/propertysheet/invalid.gif")); //NOI18N
+                ic = new ImageIcon(ImageUtilities.loadImage("org/openide/resources/propertysheet/invalid.gif")); //NOI18N
             } else if (fd != null) {
                 ic = (Icon) fd.getValue("valueIcon"); //NOI18N
             }

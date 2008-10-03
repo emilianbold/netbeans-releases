@@ -43,6 +43,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -55,7 +56,7 @@ public class PHPOptionsCategory extends OptionsCategory{
     
     @Override
     public Icon getIcon() {
-        return new ImageIcon(Utilities.loadImage("org/netbeans/modules/php/project/ui/resources/php-options-icon.png")); // NOI18N
+        return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/php-options-icon.png")); // NOI18N
     }
 
     @Override

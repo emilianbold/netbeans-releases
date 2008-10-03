@@ -42,6 +42,7 @@
 package org.netbeans.modules.xml.schema.refactoring.ui;
 
 import java.awt.Component;
+import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
 import org.openide.util.Utilities;
 import org.openide.ErrorManager;
@@ -71,9 +72,9 @@ final public class CloseButtonTabbedPane extends JTabbedPane implements ChangeLi
 
     public static final long serialVersionUID = 1L;
     private final Image closeTabImage =
-        org.openide.util.Utilities.loadImage("org/netbeans/modules/refactoring/resources/RefCloseTab.gif"); // NOI18N
+        ImageUtilities.loadImage("org/netbeans/modules/refactoring/resources/RefCloseTab.gif"); // NOI18N
     private final Image closeTabInactiveImage =
-        org.openide.util.Utilities.loadImage("org/netbeans/modules/refactoring/resources/RefCloseTabInactive.gif"); // NOI18N
+        ImageUtilities.loadImage("org/netbeans/modules/refactoring/resources/RefCloseTabInactive.gif"); // NOI18N
 
     public static final String PROP_CLOSE = "close"; // NOI18N
 

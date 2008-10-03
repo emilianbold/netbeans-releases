@@ -52,6 +52,7 @@ import javax.swing.Action;
 import org.openide.actions.OpenAction;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
@@ -69,7 +70,7 @@ public class E2EDataNode extends DataNode {
     @Override
     public Image getIcon(@SuppressWarnings("unused")
 	final int type) {
-        return Utilities.loadImage(
+        return ImageUtilities.loadImage(
                 "org/netbeans/modules/mobility/end2end/resources/e2eclienticon.png" ); // NOI18N
     }
         

@@ -53,6 +53,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JList;
 import org.netbeans.modules.mobility.project.security.KeyStoreRepository;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
@@ -62,10 +63,10 @@ import org.openide.util.NbBundle;
  */
 public class KeystoreCellRenderer extends DefaultListCellRenderer {
     
-    private static final Image keystore = Utilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/keystore.gif"); //NOI18N
-    private static final Icon ICON_OPENED = new ImageIcon(Utilities.mergeImages(keystore, Utilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/unlockedBadge.gif"), 0, 0)); //NOI18N
-    private static final Icon ICON_CLOSED = new ImageIcon(Utilities.mergeImages(keystore, Utilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/lockedBadge.gif"), 0, 0)); //NOI18N
-    private static final Icon ICON_INVALID = new ImageIcon(Utilities.mergeImages(keystore, Utilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/invalidBadge.gif"), 0, 0)); //NOI18N
+    private static final Image keystore = ImageUtilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/keystore.gif"); //NOI18N
+    private static final Icon ICON_OPENED = new ImageIcon(ImageUtilities.mergeImages(keystore, ImageUtilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/unlockedBadge.gif"), 0, 0)); //NOI18N
+    private static final Icon ICON_CLOSED = new ImageIcon(ImageUtilities.mergeImages(keystore, ImageUtilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/lockedBadge.gif"), 0, 0)); //NOI18N
+    private static final Icon ICON_INVALID = new ImageIcon(ImageUtilities.mergeImages(keystore, ImageUtilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/invalidBadge.gif"), 0, 0)); //NOI18N
     public static final String buildinKeystoreString = NbBundle.getMessage(KeystoreCellRenderer.class, "NAME_BuildInKeyStore"); // NOI18N
         
     public Component getListCellRendererComponent(final JList list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {

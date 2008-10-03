@@ -50,6 +50,7 @@ import javax.swing.JComponent;
 import javax.swing.JButton;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -121,14 +122,14 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
 
     protected void performIntern() {
         try {
-            Mercurial.LOG.log(Level.FINE, "Start - {0}", displayName); // NOI18N
+            log("Start - " + displayName); // NOI18N
             if(!canceled) {
                 perform();
             }
-            Mercurial.LOG.log(Level.FINE, "End - {0}", displayName); // NOI18N
-        } finally {            
+        } finally {
+            log("End - " + displayName); // NOI18N
             finnishProgress();
-            if (logger != null) logger.closeLog();
+            getLogger().closeLog();
         }
     }
 
@@ -163,6 +164,7 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
         if(originalDisplayName.equals("")) { // NOI18N
             originalDisplayName = displayName;
         }
+        logChangedDisplayName(this.displayName, displayName);
         this.displayName = displayName;
         setProgress();
     }
@@ -211,6 +213,20 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
             eh.notifyException(false);
         } else {
             eh.notifyException();    
+        }
+    }
+    
+    private static void log(String msg) {
+        HgUtils.logT9Y(msg);
+        Mercurial.LOG.log(Level.FINE, msg); 
+    }
+
+    private void logChangedDisplayName(String thisDisplayName, String displayName) {
+        if(thisDisplayName != null && !thisDisplayName.equals(displayName)) {
+            if(!thisDisplayName.equals("")) {
+                log("End - " + thisDisplayName); // NOI18N
+                log("Start - " + displayName); // NOI18N
+            }
         }
     }
 }

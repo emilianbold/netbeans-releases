@@ -421,7 +421,7 @@ public class JsParser implements IncrementalParser {
 
             // This should not happen unless there is an error in the EditHistory...
             int docLength = context.source.length();
-            if (newFunctionEnd > docLength) {
+            if (newFunctionEnd > docLength || newFunctionEnd <= 0) {
                 return null;
             }
             if (context.source.charAt(newFunctionEnd-1) != '}') {
@@ -801,10 +801,12 @@ public class JsParser implements IncrementalParser {
         } catch (IllegalStateException ise) {
             // See issue #128983 for a way to get the compiler to assert for example
             runtimeException = ise;
+            //throw ise;
         } catch (RuntimeException re) {
             //notifyError(context, message, sourceName, line, lineSource, lineOffset, sanitizing, Severity.WARNING, "", null);
             // XXX TODO - record this somehow
             runtimeException = re;
+            //throw re;
         }
         if (root != null) {
             setParentRefs(root, null);

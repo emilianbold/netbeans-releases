@@ -87,7 +87,7 @@ public interface GlassfishModule {
     // Resource types
     public static final String JDBC_RESOURCE = "jdbc-resource"; // NOI18N
     public static final String JDBC_CONNECTION_POOL = "jdbc-connection-pool"; // NOI18N
-
+    public static final String SESSION_PRESERVATION_FLAG = "preserveSessionsOn";
     /**
      * Enum for the current state of the server (stopped, running, etc.)
      */

@@ -52,8 +52,8 @@ public class PHPParseResult extends ParserResult {
     
     private final Program root;
 
-    public PHPParseResult(GSFPHPParser parser, ParserFile file, Program rootNode) {
-        super(parser, file, PHPLanguage.PHP_MIME_TYPE);
+    public PHPParseResult(GSFPHPParser parser, ParserFile file, Program rootNode, boolean isValid) {
+        super(parser, file, PHPLanguage.PHP_MIME_TYPE, isValid);
         this.root = rootNode;
     }
 

@@ -41,10 +41,7 @@
 package org.netbeans.modules.xml.tax.cookies;
 
 import java.io.IOException;
-import java.util.Enumeration;
-import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
-import java.lang.ref.ReferenceQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
@@ -52,25 +49,17 @@ import javax.swing.text.Document;
 
 import org.xml.sax.InputSource;
 
-import org.openide.loaders.OpenSupport;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.MultiDataObject;
-import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Task;
 import org.openide.util.RequestProcessor;
 import org.openide.*;
-import org.openide.cookies.*;
 
 import org.netbeans.tax.*;
 import org.netbeans.tax.event.TreeEvent;
 
 import org.netbeans.modules.xml.*;
-import org.netbeans.modules.xml.tree.*;
 import org.netbeans.modules.xml.cookies.*;
-import org.netbeans.modules.xml.text.*;
 import org.netbeans.modules.xml.sync.*;
-import org.netbeans.modules.xml.tax.*;
 import org.netbeans.modules.xml.tax.parser.DTDParsingSupport;
 import org.netbeans.modules.xml.tax.parser.ParsingSupport;
 import org.netbeans.modules.xml.tax.parser.XMLParsingSupport;

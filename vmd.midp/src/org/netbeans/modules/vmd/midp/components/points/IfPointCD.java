@@ -59,6 +59,7 @@ import org.netbeans.modules.vmd.midp.flow.FlowIfPointPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
 import org.netbeans.api.editor.guards.GuardedSection;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
@@ -114,7 +115,7 @@ public class IfPointCD extends ComponentDescriptor {
             // flow
             new FlowIfPointPinOrderPresenter (),
             // general
-            InfoPresenter.create (PointSupport.createInfoResolver (Utilities.loadImage (ICON_PATH), MethodPointCD.PROP_METHOD_NAME, NbBundle.getMessage(IfPointCD.class, "TYPE_IfPoint"))),
+            InfoPresenter.create (PointSupport.createInfoResolver (ImageUtilities.loadImage (ICON_PATH), MethodPointCD.PROP_METHOD_NAME, NbBundle.getMessage(IfPointCD.class, "TYPE_IfPoint"))),
             new GoToSourcePresenter() {
                 protected boolean matches (GuardedSection section) {
                     return MultiGuardedSection.matches(section, getComponent ().getComponentID () + "-if", 1); // NOI18N

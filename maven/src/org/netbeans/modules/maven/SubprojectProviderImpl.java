@@ -95,7 +95,7 @@ public class SubprojectProviderImpl implements SubprojectProvider {
     }
 
 
-    public Set getSubprojects() {
+    public Set<? extends Project> getSubprojects() {
         Set<Project> projects = new HashSet<Project>();
         File basedir = FileUtil.toFile(project.getProjectDirectory());
         addProjectModules(basedir, projects, project.getOriginalMavenProject().getModules());
@@ -105,14 +105,14 @@ public class SubprojectProviderImpl implements SubprojectProvider {
     }
 
     private void addOpenedCandidates(Set<Project> resultset) {
-        Set<NbMavenProjectImpl> opened = MavenFileOwnerQueryImpl.getInstance().getOpenedProjects();
+        Set<Project> opened = MavenFileOwnerQueryImpl.getInstance().getOpenedProjects();
         List<Artifact> compileArtifacts = project.getOriginalMavenProject().getCompileArtifacts();
         List<String> artPaths = new ArrayList<String>();
         for (Artifact ar : compileArtifacts) {
             artPaths.add(project.getArtifactRelativeRepositoryPath(ar));
         }
-        for (NbMavenProjectImpl prj : opened) {
-            String prjpath = prj.getArtifactRelativeRepositoryPath();
+        for (Project prj : opened) {
+            String prjpath = ((NbMavenProjectImpl)prj).getArtifactRelativeRepositoryPath();
             if (artPaths.contains(prjpath)) {
                 resultset.add(prj);
             }

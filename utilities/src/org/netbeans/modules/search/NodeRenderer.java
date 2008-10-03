@@ -63,6 +63,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
@@ -98,7 +99,7 @@ final class NodeRenderer extends JComponent implements TreeCellRenderer {
      */
     NodeRenderer(final boolean withCheckBox) {
         nodeRenderer = HtmlRenderer.createRenderer();
-        rootIconImage = Utilities.loadImage(
+        rootIconImage = ImageUtilities.loadImage(
                             "org/netbeans/modules/search/res/find.gif", //NOI18N
                             true);                       //localized
         
@@ -313,7 +314,7 @@ final class NodeRenderer extends JComponent implements TreeCellRenderer {
     
     private Image getDeletedObjectIconImage() {
         if (deletedObjectIconImage == null) {
-            deletedObjectIconImage = Utilities.loadImage(
+            deletedObjectIconImage = ImageUtilities.loadImage(
                     "org/netbeans/modules/search/res/invalid.png",      //NOI18N
                     true);                       //localized
         }

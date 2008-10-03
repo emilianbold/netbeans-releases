@@ -469,16 +469,18 @@ public class AstUtilities {
         // ^Map bar = ...
         // find first token that is identifier and that matches given name
         TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, startOffset);
-        Token<? extends GroovyTokenId> token = ts.token();
-        if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), fieldName)) {
-            int offset = ts.offset();
-            return new OffsetRange(offset, offset + fieldName.length());
-        }
-        while (ts.moveNext()) {
-            token = ts.token();
+        if (ts != null) {
+            Token<? extends GroovyTokenId> token = ts.token();
             if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), fieldName)) {
                 int offset = ts.offset();
                 return new OffsetRange(offset, offset + fieldName.length());
+            }
+            while (ts.moveNext()) {
+                token = ts.token();
+                if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), fieldName)) {
+                    int offset = ts.offset();
+                    return new OffsetRange(offset, offset + fieldName.length());
+                }
             }
         }
         return OffsetRange.NONE;

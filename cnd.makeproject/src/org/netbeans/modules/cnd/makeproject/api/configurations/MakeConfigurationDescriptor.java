@@ -83,6 +83,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -99,7 +100,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public static final String RESOURCE_FILES_FOLDER = "ResourceFiles"; // NOI18N
     public static final String ICONBASE = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject"; // NOI18N
     public static final String ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"; // NOI18N
-    public static final Icon MAKEFILE_ICON = new ImageIcon(Utilities.loadImage(ICON)); // NOI18N
+    public static final Icon MAKEFILE_ICON = new ImageIcon(ImageUtilities.loadImage(ICON)); // NOI18N
     private Project project = null;
     private String baseDir;
     private boolean modified = false;
@@ -348,16 +349,18 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
     public Item findExternalItemByPath(String path) {
         // Try first as-is
+        path = FilePathAdaptor.normalize(path);
         Item item = externalFileItems.findItemByPath(path);
         if (item == null) {
             // Then try absolute if relative or relative if absolute
             String newPath;
             if (IpeUtils.isPathAbsolute(path)) {
-                newPath = IpeUtils.toRelativePath(getBaseDir(), path);
+                newPath = IpeUtils.toRelativePath(getBaseDir(), FilePathAdaptor.naturalize(path));
             } else {
                 newPath = IpeUtils.toAbsolutePath(getBaseDir(), path);
             }
-            item = projectItems.get(FilePathAdaptor.normalize(newPath));
+            newPath = FilePathAdaptor.normalize(newPath);
+            item = externalFileItems.findItemByPath(newPath);
         }
         return item;
     }

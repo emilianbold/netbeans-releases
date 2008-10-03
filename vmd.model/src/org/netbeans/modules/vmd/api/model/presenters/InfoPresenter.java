@@ -41,6 +41,7 @@
 package org.netbeans.modules.vmd.api.model.presenters;
 
 import org.netbeans.modules.vmd.api.model.*;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import java.awt.*;
@@ -192,7 +193,7 @@ public final class InfoPresenter extends DynamicPresenter {
     }
 
     public static InfoPresenter createStatic (final String displayName, final String typeName, final String toolTip, String iconResource) {
-        return createStatic (displayName, typeName, toolTip, Utilities.loadImage (iconResource));
+        return createStatic (displayName, typeName, toolTip, ImageUtilities.loadImage (iconResource));
     }
 
     public static InfoPresenter createStatic (final String displayName, final String typeName, final String toolTip, final Image icon) {

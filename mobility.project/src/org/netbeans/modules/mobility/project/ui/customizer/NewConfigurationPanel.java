@@ -72,6 +72,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -156,7 +157,7 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, P
         
         if (obj instanceof Icon) {
             Icon icon = (Icon)obj;
-            return Utilities.icon2Image(icon);
+            return ImageUtilities.icon2Image(icon);
         }
         
         return null;

@@ -65,6 +65,7 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.Sheet.Set;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -99,11 +100,11 @@ public class SessionBeanNode extends AbstractNode implements Node.Cookie {
     }
 
     public Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/session_bean.png");
+        return ImageUtilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/session_bean.png");
     }
 
     public Image getOpenedIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/session_bean.png");
+        return ImageUtilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/session_bean.png");
     }
 
     // Create the popup menu for the session bean node

@@ -41,8 +41,8 @@
 package org.openide.nodes;
 
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.*;
 
@@ -335,7 +335,7 @@ public class AbstractNode extends Node {
     */
     private Image findIcon(int type, int ib) {
         String res = iconBase + icons[type + ib] + iconExtension;
-        Image im = Utilities.loadImage(res, true);
+        Image im = ImageUtilities.loadImage(res, true);
 
         if (im != null) {
             return im;
@@ -344,7 +344,7 @@ public class AbstractNode extends Node {
         // try the first icon
         res = iconBase + icons[java.beans.BeanInfo.ICON_COLOR_16x16 + ib] + iconExtension;
 
-        im = Utilities.loadImage(res, true);
+        im = ImageUtilities.loadImage(res, true);
 
         if (im != null) {
             return im;
@@ -360,7 +360,7 @@ public class AbstractNode extends Node {
     }
 
     Image getDefaultIcon() {
-        Image i = Utilities.loadImage(DEFAULT_ICON, true);
+        Image i = ImageUtilities.loadImage(DEFAULT_ICON, true);
 
         if (i == null) {
             throw new MissingResourceException("No default icon", "", DEFAULT_ICON); // NOI18N

@@ -60,6 +60,7 @@ import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -79,7 +80,7 @@ import org.openide.util.Exceptions;
  */
 public class ServiceUnitNode extends CasaNode {
     
-    private static final Image DEFAULT_ICON = Utilities.loadImage(
+    private static final Image DEFAULT_ICON = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/ServiceUnitNode.png");     // NOI18N
     
     private static final String CHILD_ID_PROVIDES_LIST = "ProvidesList";        // NOI18N

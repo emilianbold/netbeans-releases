@@ -53,6 +53,7 @@ import java.util.Map;
 import org.netbeans.modules.vmd.api.screen.display.DeviceBorder;
 import org.netbeans.modules.vmd.api.screen.display.DeviceTheme;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -158,7 +159,7 @@ public class MidpScreenDeviceInfo extends ScreenDeviceInfo {
     protected void loadImages() {
         deviceBorders = new DeviceBorder[IMAGE_NAMES.length];
         for (int i=0; i < IMAGE_NAMES.length; i++) {
-            deviceBorders[i] = new DeviceBorder(Utilities.loadImage(IMAGE_BASE + IMAGE_NAMES[i]));
+            deviceBorders[i] = new DeviceBorder(ImageUtilities.loadImage(IMAGE_BASE + IMAGE_NAMES[i]));
         }
     }
     

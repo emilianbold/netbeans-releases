@@ -163,6 +163,8 @@ public class VerifyClassLinkage extends Task {
                     log("Warning: class '" + clazz + "' found in default package", Project.MSG_WARN);
                 }
             }
+            // XXX should use a load-nothing parent and require nbjdk.bootclasspath to be added explicitly to CP
+            // otherwise e.g. libs.jsr223 dep can be removed from contrib/java.hints.scripting without warning if building on JDK 6
             ClassLoader loader = new AntClassLoader(ClassLoader.getSystemClassLoader().getParent(), getProject(), classpath, true);
             AtomicInteger max = new AtomicInteger(maxWarnings);
             for (Map.Entry<String, byte[]> entry: classfiles.entrySet()) {

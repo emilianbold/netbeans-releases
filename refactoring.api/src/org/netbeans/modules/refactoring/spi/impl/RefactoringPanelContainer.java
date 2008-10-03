@@ -49,6 +49,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.openide.awt.MouseUtils;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -75,8 +76,8 @@ public class RefactoringPanelContainer extends TopComponent {
     private PopupListener listener;
     private CloseListener closeL;
     private boolean isRefactoring;
-    private static Image REFACTORING_BADGE = Utilities.loadImage( "org/netbeans/modules/refactoring/api/resources/refactoringpreview.png" ); // NOI18N
-    private static Image USAGES_BADGE = Utilities.loadImage( "org/netbeans/modules/refactoring/api/resources/findusages.png" ); // NOI18N
+    private static Image REFACTORING_BADGE = ImageUtilities.loadImage( "org/netbeans/modules/refactoring/api/resources/refactoringpreview.png" ); // NOI18N
+    private static Image USAGES_BADGE = ImageUtilities.loadImage( "org/netbeans/modules/refactoring/api/resources/findusages.png" ); // NOI18N
     
     private RefactoringPanelContainer() {
         this("", false);

@@ -40,6 +40,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -264,7 +265,7 @@ class IepProjectViews {
 
     private static final class DocBaseNode extends FilterNode {
 
-        private static Image CONFIGURATION_FILES_BADGE = Utilities.loadImage("org/netbeans/modules/compapp/projects/base/ui/resources/docjar.gif", true); // NOI18N
+        private static Image CONFIGURATION_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/compapp/projects/base/ui/resources/docjar.gif", true); // NOI18N
 
 
         DocBaseNode(Node orig) {
@@ -282,7 +283,7 @@ class IepProjectViews {
         private Image computeIcon(boolean opened, int type) {
             Node folderNode = getOriginal();
             Image image = opened ? folderNode.getOpenedIcon(type) : folderNode.getIcon(type);
-            return Utilities.mergeImages(image, CONFIGURATION_FILES_BADGE, 7, 7);
+            return ImageUtilities.mergeImages(image, CONFIGURATION_FILES_BADGE, 7, 7);
         }
 
         public String getDisplayName() {

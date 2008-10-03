@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.awt.Image;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -51,6 +52,6 @@ import org.openide.util.Utilities;
 public class FortranDataLoaderBeanInfo extends CndAbstractDataLoaderBeanInfo {
 
     public Image getIcon(int type) {
-	return Utilities.loadImage("org/netbeans/modules/cnd/loaders/FortranSrcIcon.gif");   // NOI18N
+	return ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/FortranSrcIcon.gif");   // NOI18N
     }
 }

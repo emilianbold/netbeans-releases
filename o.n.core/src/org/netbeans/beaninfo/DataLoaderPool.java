@@ -48,6 +48,7 @@ import org.openide.loaders.DataLoader;
 import org.openide.loaders.UniFileLoader;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
@@ -91,9 +92,9 @@ public class DataLoaderPool {
 
         public Image getIcon (int type) {
             if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-                return Utilities.loadImage("org/openide/loaders/defaultFolder.gif"); // NOI18N
+                return ImageUtilities.loadImage("org/openide/loaders/defaultFolder.gif"); // NOI18N
             } else {
-                return Utilities.loadImage("org/openide/loaders/defaultFolder32.gif"); // NOI18N
+                return ImageUtilities.loadImage("org/openide/loaders/defaultFolder32.gif"); // NOI18N
             }
         }
     }
@@ -120,9 +121,9 @@ public class DataLoaderPool {
         
         public Image getIcon (int type) {
             if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-                return Utilities.loadImage("org/netbeans/core/resources/action.gif"); // NOI18N
+                return ImageUtilities.loadImage("org/netbeans/core/resources/action.gif"); // NOI18N
             } else {
-                return Utilities.loadImage ("org/netbeans/core/resources/action32.gif"); // NOI18N
+                return ImageUtilities.loadImage ("org/netbeans/core/resources/action32.gif"); // NOI18N
             }
         }
 
@@ -141,9 +142,9 @@ public class DataLoaderPool {
 
         public Image getIcon (int type) {
             if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-                return Utilities.loadImage ("org/openide/resources/pending.gif"); // NOI18N
+                return ImageUtilities.loadImage ("org/openide/resources/pending.gif"); // NOI18N
             } else {
-                return Utilities.loadImage ("org/openide/resources/pending32.gif"); // NOI18N
+                return ImageUtilities.loadImage ("org/openide/resources/pending32.gif"); // NOI18N
             }
         }
 
@@ -177,7 +178,7 @@ public class DataLoaderPool {
 
         public Image getIcon (int type) {
             if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-                return Utilities.loadImage("org/openide/resources/actions/copy.gif"); // NOI18N
+                return ImageUtilities.loadImage("org/openide/resources/actions/copy.gif"); // NOI18N
             } else {
                 // [PENDING]
                 //return Utilities.loadImage ("org/openide/resources/actions/copy32.gif"); // NOI18N

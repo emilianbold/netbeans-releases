@@ -82,6 +82,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import javax.swing.JOptionPane;
 import org.openide.cookies.EditorCookie;
@@ -1135,6 +1136,12 @@ itor tabs #66700).
      * This utility class should not be instantiated anywhere.
      */
     private HgUtils() {
+    }
+
+    private static Logger TY9_LOG = null;
+    public static void logT9Y(String msg) {
+        if(TY9_LOG == null) TY9_LOG = Logger.getLogger("org.netbeans.modules.mercurial.t9y");
+        TY9_LOG.log(Level.FINEST, msg);
     }
     
 }

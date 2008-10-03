@@ -79,8 +79,8 @@ import org.openide.util.Exceptions;
  * maven dependencies to the way classpath items are added through this api.
  * @author mkleint
  */
-@SuppressWarnings("deprecation")
-public class CPExtender extends ProjectClassPathModifierImplementation implements ProjectClassPathExtender {
+
+public @SuppressWarnings("Deprecation") class CPExtender extends ProjectClassPathModifierImplementation implements ProjectClassPathExtender {
 
     private NbMavenProjectImpl project;
     private static final String MD5_ATTR = "MD5"; //NOI18N

@@ -57,6 +57,8 @@ import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.spi.project.AuxiliaryProperties;
@@ -172,7 +174,7 @@ public class POHImpl extends ProjectOpenedHook {
             String newOne = ServerManager.showAddServerInstanceWizard();
             String serverType = null;
             if (newOne != null) {
-                serverType = Deployment.getDefault().getServerID(newOne);
+                serverType = privateGetServerId(newOne);
             }
             try {
                 ModelHandle handle = ModelHandleUtils.createModelHandle(prj);
@@ -202,4 +204,14 @@ public class POHImpl extends ProjectOpenedHook {
             }
         }
     }
+
+    public static String privateGetServerId(String serverInstanceID) {
+        ServerInstance si = Deployment.getDefault().getServerInstance(serverInstanceID);
+        try {
+            return si.getServerID();
+        } catch (InstanceRemovedException ex) {
+            return null;
+        }
+    }
+
 }

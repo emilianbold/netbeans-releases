@@ -61,6 +61,7 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.palette.PaletteSupport;
 import org.netbeans.modules.vmd.flow.FlowViewController;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
@@ -80,7 +81,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
     private static Paint PAINT_BACKGROUND;
 
     static {
-        Image sourceImage = Utilities.loadImage ("org/netbeans/modules/vmd/flow/resources/paper_grid.png"); // NOI18N
+        Image sourceImage = ImageUtilities.loadImage ("org/netbeans/modules/vmd/flow/resources/paper_grid.png"); // NOI18N
         int width = sourceImage.getWidth (null);
         int height = sourceImage.getHeight (null);
         BufferedImage image = new BufferedImage (width, height, BufferedImage.TYPE_INT_RGB);

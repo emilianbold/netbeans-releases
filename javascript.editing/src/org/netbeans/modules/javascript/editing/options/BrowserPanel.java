@@ -135,6 +135,8 @@ public class BrowserPanel extends JSPreferencesPanel {
         
     }
 
+    @Override
+    @SuppressWarnings("fallthrough")
     public void store() {
         EnumSet<BrowserVersion> es = EnumSet.noneOf(BrowserVersion.class);
 

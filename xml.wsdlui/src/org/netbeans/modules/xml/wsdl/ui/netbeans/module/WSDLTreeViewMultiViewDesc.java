@@ -49,6 +49,7 @@ import java.io.Serializable;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -109,7 +110,7 @@ public class WSDLTreeViewMultiViewDesc extends Object
 	 *
 	 */
 	public java.awt.Image getIcon() {
-		return Utilities.loadImage(WSDLDataObject.WSDL_ICON_BASE_WITH_EXT);
+		return ImageUtilities.loadImage(WSDLDataObject.WSDL_ICON_BASE_WITH_EXT);
 	}
 
 

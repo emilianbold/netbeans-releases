@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.xml.lib;
 
+import org.netbeans.modules.xml.util.Util;
 import java.io.IOException;
 
 import org.openide.loaders.DataObject;

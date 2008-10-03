@@ -99,7 +99,10 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         
         try {
             FileObject fo = FileUtil.toFileObject(file);
-            assert fo != null : "no fileobject for file " + file;
+            if(fo == null) {
+                Subversion.LOG.warning("can't resolve conflicts for null fileobject : " + file + ", exists: " + file.exists());
+                return;
+            }
             FileLock lock = fo.lock();
             boolean mergeWriterCreated = false;
             try { 

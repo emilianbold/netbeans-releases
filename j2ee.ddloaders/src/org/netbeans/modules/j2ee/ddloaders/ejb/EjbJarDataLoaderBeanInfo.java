@@ -46,6 +46,7 @@ import java.awt.Image;
 
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** BeanInfo for config file loader.
@@ -65,7 +66,7 @@ public final class EjbJarDataLoaderBeanInfo extends SimpleBeanInfo {
     * @return returns the Java loader's icon
     */
     public Image getIcon(final int type) {
-        return Utilities.loadImage( "org/netbeans/modules/j2ee/ddloaders/ejb/DDDataIcon.gif"); // NOI18N
+        return ImageUtilities.loadImage( "org/netbeans/modules/j2ee/ddloaders/ejb/DDDataIcon.gif"); // NOI18N
     }
     
     public PropertyDescriptor[] getPropertyDescriptors() {

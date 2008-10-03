@@ -46,6 +46,7 @@ import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.openide.nodes.*;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
@@ -121,7 +122,7 @@ public class RefreshAction extends NodeAction {
         
         public OutputAction(ServerInstance instance) {
             super(NbBundle.getMessage(DebugAction.class, "LBL_RefreshOutput"),
-                  new ImageIcon(Utilities.loadImage(ICON)));
+                  new ImageIcon(ImageUtilities.loadImage(ICON)));
             putValue(SHORT_DESCRIPTION, NbBundle.getMessage(DebugAction.class, "LBL_RefreshOutputDesc"));
             this.instance = instance;
             

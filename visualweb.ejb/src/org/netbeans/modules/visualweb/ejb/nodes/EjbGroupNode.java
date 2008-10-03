@@ -67,6 +67,7 @@ import org.openide.nodes.Sheet.Set;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -106,19 +107,19 @@ public class EjbGroupNode extends AbstractNode implements PropertyChangeListener
     }
     
     public Image getIcon(int type){
-        Image image1 = Utilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/ejbSetFolder.png");
-        Image image2 = Utilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/archive_container_8x8.png");
+        Image image1 = ImageUtilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/ejbSetFolder.png");
+        Image image2 = ImageUtilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/archive_container_8x8.png");
         int x = image1.getWidth(null) - image2.getWidth(null);
         int y = image1.getHeight(null) - image2.getHeight(null);
-        return Utilities.mergeImages( image1, image2, x, y);
+        return ImageUtilities.mergeImages( image1, image2, x, y);
     }
     
     public Image getOpenedIcon(int type){
-        Image image1 = Utilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/ejbSetOpenFolder.png");
-        Image image2 = Utilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/archive_container_8x8.png");
+        Image image1 = ImageUtilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/ejbSetOpenFolder.png");
+        Image image2 = ImageUtilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/archive_container_8x8.png");
         int x = image1.getWidth(null) - image2.getWidth(null);
         int y = image1.getHeight(null) - image2.getHeight(null);
-        return Utilities.mergeImages( image1, image2, x, y);
+        return ImageUtilities.mergeImages( image1, image2, x, y);
     }
     
     protected EjbGroupNodeChildren getEjbGroupNodeChildren() {

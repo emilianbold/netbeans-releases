@@ -503,24 +503,27 @@ public class UIDiagram extends Diagram {
                                           boolean bDeselectAllOthers) 
     {
         Widget w=scene.findWidget(pPresentationElement);
-        Rectangle bnd=w.getBounds();
-        bnd=w.convertLocalToScene(bnd);
-        centerRectangle(bnd);
-        
-        ContextPaletteManager manager = scene.getLookup().lookup(ContextPaletteManager.class);
-        if(manager != null)
+        if(w!=null)
         {
-            manager.cancelPalette();
-        }
-        
-        Set selected=new HashSet(bDeselectAllOthers ? new HashSet() : scene.getSelectedObjects());
-        selected.add(pPresentationElement);
-        scene.userSelectionSuggested(selected, false);
-        scene.validate();
-        
-        if(manager != null)
-        {
-            manager.selectionChanged(null);
+            Rectangle bnd=w.getBounds();
+            bnd=w.convertLocalToScene(bnd);
+            centerRectangle(bnd);
+
+            ContextPaletteManager manager = scene.getLookup().lookup(ContextPaletteManager.class);
+            if(manager != null)
+            {
+                manager.cancelPalette();
+            }
+
+            Set selected=new HashSet(bDeselectAllOthers ? new HashSet() : scene.getSelectedObjects());
+            selected.add(pPresentationElement);
+            scene.userSelectionSuggested(selected, false);
+            scene.validate();
+
+            if(manager != null)
+            {
+                manager.selectionChanged(null);
+            }
         }
     }
     

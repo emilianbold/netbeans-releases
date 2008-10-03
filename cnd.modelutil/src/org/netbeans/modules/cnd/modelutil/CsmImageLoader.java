@@ -48,6 +48,7 @@ import java.util.Map;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -75,7 +76,7 @@ public class CsmImageLoader implements CsmImageName {
      */
     public static Image getImage(CsmObject o, Map<CsmDeclaration.Kind, CsmDeclaration.Kind> translateIcons) {
         String iconPath = getImagePath(o, translateIcons);
-        return Utilities.loadImage(iconPath);
+        return ImageUtilities.loadImage(iconPath);
     }
 
     public static Image getFriendFunctionImage(CsmFriend o) {
@@ -90,7 +91,7 @@ public class CsmImageLoader implements CsmImageName {
                 iconPath = FRIEND_METHOD;
             }
         }
-        return Utilities.loadImage(iconPath);
+        return ImageUtilities.loadImage(iconPath);
     }
 
     public static ImageIcon getProjectIcon(CsmProject prj, boolean opened) {
@@ -100,7 +101,7 @@ public class CsmImageLoader implements CsmImageName {
 
     public static Image getProjectImage(boolean library, boolean opened) {
         String iconPath = getProjectPath(library, opened);
-        return Utilities.loadImage(iconPath);
+        return ImageUtilities.loadImage(iconPath);
     }
     
     private static String getProjectPath(boolean library, boolean opened) {
@@ -421,7 +422,7 @@ public class CsmImageLoader implements CsmImageName {
     private static ImageIcon getCachedImageIcon(String iconPath) {
         ImageIcon icon = map.get(iconPath);
         if (icon == null) {
-            icon = new ImageIcon(Utilities.loadImage(iconPath));
+            icon = new ImageIcon(ImageUtilities.loadImage(iconPath));
             map.put(iconPath, icon);
         }
         return icon;

@@ -49,6 +49,7 @@ import org.netbeans.modules.mobility.editor.pub.J2MEDataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -59,7 +60,7 @@ import java.awt.*;
  */
 public class J2MENode extends FilterNode implements MIDletsCacheListener {
     
-    public static final Image entryPointImage = Utilities.loadImage("org/netbeans/modules/mobility/editor/resources/entrypoint.gif", true); //NOI18N
+    public static final Image entryPointImage = ImageUtilities.loadImage("org/netbeans/modules/mobility/editor/resources/entrypoint.gif", true); //NOI18N
     
     final private J2MEDataObject dao;
     final private Node node;
@@ -92,7 +93,7 @@ public class J2MENode extends FilterNode implements MIDletsCacheListener {
         final String midlet = cp.getResourceName(file, '.', false);
         if (cache.contains(midlet))
             if (original != null  &&  entryPointImage != null)
-                original = Utilities.mergeImages(original, entryPointImage, 0, 0);
+                original = ImageUtilities.mergeImages(original, entryPointImage, 0, 0);
         return original;
     }
     

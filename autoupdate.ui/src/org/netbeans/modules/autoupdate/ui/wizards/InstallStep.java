@@ -86,6 +86,7 @@ import org.netbeans.modules.autoupdate.ui.NetworkProblemPanel;
 import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
 import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.netbeans.modules.autoupdate.ui.actions.AutoupdateCheckScheduler;
+import org.netbeans.modules.autoupdate.ui.actions.AutoupdateSettings;
 import org.netbeans.modules.autoupdate.ui.actions.BalloonManager;
 import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.LazyUnit;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
@@ -575,6 +576,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         panel.hideRunInBackground ();
         if (runInBackground ()) {
             InstallSupport support = model.getInstallSupport ();
+            resetLastCheckWhenUpdatingFirstClassModules (model.getAllUpdateElements ());
             support.doRestartLater (restarter);
             try {
                 model.doCleanup (false);
@@ -730,6 +732,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             assert support != null : "OperationSupport cannot be null because OperationContainer " +
                     "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
             if (panel.restartNow ()) {
+                resetLastCheckWhenUpdatingFirstClassModules (model.getAllUpdateElements ());
                 handleLazyUnits (clearLazyUnits, false);
                 try {
                     support.doRestart (restarter, null);
@@ -738,6 +741,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 }
                 
             } else {
+                resetLastCheckWhenUpdatingFirstClassModules (model.getAllUpdateElements ());
                 support.doRestartLater (restarter);
                 handleLazyUnits (clearLazyUnits, true);
                 try {
@@ -808,5 +812,18 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
 
     private static String getBundle (String key, Object... params) {
         return NbBundle.getMessage (InstallStep.class, key, params);
+    }
+    
+    private static void resetLastCheckWhenUpdatingFirstClassModules (Collection<UpdateElement> toUpdate) {
+        boolean resetChecking = false;
+        for (UpdateElement el : toUpdate) {
+            if (Utilities.getFirstClassModules ().contains (el.getCodeName ())) {
+                resetChecking = true;
+                break;
+            }
+        }
+        if (resetChecking) {
+            AutoupdateSettings.setLastCheck (null);
+        }
     }
 }

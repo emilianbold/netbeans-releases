@@ -1,6 +1,5 @@
 Other                   > Declaration           D
                           Javadoc               J
                           Application Actions   A
-                          BPEL Mapper           M
                           CSS Preview           S
                           CSS Style Builder     B

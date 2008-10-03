@@ -22,6 +22,7 @@ package org.netbeans.modules.xml.xpath.ext.metadata.impl.images;
 import java.awt.Image;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -41,7 +42,7 @@ public final class IconLoader {
     
     public static Icon getIcon(Object name, String locationFolder) {
         String fileName = locationFolder + name + ".png"; // NOI18N
-        Image img = Utilities.loadImage(fileName);
+        Image img = ImageUtilities.loadImage(fileName);
         if (img == null) {
             return UNKNOWN_ICON;
         } else {

@@ -235,6 +235,8 @@ public class JPDAStart extends Task implements Runnable {
                         if (lock[1] instanceof DebuggerStartException) {
                             //getProject().log(((DebuggerStartException) lock[1]).getLocalizedMessage(), Project.MSG_ERR);
                             throw new BuildException(((DebuggerStartException) lock[1]).getLocalizedMessage());
+                        } else if (lock[1] instanceof ThreadDeath) {
+                            throw (ThreadDeath) lock[1];
                         } else {
                             throw new BuildException ((Throwable) lock [1]);
                         }
@@ -426,6 +428,9 @@ public class JPDAStart extends Task implements Runnable {
                 lock[1] = ioex;
             } catch (com.sun.jdi.connect.IllegalConnectorArgumentsException icaex) {
                 lock[1] = icaex;
+            } catch (ThreadDeath td) {
+                // Session was canceled - see issue #148483
+                lock[1] = td;
             } finally {
                 debug ("Notifying"); // NOI18N
                 lock.notify ();

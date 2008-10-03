@@ -139,6 +139,9 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
         if (superText != null) {
             return superText;
         }
+        if (customEditor == null) {
+            return null;
+        }
         customEditor.setConstant(MidpTypes.getInteger((PropertyValue) super.getValue()));
         return customEditor.getBitmaskAsText();
     }

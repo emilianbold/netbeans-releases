@@ -58,6 +58,7 @@ import org.netbeans.modules.xml.wsdl.ui.search.ComponentTypeSearchProvider;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.TreeEditorView;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ui.category.AbstractCategory;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -127,7 +128,7 @@ public class WSDLTreeCategory extends AbstractCategory {
     public Icon getIcon() {
         String url = NbBundle.getMessage(WSDLTreeCategory.class,
                 "IMG_WsdlCategory_Tree");
-        Image img = Utilities.loadImage(url);
+        Image img = ImageUtilities.loadImage(url);
         return new ImageIcon(img);
     }
 

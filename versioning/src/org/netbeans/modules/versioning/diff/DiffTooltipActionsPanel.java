@@ -46,6 +46,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -55,10 +56,10 @@ import org.openide.util.NbBundle;
  */
 class DiffTooltipActionsPanel extends JToolBar implements ActionListener {
     
-    private final Icon iconPrevious = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/diff/diff-prev.png")); // NOI18N
-    private final Icon iconNext = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/diff/diff-next.png")); // NOI18N
-    private final Icon iconDiff = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/diff/diff.png")); // NOI18N
-    private final Icon iconRollback = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/diff/rollback.png")); // NOI18N
+    private final Icon iconPrevious = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/versioning/diff/diff-prev.png")); // NOI18N
+    private final Icon iconNext = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/versioning/diff/diff-next.png")); // NOI18N
+    private final Icon iconDiff = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/versioning/diff/diff.png")); // NOI18N
+    private final Icon iconRollback = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/versioning/diff/rollback.png")); // NOI18N
 
     private final DiffActionTooltipWindow master;
     private final Difference              diff;

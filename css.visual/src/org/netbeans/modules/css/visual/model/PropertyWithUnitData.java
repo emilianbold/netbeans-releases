@@ -92,7 +92,7 @@ public class PropertyWithUnitData extends PropertyData{
 
     public String toString(){
         String valueString = super.toString();
-        if(Utils.isInteger(valueString)){
+        if(Utils.isFloat(valueString)){
             valueString += unit;
         }
         return valueString;

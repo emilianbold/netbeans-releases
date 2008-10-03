@@ -63,8 +63,6 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class LocalVariablesTest extends JellyTestCase {
     
-    static int consoleLineNumber = 0;
-    
     public final String version;
     
     String projectPropertiesTitle;
@@ -143,7 +141,7 @@ public class LocalVariablesTest extends JellyTestCase {
         Utilities.setCaret(eo, temp);
         new RunToCursorAction().perform();
         Utilities.getDebugToolbar().waitComponentVisible(true);
-        consoleLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:"+Integer.toString(temp)+".", 0); //NOI18N
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:"+Integer.toString(temp)+"."); //NOI18N
         new EventTool().waitNoEvent(1000);
         expandNodes();
     }
@@ -316,7 +314,7 @@ public class LocalVariablesTest extends JellyTestCase {
             new EventTool().waitNoEvent(500);
             new RunToCursorAction().performMenu();
             new EventTool().waitNoEvent(500);
-            consoleLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104.", consoleLineNumber+1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
             
             Utilities.showDebuggerView(Utilities.localVarsViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
@@ -353,9 +351,7 @@ public class LocalVariablesTest extends JellyTestCase {
             Utilities.setCaret(eo, 104);
             new EventTool().waitNoEvent(500);
             new RunToCursorAction().performMenu();
-            new EventTool().waitNoEvent(1500);
-            consoleLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104.", consoleLineNumber+1);
-            new EventTool().waitNoEvent(1500);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
             new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
             new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
             new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();

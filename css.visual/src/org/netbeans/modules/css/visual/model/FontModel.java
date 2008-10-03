@@ -156,7 +156,7 @@ public class FontModel{
         }
 
         public String getValue(){
-            if(Utils.isInteger(fontSize)){
+            if(Utils.isFloat(fontSize)){
                 return fontSize;
             }else{
                 return null;

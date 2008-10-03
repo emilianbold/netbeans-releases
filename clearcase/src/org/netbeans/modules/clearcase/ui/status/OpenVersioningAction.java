@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.clearcase.ui.status;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 
@@ -55,7 +56,7 @@ public class OpenVersioningAction extends SystemAction {
 
     public OpenVersioningAction() {
         putValue("noIconInMenu", Boolean.FALSE); // NOI18N
-        setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/clearcase/resources/icons/versioning-view.png"))); // NOI18N
+        setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/clearcase/resources/icons/versioning-view.png"))); // NOI18N
     }
 
 

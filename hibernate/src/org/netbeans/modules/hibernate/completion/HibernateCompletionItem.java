@@ -72,6 +72,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -316,7 +317,7 @@ public abstract class HibernateCompletionItem implements CompletionItem {
         @Override
         protected ImageIcon getIcon() {
 
-            return new ImageIcon(Utilities.loadImage(FIELD_ICON));
+            return new ImageIcon(ImageUtilities.loadImage(FIELD_ICON));
         }
 
         @Override
@@ -456,7 +457,7 @@ public abstract class HibernateCompletionItem implements CompletionItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(Utilities.loadImage(CLASS));
+            return new ImageIcon(ImageUtilities.loadImage(CLASS));
         }
 
         @Override
@@ -543,7 +544,7 @@ public abstract class HibernateCompletionItem implements CompletionItem {
         @Override
         protected ImageIcon getIcon() {
             if (icon == null) {
-                icon = new ImageIcon(Utilities.loadImage(PACKAGE));
+                icon = new ImageIcon(ImageUtilities.loadImage(PACKAGE));
             }
             return icon;
         }
@@ -648,7 +649,7 @@ public abstract class HibernateCompletionItem implements CompletionItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(Utilities.loadImage(TABLE_ICON));
+            return new ImageIcon(ImageUtilities.loadImage(TABLE_ICON));
         }
     }
 
@@ -693,9 +694,9 @@ public abstract class HibernateCompletionItem implements CompletionItem {
         @Override
         protected ImageIcon getIcon() {
             if (pk) {
-                return new ImageIcon(Utilities.loadImage(PK_COLUMN_ICON));
+                return new ImageIcon(ImageUtilities.loadImage(PK_COLUMN_ICON));
             } else {
-                return new ImageIcon(Utilities.loadImage(COLUMN_ICON));
+                return new ImageIcon(ImageUtilities.loadImage(COLUMN_ICON));
             }
         }
     }
@@ -795,7 +796,7 @@ public abstract class HibernateCompletionItem implements CompletionItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(Utilities.loadImage(HB_MAPPING_ICON));
+            return new ImageIcon(ImageUtilities.loadImage(HB_MAPPING_ICON));
         }
     }
 
