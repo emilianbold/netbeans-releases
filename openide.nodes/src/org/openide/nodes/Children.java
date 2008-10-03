@@ -140,29 +140,18 @@ public abstract class Children extends Object {
     /**
      * Initializes entry support.
      */
-    final EntrySupport entrySupport() {
+    EntrySupport entrySupport() {
         synchronized (Children.class) {
-            checkSupportValidity();
             if (entrySupport == null) {
-                entrySupport = createEntrySource();
+                entrySupport = lazySupport ? new EntrySupport.Lazy(this) : new EntrySupport.Default(this);
                 postInitializeEntrySupport();
             }
             return entrySupport;
         }
     }
-    
-    void checkSupportValidity() {
-    }
-    
+
     boolean lazySupport;
-    /**
-     * Creates appropriate entry support for this children.
-     * Overriden in Children.Keys to sometimes make lazy support.
-     */
-    EntrySupport createEntrySource() {
-        return lazySupport ? new EntrySupport.Lazy(this) : new EntrySupport.Default(this);
-    }
-    
+
     boolean isLazy() {
         return lazySupport;
     }

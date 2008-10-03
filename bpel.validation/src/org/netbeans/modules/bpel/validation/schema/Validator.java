@@ -209,7 +209,7 @@ public final class Validator extends XsdBasedValidator {
     if (k == -1) {
       return value;
     }
-    return value.substring(0, k) + "The element must contain at least one child activity."; // NOI18N
+    return value.substring(0, k) + i18n(Validator.class, "Must_contain_child"); // NOI18N
   }
 
   private int getCommaCount(String value) {
