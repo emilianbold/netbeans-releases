@@ -1,5 +1,6 @@
-package org.netbeans.test.junit3;
+package org.netbeans.test.junit.junit3;
 
+import org.netbeans.jellytools.modules.junit.testcases.ExtJellyTestCaseForJunit3;
 import java.util.ArrayList;
 import javax.swing.tree.TreePath;
 import junit.framework.Test;
@@ -27,16 +28,17 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  * @author Pavel Pribyl
  */
-public class CreateProjectTest extends ExtJellyTestCase {
+public class CreateProjectTest extends ExtJellyTestCaseForJunit3 {
 
     public CreateProjectTest(String testName) {
         super(testName);
     }
 
+    /*
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(suite());
     }
-
+    
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateProjectTest.class).addTest(
            "testCreateJUnit3Project",
@@ -47,6 +49,7 @@ public class CreateProjectTest extends ExtJellyTestCase {
             "testGeneratedMainTestFile2",
             "testDeteleJUnit3Project").enableModules(".*").clusters(".*"));
     }
+    */
 
     public void testCreateJUnit3Project() {
         new Action("File|New Project", null).perform();
@@ -104,7 +107,7 @@ public class CreateProjectTest extends ExtJellyTestCase {
         ArrayList<String> lines = new ArrayList<String>();
         lines.add("import junit.framework.");
 
-        lines.add("suite.addTest(new TestSuite(junit3testproject.MainTest.class));");
+        lines.add("public static Test suite()");
         lines.add("protected void setUp() throws Exception");
         lines.add("protected void tearDown() throws Exception");
         lines.add("@Override");
