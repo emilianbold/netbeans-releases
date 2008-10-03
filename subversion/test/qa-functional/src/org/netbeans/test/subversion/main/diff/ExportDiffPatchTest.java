@@ -91,7 +91,7 @@ public class ExportDiffPatchTest extends JellyTestCase {
         try {
             MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
-
+            TestKit.TIME_OUT = 25;
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             VersioningOperator vo = VersioningOperator.invoke();
             TestKit.showStatusLabels();
@@ -152,7 +152,7 @@ public class ExportDiffPatchTest extends JellyTestCase {
             //comOperator = new Operator.DefaultStringComparator(true, true);
             //oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
             //Operator.setDefaultStringComparator(comOperator);
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(3000);
 
             mh = new MessageHandler("Exporting");
             TestKit.removeHandlers(log);
@@ -181,6 +181,7 @@ public class ExportDiffPatchTest extends JellyTestCase {
             br.close();
             assertTrue("Diff Patch file is empty!", generated);
             System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
+            TestKit.TIME_OUT = 15;
             stream.flush();
             stream.close();
         } catch (Exception e) {

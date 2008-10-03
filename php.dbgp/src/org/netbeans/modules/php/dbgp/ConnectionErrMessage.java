@@ -48,6 +48,7 @@ import javax.swing.JLabel;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import org.netbeans.modules.php.project.api.PhpOptions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -76,10 +77,14 @@ public class ConnectionErrMessage extends javax.swing.JPanel {
     }
 
     private static String createMessage(int seconds) {
-        final String reason1 = "<li>"+NbBundle.getMessage(ConnectionErrMessage.class, "MSG_ErrDebugSessionReason1")+"</li>";//NOI18N
-        final String reason2 = "<li>"+NbBundle.getMessage(ConnectionErrMessage.class, "MSG_ErrDebugSessionReason2")+"</li>";//NOI18N
-        final String reasons = "<ul>"+reason1+reason2+"</ul>";       
-        return "<html>"+NbBundle.getMessage(ConnectionErrMessage.class, "MSG_ErrDebugSession", seconds,reasons)+"</html>";//NOI18N
+        int debuggerPort = PhpOptions.getInstance().getDebuggerPort();
+        final String entry1 = "<li>"+NbBundle.getMessage(ConnectionErrMessage.class, "MSG_ErrDebugSessionEntry1")+"</li>";//NOI18N
+        final String entry2 = "<li>"+NbBundle.getMessage(ConnectionErrMessage.class, "MSG_ErrDebugSessionEntry2")+"</li>";//NOI18N
+        final String entry3 = "<li>"+NbBundle.getMessage(ConnectionErrMessage.class, "MSG_ErrDebugSessionEntry3")+"</li>";//NOI18N
+        final String entry4 = "<li>"+NbBundle.getMessage(ConnectionErrMessage.class, "MSG_ErrDebugSessionEntry4",
+                String.valueOf(debuggerPort))+"</li>";//NOI18N
+        final String entries = "<ul>"+entry1+entry2+entry3+entry4+"</ul>";       
+        return "<html>"+NbBundle.getMessage(ConnectionErrMessage.class, "MSG_ErrDebugSession", seconds,entries)+"</html>";//NOI18N
     }
     
     private static JLabel createIconLabel() {
@@ -125,8 +130,8 @@ public class ConnectionErrMessage extends javax.swing.JPanel {
                     .add(messageTextLabel)
                     .add(messageIconLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(link, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(link, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 39, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 

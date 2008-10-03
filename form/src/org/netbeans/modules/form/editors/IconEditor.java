@@ -542,9 +542,15 @@ public class IconEditor extends PropertyEditorSupport
                     setValue(iconFromFileName(name));
                     break;
                 case TYPE_CLASSPATH:
-                    if (name.startsWith("/")) // NOI18N
+                    if (name.startsWith("/")) {// NOI18N
                         name = name.substring(1);
-                    setValue(iconFromResourceName(name));
+                    }
+                    NbImageIcon iconValue = iconFromResourceName(name);
+                    if (iconValue == null && name.contains("/")) { // NOI18N
+                        // likely the image file cannot be found, but we should keep the value
+                        iconValue = new NbImageIcon(TYPE_CLASSPATH, name, null);
+                    }
+                    setValue(iconValue);
                     break;
             }
         } catch (NullPointerException e) {

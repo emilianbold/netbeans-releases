@@ -1101,6 +1101,24 @@ public class EditorContextImpl extends EditorContext {
         return "";
          */
     }
+
+    private CompilationController getPreferredCompilationController(FileObject fo, JavaSource js) throws IOException {
+        CompilationController preferredCI;
+        if (fo != null) {
+            JavaSourceUtil.Handle handle;
+            synchronized (sourceHandles) {
+                handle = sourceHandles.get(js);
+            }
+            handle = JavaSourceUtil.createControllerHandle(fo, handle);
+            synchronized (sourceHandles) {
+                sourceHandles.put(js, handle);
+            }
+            preferredCI = (CompilationController) handle.getCompilationController();
+        } else {
+            preferredCI = null;
+        }
+        return preferredCI;
+    }
         
     @Override
     public Operation[] getOperations(String url, final int lineNumber,
@@ -1126,11 +1144,18 @@ public class EditorContextImpl extends EditorContext {
         final Tree[] methodTreePtr = new Tree[1];
         final int[] treeStartLinePtr = new int[1];
         final int[] treeEndLinePtr = new int[1];
+        //long t1, t2, t3, t4;
+        //t1 = System.nanoTime();
         try {
+            final CompilationController preferredCI = getPreferredCompilationController(dataObject.getPrimaryFile(), js);
+            //t2 = System.nanoTime();
             js.runUserActionTask(new CancellableTask<CompilationController>() {
                 public void cancel() {
                 }
                 public void run(CompilationController ci) throws Exception {
+                    if (preferredCI != null) {
+                        ci = preferredCI;
+                    }
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
@@ -1170,7 +1195,8 @@ public class EditorContextImpl extends EditorContext {
                                 sp.getEndPosition(cu, expTrees.get(expTrees.size() - 1)));
                     
                 }
-            },false);
+            }, false);
+            //t3 = System.nanoTime();
             if (ops[0] != null) {
                 return ops[0];
             }
@@ -1195,6 +1221,8 @@ public class EditorContextImpl extends EditorContext {
             if (ops[0] != null) {
                 assignNextOperations(methodTreePtr[0], cu, ci, bytecodeProvider, expTrees, infoPtr[0], nodeOperations);
             }
+            //t4 = System.nanoTime();
+            //System.err.println("PARSE TIMES 2: "+(t2-t1)/1000000+", "+(t3-t2)/1000000+", "+(t4-t3)/1000000+" TOTAL: "+(t4-t1)/1000000+" ms.");
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ioex);
             return null;
@@ -1482,20 +1510,7 @@ public class EditorContextImpl extends EditorContext {
         //long t1, t2, t3, t4;
         //t1 = System.nanoTime();
         try {
-            final CompilationController preferredCI;
-            if (fo != null) {
-                JavaSourceUtil.Handle handle;
-                synchronized (sourceHandles) {
-                    handle = sourceHandles.get(js);
-                }
-                handle = JavaSourceUtil.createControllerHandle(fo, handle);
-                synchronized (sourceHandles) {
-                    sourceHandles.put(js, handle);
-                }
-                preferredCI = (CompilationController) handle.getCompilationController();
-            } else {
-                preferredCI = null;
-            }
+            final CompilationController preferredCI = getPreferredCompilationController(fo, js);
             //t2 = System.nanoTime();
             js.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController ci) throws Exception {
@@ -1556,7 +1571,7 @@ public class EditorContextImpl extends EditorContext {
                 retValue = tree.accept(visitor, context);
             }
             //t4 = System.nanoTime();
-            //System.err.println("PARSE TIMES: "+(t2-t1)/1000000+", "+(t3-t2)/1000000+", "+(t4-t3)/1000000+" TOTAL: "+(t4-t1)/1000000+" ms.");
+            //System.err.println("PARSE TIMES 1: "+(t2-t1)/1000000+", "+(t3-t2)/1000000+", "+(t4-t3)/1000000+" TOTAL: "+(t4-t1)/1000000+" ms.");
             return retValue;
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ioex);
