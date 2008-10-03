@@ -41,6 +41,8 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 import java.net.MalformedURLException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
@@ -53,6 +55,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -111,7 +114,7 @@ public class DebugCommand extends Command implements Displayable {
                     } else {
                         final FileObject fileForProject = fileForProject(true);
                         if (fileForProject != null) {
-                            dbgStarter.start(getProject(), runnable, fileForProject, scriptSelected);
+                            startDebugger(dbgStarter,runnable, fileForProject, scriptSelected);
                         } else {
                             String idxFileName = ProjectPropertiesSupport.getIndexFile(getProject());
                             String err = NbBundle.getMessage(DebugLocalCommand.class,
@@ -128,6 +131,16 @@ public class DebugCommand extends Command implements Displayable {
                 runnable.run();
             }
         }
+    }
+
+    protected void startDebugger(final XDebugStarter dbgStarter, final Runnable initDebuggingCode,
+            final FileObject debuggedFile, boolean runAsScript) {
+        Callable initDebuggingCallable = Executors.callable(initDebuggingCode, new Cancellable() {
+            public boolean cancel() {
+                return true;
+            }
+        });
+        dbgStarter.start(getProject(), initDebuggingCallable, debuggedFile, runAsScript);
     }
 
     @Override
