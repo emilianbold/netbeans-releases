@@ -1901,6 +1901,61 @@ public class ChildrenKeysTest extends NbTestCase {
         
         //fail("Ok");
     }
+    
+    public void testIssue148911()  {
+        final CountDownLatch block1 = new CountDownLatch(1);
+        final CountDownLatch block2 = new CountDownLatch(1);
+        final Keys ch = new Keys(lazy(), "a", "b");
+        final Node root = createNode(ch);
+        final FilterNode fn = new FilterNode(root);
+
+        class Thread1 extends Thread {
+
+            @Override
+            public void run() {
+                try {
+                    block1.await();
+                    Children.PR.enterWriteAccess();
+                    block2.countDown();
+                    Thread.sleep(500);
+                    ch.getNodesCount();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    Children.PR.exitWriteAccess();
+                }
+            }
+        }
+
+        class Thread2 extends Thread {
+
+            @Override
+            public void run() {
+                Children ch = fn.getChildren();
+                ch.isInitialized();
+                try {
+                    block2.await();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                ch.getNodesCount();
+            }
+        }
+
+        Thread1 thread1 = new Thread1();
+        final Thread2 thread2 = new Thread2();
+        thread2.start();
+        thread1.start();
+        block1.countDown();
+        try {
+            thread1.join(10000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (thread1.isAlive()) {
+            fail("Possible deadlock detected");
+        }
+    }
 
     
     /** Sample keys.
