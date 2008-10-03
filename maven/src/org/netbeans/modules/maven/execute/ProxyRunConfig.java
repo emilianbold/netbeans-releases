@@ -44,6 +44,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Properties;
 import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -131,6 +132,10 @@ public class ProxyRunConfig implements RunConfig {
 
     public String getActionName() {
         return delegate.getActionName();
+    }
+
+    public FileObject getSelectedFileObject() {
+        return delegate.getSelectedFileObject();
     }
     
 }

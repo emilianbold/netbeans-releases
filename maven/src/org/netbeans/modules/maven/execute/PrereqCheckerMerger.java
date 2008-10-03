@@ -39,34 +39,54 @@
 
 package org.netbeans.modules.maven.execute;
 
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import java.util.Collection;
+import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
+import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.cos.CosChecker;
+import org.netbeans.spi.project.LookupMerger;
+import org.openide.util.Lookup;
 
 /**
- * run configuration backed up by model
+ * a PrerequisitesChecker lookupMerger, for now will just put the CoS implementation at the end
+ * of the list.
  * @author mkleint
  */
-public final class ModelRunConfig extends BeanRunConfig {
-    
-    private NetbeansActionMapping model;
-    
-    /** Creates a new instance of ModelRunConfig */
-    public ModelRunConfig(Project proj, NetbeansActionMapping mod, String actionName, FileObject selectedFile) {
-        model = mod;
-        NbMavenProjectImpl nbprj = proj.getLookup().lookup(NbMavenProjectImpl.class);
-        setProject(nbprj);
-        setExecutionName(nbprj.getName());
-        setTaskDisplayName(nbprj.getName());
-        setProperties(model.getProperties());
-        setGoals(model.getGoals());
-        setExecutionDirectory(FileUtil.toFile(proj.getProjectDirectory()));
-        setRecursive(mod.isRecursive());
-        setActivatedProfiles(mod.getActivatedProfiles());
-        setActionName(actionName);
-        setFileObject(selectedFile);
+public class PrereqCheckerMerger implements LookupMerger<PrerequisitesChecker> {
+
+    public Class<PrerequisitesChecker> getMergeableClass() {
+        return PrerequisitesChecker.class;
+    }
+
+    public PrerequisitesChecker merge(Lookup lookup) {
+        Lookup.Result<PrerequisitesChecker> res = lookup.lookupResult(PrerequisitesChecker.class);
+        return new Impl(res);
+    }
+
+    private static class Impl implements PrerequisitesChecker {
+
+        Lookup.Result<PrerequisitesChecker> checkers;
+        public Impl(Lookup.Result<PrerequisitesChecker> res) {
+            checkers = res;
+        }
+
+        public boolean checkRunConfig(RunConfig config) {
+            Collection<? extends PrerequisitesChecker> all = checkers.allInstances();
+            PrerequisitesChecker cos = null;
+            for (PrerequisitesChecker check : all) {
+                if (check instanceof CosChecker) {
+                    cos = check;
+                    continue;
+                }
+                if (!check.checkRunConfig(config)) {
+                    return false;
+                }
+            }
+            if (cos != null && !cos.checkRunConfig(config)) {
+                return false;
+            }
+            return true;
+        }
+
     }
 
 }

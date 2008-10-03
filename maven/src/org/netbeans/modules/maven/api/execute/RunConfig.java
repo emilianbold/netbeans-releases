@@ -43,9 +43,11 @@ import java.io.File;
 import java.util.List;
 import java.util.Properties;
 import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
 
 /**
- * Context provider for maven executor
+ * Context provider for maven executors and checkers. Never to be implemented by
+ * client code.
  * @author Milos Kleint
  */
 public interface RunConfig {
@@ -109,6 +111,8 @@ public interface RunConfig {
     void setActivatedProfiles(List<String> profiles);
     
     boolean isInteractive();
+
+    FileObject getSelectedFileObject();
 
     
 }

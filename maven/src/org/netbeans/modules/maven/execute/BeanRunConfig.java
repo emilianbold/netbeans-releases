@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Properties;
 import org.netbeans.modules.maven.options.MavenExecutionSettings;
 import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -68,6 +69,7 @@ public class BeanRunConfig implements RunConfig {
     private boolean interactive = true;
     private RunConfig parent;
     private String actionName;
+    private FileObject selectedFO;
     
     /** Creates a new instance of BeanRunConfig */
     public BeanRunConfig() {
@@ -258,6 +260,18 @@ public class BeanRunConfig implements RunConfig {
         }
         return actionName;
     }
+
+    public FileObject getSelectedFileObject() {
+        if (parent != null && selectedFO == null) {
+            return parent.getSelectedFileObject();
+        }
+        return selectedFO;
+    }
+
+    public void setFileObject(FileObject selectedFile) {
+        this.selectedFO = selectedFile;
+    }
     
     
 }
+

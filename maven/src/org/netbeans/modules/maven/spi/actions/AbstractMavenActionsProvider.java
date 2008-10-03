@@ -127,21 +127,23 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
         FileObject[] fos = extractFileObjectsfromLookup(lookup);
         String relPath = null;
         SourceGroup group = null;
+        FileObject fo = null;
         HashMap<String, String> replaceMap = new HashMap<String, String>();
         if (fos.length > 0) {
+            fo = fos[0];
             Sources srcs = project.getLookup().lookup(Sources.class);
             SourceGroup[] grp = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             for (int i = 0; i < grp.length; i++) {
-                relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fos[0]);
+                relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
                 if (relPath != null) {
                     group = grp[i];
-                    replaceMap.put(CLASSNAME_EXT, fos[0].getNameExt());
-                    replaceMap.put(CLASSNAME, fos[0].getName());
-                    String pack = FileUtil.getRelativePath(grp[i].getRootFolder(), fos[0].getParent());
+                    replaceMap.put(CLASSNAME_EXT, fo.getNameExt());
+                    replaceMap.put(CLASSNAME, fo.getName());
+                    String pack = FileUtil.getRelativePath(grp[i].getRootFolder(), fo.getParent());
                     if (pack != null) { //#141175
-                        replaceMap.put(PACK_CLASSNAME, (pack + (pack.length() > 0 ? "." : "") + fos[0].getName()).replace('/', '.')); //NOI18N
+                        replaceMap.put(PACK_CLASSNAME, (pack + (pack.length() > 0 ? "." : "") + fo.getName()).replace('/', '.')); //NOI18N
                     } else {
-                        replaceMap.put(PACK_CLASSNAME, fos[0].getName());//NOI18N
+                        replaceMap.put(PACK_CLASSNAME, fo.getName());//NOI18N
                     }
                     break;
                 }
@@ -153,7 +155,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
             }
             grp = srcs.getSourceGroups("doc_root"); //NOI18N J2EE
             for (int i = 0; i < grp.length; i++) {
-                relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fos[0]);
+                relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
                 if (relPath != null) {
                     replaceMap.put(WEB_PATH, relPath);
                     break;
@@ -184,7 +186,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
                 replaceMap.put(PACK_CLASSNAME, replaceMap.get(PACK_CLASSNAME) + "Test");
             }
         }
-        return mapGoalsToAction(project, actionName, replaceMap);
+        return mapGoalsToAction(project, actionName, replaceMap, fo);
     }
 
     public ActionToGoalMapping getRawMappings() {
@@ -291,7 +293,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
      */
     protected abstract InputStream getActionDefinitionStream();
 
-    private RunConfig mapGoalsToAction(Project project, String actionName, HashMap replaceMap) {
+    private RunConfig mapGoalsToAction(Project project, String actionName, HashMap replaceMap, FileObject selectedFile) {
         try {
             // TODO need some caching really badly here..
             Reader read = performDynamicSubstitutions(replaceMap, getRawMappingsAsString());
@@ -310,7 +312,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
                 }
             }
             if (action != null) {
-                return new ModelRunConfig(project, action, actionName);
+                return new ModelRunConfig(project, action, actionName, selectedFile);
             }
         } catch (XmlPullParserException ex) {
             ex.printStackTrace();

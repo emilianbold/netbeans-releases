@@ -132,60 +132,6 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
                 }
             }
         }
-
-        //compile on save stuff
-        if (config.getProject() != null &&
-            NbMavenProject.TYPE_JAR.equals(
-                config.getProject().getLookup().lookup(NbMavenProject.class).getPackagingType())) {
-            Project prj = config.getProject();
-            //TODO replace with an api method call
-
-            if (RunUtils.hasApplicationCompileOnSaveEnabled(config) &&
-                   (ActionProvider.COMMAND_RUN.equals(actionName) ||
-                    ActionProvider.COMMAND_DEBUG.equals(actionName) ||
-                    ActionProvider.COMMAND_RUN_SINGLE.equals(actionName) ||
-                    ActionProvider.COMMAND_DEBUG_SINGLE.equals(actionName))) {
-                //TODO check the COS timestamp against critical files (pom.xml)
-                // if changed, don't do COS.
-
-                //TODO check the COS timestamp against resources etc.
-                //if changed, perform part of the maven build. (or skip COS)
-
-                Map<String, Object> params = new HashMap<String, Object>();
-                params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName());
-                params.put(JavaRunner.PROP_WORK_DIR, config.getExecutionDirectory());
-                ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
-                params.put(JavaRunner.PROP_EXECUTE_CLASSPATH, cpp.getProjectClassPaths(ClassPath.EXECUTE)[0]);
-                //exec:exec property
-                String exargs = config.getProperties().getProperty("exec.args"); //NOI18N
-                if (exargs != null) {
-                    String[] args = RunJarPanel.splitAll(exargs);
-                    System.out.println("jvmargs=" + args[0]);
-                    System.out.println("clazz=" + args[1]);
-                    System.out.println("args=" + args[2]);
-                    params.put(JavaRunner.PROP_CLASSNAME, args[1]);
-                    String[] appargs = args[2].split(" ");
-                    params.put(JavaRunner.PROP_APPLICATION_ARGS, Arrays.asList(appargs));
-                    //TODO jvm args, add and for debugging, remove the debugging ones..
-//                    params.put(JavaRunner.PROP_RUN_JVMARGS, args[2]);
-                    String action2Quick = action2Quick(actionName);
-                    boolean supported = JavaRunner.isSupported(action2Quick, params);
-                    if (supported) {
-                        try {
-                            JavaRunner.execute(action2Quick, params);
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (UnsupportedOperationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                        return false;
-                    } else {
-                    }
-                } else {
-                    //TODO what to do now? skip?
-                }
-            }
-        }
         return true;
     }
 
