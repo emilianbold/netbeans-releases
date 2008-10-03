@@ -119,6 +119,7 @@ public class InitializeTest extends JellyTestCase {
             Thread.sleep(1000);
 
             MessageHandler mh = new MessageHandler("Initializing");
+            TestKit.TIME_OUT = 25;
             log.addHandler(mh);
 
             MessageHandler mh2 = new MessageHandler("Adding");
@@ -159,6 +160,8 @@ public class InitializeTest extends JellyTestCase {
             cmo.commit();
             
             TestKit.waitText(mh);
+
+            TestKit.TIME_OUT = 15;
 
             Thread.sleep(1000);
             vo = VersioningOperator.invoke();
