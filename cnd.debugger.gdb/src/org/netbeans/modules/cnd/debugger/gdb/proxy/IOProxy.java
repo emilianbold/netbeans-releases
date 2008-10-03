@@ -40,10 +40,13 @@
 package org.netbeans.modules.cnd.debugger.gdb.proxy;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.Writer;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
@@ -58,31 +61,37 @@ import org.openide.windows.InputOutput;
  * Creates two fifos for the process input and output and forward them to the specified io tab
  * @author eu155513
  */
-public abstract class InputProxy {
+public abstract class IOProxy {
     private static final String FILENAME_PREFIX = "gdbFifo"; // NOI18N
     private static final String FILENAME_EXTENSION = ".fifo"; // NOI18N
 
     private InputWriterThread irt = null;
     private final Reader ioReader;
+
+    private OutputReaderThread ort = null;
+    private final Writer ioWriter;
     
-    public static InputProxy create(String hkey, InputOutput io) {
-        InputProxy res;
+    public static IOProxy create(String hkey, InputOutput io) {
+        IOProxy res;
         if (hkey == null || CompilerSetManager.LOCALHOST.equals(hkey)) {
-            res = new LocalInputProxy(io.getIn());
+            res = new LocalIOProxy(io.getIn(), io.getOut());
         } else {
-            res = new RemoteInputProxy(hkey, io.getIn());
+            res = new RemoteIOProxy(hkey, io.getIn(), io.getOut());
         }
         res.start();
         return res;
     }
 
-    private InputProxy(Reader ioReader) {
+    private IOProxy(Reader ioReader, Writer ioWriter) {
         this.ioReader = ioReader;
+        this.ioWriter = ioWriter;
     }
 
     private void start() {
-        irt = new InputWriterThread(ioReader);
+        irt = new InputWriterThread();
         irt.start();
+        ort = new OutputReaderThread();
+        ort.start();
     }
 
     public void stop() {
@@ -94,6 +103,14 @@ public abstract class InputProxy {
                 // do nothing
             }
         }
+        if (ort != null) {
+            ort.cancel();
+            try {
+                ioWriter.close();
+            } catch (IOException ex) {
+                // do nothing
+            }
+        }
     }
 
     @Override
@@ -101,25 +118,20 @@ public abstract class InputProxy {
         stop();
     }
 
-    public abstract String getFilename();
-    protected abstract OutputStream createStream() throws IOException;
+    public abstract String getInFilename();
+    protected abstract OutputStream createInStream() throws IOException;
 
-    /** Helper class to read the input from the build */
+    public abstract String getOutFilename();
+    protected abstract InputStream createOutStream() throws IOException;
+
+    /** Helper class forwarding input from the io tab to the file */
     private class InputWriterThread extends Thread {
-
-        /** This is all output, not just stderr */
-        private final Reader in;
         private boolean cancel = false;
 
-        public InputWriterThread(Reader in) {
-            this.in = in;
-            setName("TTY inputReaderThread"); // NOI18N - Note NetBeans doesn't xlate "IDE Main"
+        public InputWriterThread() {
+            setName("TTY InputWriterThread"); // NOI18N - Note NetBeans doesn't xlate "IDE Main"
         }
 
-        /**
-         *  Reader proc to read input from Output2's input textfield and send it
-         *  to the running process.
-         */
         @Override
         public void run() {
             int ch;
@@ -127,9 +139,9 @@ public abstract class InputProxy {
             OutputStream pout = null;
 
             try {
-                pout = createStream();
+                pout = createInStream();
 
-                while ((ch = in.read()) != -1) {
+                while ((ch = ioReader.read()) != -1) {
                     if (cancel) {
                         return;
                     }
@@ -143,7 +155,7 @@ public abstract class InputProxy {
                     pout.flush();
                     pout.close();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }
@@ -153,13 +165,62 @@ public abstract class InputProxy {
         }
     }
 
-    private static class LocalInputProxy extends InputProxy {
-        private final File file;
+    /** Helper class forwarding output from the file to the io tab */
+    private class OutputReaderThread  extends Thread {
+        private boolean cancel = false;
 
-        public LocalInputProxy(Reader ioReader) {
-            super(ioReader);
-            this.file = createNewFifo();
-            this.file.deleteOnExit();
+        public OutputReaderThread() {
+            setName("TTY OutputReaderThread"); // NOI18N - Note NetBeans doesn't xlate "IDE Main"
+        }
+
+        @Override
+        public void run() {
+            InputStream in = null;
+            try {
+                int read;
+                in = createOutStream();
+
+                while ((read = in.read()) != (-1)) {
+                    if (cancel) { // 131739
+                        return;
+                    }
+                    if (read == 10) {
+                        ioWriter.write("\n"); // NOI18N
+                    } else {
+                        ioWriter.write((char) read);
+                    }
+                    //output.flush(); // 135380
+                }
+            } catch (IOException e) {
+            } finally {
+                try {
+                    ioWriter.flush();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                try {
+                    in.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
+        public void cancel() {
+            cancel = true;
+        }
+    }
+
+    private static class LocalIOProxy extends IOProxy {
+        private final File inFile;
+        private final File outFile;
+
+        public LocalIOProxy(Reader ioReader, Writer ioWriter) {
+            super(ioReader, ioWriter);
+            this.inFile = createNewFifo();
+            this.inFile.deleteOnExit();
+            this.outFile = createNewFifo();
+            this.outFile.deleteOnExit();
         }
 
         private static File createNewFifo() {
@@ -196,43 +257,71 @@ public abstract class InputProxy {
         }
 
         @Override
-        protected OutputStream createStream() throws IOException {
-            return new FileOutputStream(file);
+        protected OutputStream createInStream() throws IOException {
+            return new FileOutputStream(inFile);
         }
 
         @Override
-        public String getFilename() {
-            return file.getAbsolutePath();
+        public String getInFilename() {
+            return inFile.getAbsolutePath();
+        }
+
+        @Override
+        protected InputStream createOutStream() throws IOException {
+            return new FileInputStream(outFile);
+        }
+
+        @Override
+        public String getOutFilename() {
+            return outFile.getAbsolutePath();
         }
 
         @Override
         public void stop() {
             super.stop();
-            file.delete();
+            inFile.delete();
+            outFile.delete();
         }
     }
 
-    private static class RemoteInputProxy extends InputProxy {
-        private final String filename;
+    private static class RemoteIOProxy extends IOProxy {
+        private final String inFilename;
+        private final String outFilename;
         private final String hkey;
-        private InteractiveCommandProvider provider = null;
+        private InteractiveCommandProvider inProvider = null;
+        private InteractiveCommandProvider outProvider = null;
 
-        public RemoteInputProxy(String hkey, Reader ioReader) {
-            super(ioReader);
+        public RemoteIOProxy(String hkey, Reader ioReader, Writer ioWriter) {
+            super(ioReader, ioWriter);
             this.hkey = hkey;
-            this.filename = createNewFifo(hkey);
+            this.inFilename = createNewFifo(hkey);
+            this.outFilename = createNewFifo(hkey);
         }
 
         @Override
-        public String getFilename() {
-            return filename;
+        public String getInFilename() {
+            return inFilename;
         }
 
         @Override
-        protected OutputStream createStream() throws IOException {
-            provider = InteractiveCommandProviderFactory.create(hkey);
-            if (provider != null && provider.run(hkey, "cat > " + filename, null)) { // NOI18N
-                return provider.getOutputStream();
+        protected OutputStream createInStream() throws IOException {
+            inProvider = InteractiveCommandProviderFactory.create(hkey);
+            if (inProvider != null && inProvider.run(hkey, "cat > " + inFilename, null)) { // NOI18N
+                return inProvider.getOutputStream();
+            }
+            return null;
+        }
+
+        @Override
+        public String getOutFilename() {
+            return outFilename;
+        }
+
+        @Override
+        protected InputStream createOutStream() throws IOException {
+            outProvider = InteractiveCommandProviderFactory.create(hkey);
+            if (outProvider != null && outProvider.run(hkey, "cat " + outFilename, null)) { // NOI18N
+                return outProvider.getInputStream();
             }
             return null;
         }
@@ -251,13 +340,16 @@ public abstract class InputProxy {
         @Override
         public void stop() {
             super.stop();
-            if (provider != null) {
-                provider.disconnect();
+            if (inProvider != null) {
+                inProvider.disconnect();
             }
-            // delete the file
+            if (outProvider != null) {
+                outProvider.disconnect();
+            }
+            // delete files
             CommandProvider cp = Lookup.getDefault().lookup(CommandProvider.class);
             if (cp != null) {
-                cp.run(hkey, "rm -f " + filename, null); // NOI18N
+                cp.run(hkey, "rm -f " + inFilename + " " + outFilename, null); // NOI18N
             }
         }
     }
