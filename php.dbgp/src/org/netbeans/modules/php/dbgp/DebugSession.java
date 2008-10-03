@@ -277,7 +277,15 @@ public class DebugSession implements Runnable {
                     }
                 } catch (SocketException exc) {
                     Logger.getLogger(DebugSession.class.getName()).log(Level.INFO, null, exc);
-                    stop();
+                    Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+                    SessionId sessionId = getSessionId();
+                    for (Session session : sessions) {
+                        SessionId id = (SessionId) session.lookupFirst(null, SessionId.class);
+                        if (id != null && id.getId().equals(sessionId.getId())) {
+                            StartActionProviderImpl.getInstance().stop(session);
+                        }
+                    }
+
                     warnUserInCaseOfSocketException();
                 }
             }
