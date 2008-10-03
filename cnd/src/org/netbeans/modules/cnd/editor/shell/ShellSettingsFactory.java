@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.editor.shell;
 
 import org.netbeans.editor.Acceptor;
+import org.netbeans.editor.AcceptorFactory;
 
 /**
  * Settings factory for shell files.
@@ -60,6 +61,14 @@ public class ShellSettingsFactory {
 
     public static Acceptor getIndentHotCharsAcceptor() {
         return INDENT_HOT_CHARS_ACCEPTOR;
+    }
+
+    public static Acceptor getIdentifierAcceptor() {
+        return AcceptorFactory.LETTER_DIGIT;
+    }
+
+    public static Acceptor getAbbrevResetAcceptor() {
+        return AcceptorFactory.NON_JAVA_IDENTIFIER;
     }
 
 }

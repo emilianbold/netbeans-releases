@@ -44,5 +44,7 @@ made subject to such option by the copyright holder.
 
 <editor-preferences>
     <entry name="word-match-match-case" javaType="java.lang.Boolean" value="true" />
-    <entry name="indent-hot-chars-acceptor" javaType="methodvalue" value="org.netbeans.modules.cnd.editor.shell.getIndentHotCharsAcceptor" />
+    <entry name="indent-hot-chars-acceptor" javaType="methodvalue" value="org.netbeans.modules.cnd.editor.shell.ShellSettingsFactory.getIndentHotCharsAcceptor" />
+    <entry name="identifier-acceptor" javaType="methodvalue" value="org.netbeans.modules.cnd.editor.shell.ShellSettingsFactory.getIdentifierAcceptor" />
+    <entry name="abbrev-reset-acceptor" javaType="methodvalue" value="org.netbeans.modules.cnd.editor.shell.ShellSettingsFactory.getAbbrevResetAcceptor" />
 </editor-preferences>

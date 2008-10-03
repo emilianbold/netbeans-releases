@@ -41,10 +41,6 @@
 
 package org.netbeans.modules.cnd.editor.makefile;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamField;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.FormatterIndentEngine;
@@ -69,8 +65,6 @@ public class MakefileIndentEngine extends FormatterIndentEngine {
 
     public MakefileIndentEngine() {
         setAcceptedMimeTypes(new String[] { MIMENames.MAKEFILE_MIME_TYPE });
-	setExpandTabs(false); // This should be the default for Makefilesd
-	setSpacesPerTab(8);
     }
     
     protected ExtFormatter createFormatter() {

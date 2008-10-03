@@ -43,6 +43,8 @@ made subject to such option by the copyright holder.
 <!DOCTYPE editor-preferences PUBLIC "-//NetBeans//DTD Editor Preferences 1.0//EN" "http://www.netbeans.org/dtds/EditorPreferences-1_0.dtd">
 
 <editor-preferences>
+    <entry name="tab-size" value="8" javaType="java.lang.Integer" />
+    <entry name="expand-tabs" value="false" javaType="java.lang.Boolean" />
     <entry name="word-match-match-case" value="true" javaType="java.lang.Boolean" />
     <entry name="word-match-static-words" value="Exception IntrospectionException FileNotFoundException IOException ArrayIndexOutOfBoundsException ClassCastException ClassNotFoundException CloneNotSupportedException NullPointerException NumberFormatException SQLException IllegalAccessException IllegalArgumentException" javaType="java.lang.String" />
     <entry name="abbrev-reset-acceptor" value="org.netbeans.modules.cnd.editor.makefile.MakefileSettingsFactory.getAbbrevResetAcceptor" javaType="methodvalue" />
