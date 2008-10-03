@@ -270,7 +270,7 @@ made subject to such option by the copyright holder.
         <file name="SO-9.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-DebuggingViewAction.instance"/>
         </file>
-        <file name="D-8.shadow">
+        <file name="SO-T.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-debugging-ThreadsHistoryAction.instance"/>
         </file>
         <!-- <file name="D-9.shadow">  TODO: Redefine, conflicts with Actions/View/org.netbeans.modules.cnd.classview-ClassViewAction.instance, defined in org.netbeans.modules.cnd.classview/1

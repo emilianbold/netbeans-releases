@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.dbgp;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
@@ -49,6 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.api.PhpProjectUtils;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Cancellable;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -63,15 +65,14 @@ public class DebuggerImpl implements XDebugStarter {
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.Debugger#debug()
      */
-    public void start(Project project, Runnable run, FileObject startFile, boolean closeSession) {
+    public void start(Project project, Callable<Cancellable> run, FileObject startFile, boolean closeSession) {
         assert startFile != null;
         SessionId sessionId = getSessionId(project);
         if (sessionId == null) {
             sessionId = new SessionId(startFile);
             DebuggerOptions options = new DebuggerOptions();
             options.debugForFirstPageOnly = closeSession;
-            debug(sessionId, options);
-            RequestProcessor.getDefault().post(run);
+            debug(sessionId, options, run);
             long started = System.currentTimeMillis();
             String serverFileUri = sessionId.waitServerFile(true);
             if (serverFileUri == null) {
@@ -123,10 +124,10 @@ public class DebuggerImpl implements XDebugStarter {
         return null;
     }
 
-    public Semaphore debug(SessionId id,DebuggerOptions options) {
+    public Semaphore debug(SessionId id,DebuggerOptions options, Callable<Cancellable> run) {
         DebugSession session = new DebugSession(options);
         DebuggerInfo dInfo = DebuggerInfo.create(ID, new Object[]{id, session});
         DebuggerEngine[] engines = DebuggerManager.getDebuggerManager().startDebugging(dInfo);
-        return StartActionProviderImpl.getInstance().start(session);
-    }    
+        return StartActionProviderImpl.getInstance().start(session, run);
+    }
 }

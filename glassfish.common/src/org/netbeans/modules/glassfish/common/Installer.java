@@ -56,7 +56,7 @@ public class Installer extends ModuleInstall {
         if (GlassfishInstanceProvider.initialized()) {
             GlassfishInstanceProvider provider = GlassfishInstanceProvider.getDefault();
             for(GlassfishInstance instance: provider.getInternalInstances()) {
-                instance.stopIfStartedByIde();
+                instance.stopIfStartedByIde(0L);
             }
         }
     }

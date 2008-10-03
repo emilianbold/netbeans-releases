@@ -42,9 +42,8 @@ package org.netbeans.modules.php.dbgp.breakpoints;
 
 import java.lang.reflect.InvocationTargetException;
 
-import javax.swing.JEditorPane;
-import javax.swing.text.Caret;
-import javax.swing.text.StyledDocument;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -56,12 +55,10 @@ import org.netbeans.modules.php.dbgp.packets.BrkpntRemoveCommand;
 import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand;
 import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand.State;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
-import org.openide.text.NbDocument;
 
 
 /**
@@ -193,10 +190,14 @@ public class Utils {
             if (set == null) {
                 return null;
             }
-            if (line < 0 || set.getLines().size() < line) {
-                return null;
+            try {
+                return set.getCurrent(line-1);
+            } catch (IndexOutOfBoundsException e) {
+                Logger.getLogger( Utils.class.getName()).log(Level.FINE, e.getMessage(), e);
+            } catch (IllegalArgumentException e) {
+                Logger.getLogger( Utils.class.getName()).log(Level.FINE, e.getMessage(), e);
             }
-            return set.getOriginal(line - 1);
+            return null;
         }        
     }
 }

@@ -41,6 +41,8 @@
 package org.netbeans.performance.languages.actions;
 
 
+import java.awt.Container;
+import javax.swing.JComponent;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
@@ -49,6 +51,7 @@ import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 
@@ -65,19 +68,52 @@ public class CreateRubyProject  extends org.netbeans.modules.performance.utiliti
     public CreateRubyProject(String testName) {
         super(testName);        
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;        
+        WAIT_AFTER_OPEN=20000;
     }
     
     public CreateRubyProject(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;        
+        WAIT_AFTER_OPEN=20000;
     }
 
     @Override
     public void initialize(){
-        log("::initialize::");              
-                
+        log("::initialize::");
+
+        repaintManager().addRegionFilter(new LoggingRepaintManager.RegionFilter() {
+
+            public boolean accept(JComponent c) {
+                String cn = c.getClass().getName();
+                if ("org.netbeans.modules.versioning.diff.DiffSidebar".equals(cn)) {
+                    return false;
+                } else if ("org.openide.explorer.view.TreeView$ExplorerTree".equals(cn)) {
+                    return false;
+                } else if ("javax.swing.JRootPane".equals(cn)
+                        && "org.netbeans.core.windows.view.ui.MainWindow".equals(
+                        c.getParent().getClass().getName())) {
+                    return false;
+                } else if ("null.nbGlassPane".equals(c.getName())) {
+                    return false;
+                } else {
+                    Container cont = c;
+                    do {
+                        cn = cont.getName();
+                        if ("StatusLine".equalsIgnoreCase(cn)) {
+                            return false;
+                        }
+                        cont = cont.getParent();
+                    } while (cont != null);
+                    return true;
+                }
+            }
+
+            public String getFilterName() {
+                return "Ignores 1) DiffSidebar, 2) TreeView$ExplorerTree, 3) JRootPane under MainWindow, 4) nbGlassPane and 5) StatusLine content";
+            }
+        });
+
+        closeAllModal();
     }
 
     @Override
@@ -129,17 +165,17 @@ public class CreateRubyProject  extends org.netbeans.modules.performance.utiliti
         category = "Ruby";
         project = Bundle.getString("org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle",
                 "Templates/Project/Ruby/emptyRuby.xml");
-        project_type="RubyProject";
+        project_type = "RubyProject";
         editor_name = "main.rb";
-        doMeasurement();        
+        doMeasurement();
     }
     
     public void testCreateRubyOnRailsProject() {
         category = "Ruby";
         project = "Ruby on Rails Application";
-        project_type="RailsProject";
-        editor_name = "database.yml";        
-        doMeasurement();         
+        project_type = "RailsProject";
+        editor_name = "database.yml";
+        doMeasurement();
     }
 
     public static Test suite() {

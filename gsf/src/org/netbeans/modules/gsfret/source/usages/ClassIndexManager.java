@@ -49,8 +49,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-//import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
@@ -67,33 +65,23 @@ import org.openide.util.Exceptions;
  */
 public final class ClassIndexManager {
     
-    private static final byte OP_ADD    = 1;
-    private static final byte OP_REMOVE = 2;
+    //private static final byte OP_ADD    = 1;
+    //private static final byte OP_REMOVE = 2;
 
     //private static ClassIndexManager instance;
     private final Map<URL, ClassIndexImpl> instances = new HashMap<URL, ClassIndexImpl> ();
     
-//    private final ReadWriteLock lock;
-////    private final List<ClassIndexManagerListener> listeners = new CopyOnWriteArrayList<ClassIndexManagerListener> ();
-//    private boolean invalid;
-//    private Set<URL> added;
-//    private Set<URL> removed;
-//    private int depth = 0;
-//    private Thread owner;
-  
     // GSF - using a single lock shared among all index managers
-    private static final ReadWriteLock lock = new ReentrantReadWriteLock (false);
-//    private final List<ClassIndexManagerListener> listeners = new CopyOnWriteArrayList<ClassIndexManagerListener> ();
+    private static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock (false);
+    //private final List<ClassIndexManagerListener> listeners = new CopyOnWriteArrayList<ClassIndexManagerListener> ();
     private static boolean invalid;
-    private static Set<URL> added;
-    private static Set<URL> removed;
-    private static int depth = 0;
-    private static Thread owner;
+    //private static Set<URL> added;
+    //private static Set<URL> removed;
+    //private static int depth = 0;
     
     
     private ClassIndexManager(Language language) {
         this.language = language;
-        //this.lock = new ReentrantReadWriteLock (false);
     }
     
 //    public void addClassIndexManagerListener (final ClassIndexManagerListener listener) {
@@ -105,47 +93,38 @@ public final class ClassIndexManager {
 //        assert listener != null;
 //        this.listeners.remove(listener);
 //    }
-    
+
     public static <T> T writeLock (final ExceptionAction<T> r) throws IOException/*, InterruptedException*/ {
         lock.writeLock().lock();
         try {
-            if (depth == 0) {
-                owner = Thread.currentThread();
-            }
-            try {
-                depth++;
-                try {
-                    if (depth == 1) {
-                        added = new HashSet<URL>();
-                        removed = new HashSet<URL>();
-                    }
-                    try {
-                        return r.run();
-                    } finally {
-                        if (depth == 1) {
-                            if (!removed.isEmpty()) {
-//                                fire (removed, OP_REMOVE);
-                                removed.clear();
-                            }
-                            if (!added.isEmpty()) {
-//                                fire (added, OP_ADD);
-                                added.clear();
-                            }                
-                        }
-                    }
-                } finally {
-                    depth--;
-                }            
-            } finally {
-                if (depth == 0) {
-                    owner = null;
-                }
-            }
+//            depth++;
+//            try {
+//                if (depth == 1) {
+//                    added = new HashSet<URL>();
+//                    removed = new HashSet<URL>();
+//                }
+//                try {
+                    return r.run();
+//                } finally {
+//                    if (depth == 1) {
+//                        if (!removed.isEmpty()) {
+//                            /fire (removed, OP_REMOVE);
+//                            removed.clear();
+//                        }
+//                        if (!added.isEmpty()) {
+//                            fire (added, OP_ADD);
+//                            added.clear();
+//                        }
+//                    }
+//                }
+//            } finally {
+//                depth--;
+//            }
         } finally {
             lock.writeLock().unlock();
         }
     }
-    
+
     public static <T> T readLock (final ExceptionAction<T> r) throws IOException/*, InterruptedException*/ {
         lock.readLock().lock();
         try {
@@ -154,26 +133,17 @@ public final class ClassIndexManager {
             lock.readLock().unlock();
         }
     }
-    
+
     public static boolean holdsWriteLock () {
-        return Thread.currentThread().equals(owner);
+        return lock.isWriteLockedByCurrentThread();
     }
-    
+
     public synchronized ClassIndexImpl getUsagesQuery (final URL root) throws IOException {
         assert root != null;
         if (invalid) {
             return null;
         }        
-        // BEGIN TOR MODIFICATIONS
-        // XXX Figure out why I often get this on boot class paths
-        //return this.instances.get (root);
-        ClassIndexImpl ci = this.instances.get (root);
-//        if (ci == null) {
-//            ci = createUsagesQuery(root, false);
-//        }
-        
-        return ci;
-        // END TOR MODIFICATIONS
+        return this.instances.get (root);
     }
     
     public synchronized ClassIndexImpl createUsagesQuery (final URL root, final boolean source) throws IOException {
@@ -185,9 +155,9 @@ public final class ClassIndexManager {
         if (qi == null) {  
             qi = PersistentClassIndex.create (language, root, Index.getDataFolder(language, root), source);
             this.instances.put(root,qi);
-            if (added != null) {
-                added.add (root);
-            }
+            //if (added != null) {
+            //    added.add (root);
+            //}
         }
 //        else if (source && !qi.isSource()){
 //            //Wrongly set up freeform project, which is common for it, prefer source
@@ -210,9 +180,9 @@ public final class ClassIndexManager {
         ClassIndexImpl ci = this.instances.remove(root);
         if (ci != null) {
             ci.close();
-            if (removed != null) {
-                removed.add (root);
-            }
+            //if (removed != null) {
+            //    removed.add (root);
+            //}
         }
     }
     

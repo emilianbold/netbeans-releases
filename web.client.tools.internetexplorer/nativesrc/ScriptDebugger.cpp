@@ -529,34 +529,35 @@ Property *ScriptDebugger::getProperty(IDebugProperty *pDebugProperty, tstring na
     pProp->type = (TCHAR *)(propertyInfo.m_bstrType);
     if(pProp->type == TYPE_ERROR) {
         return NULL;
-    }else if(pProp->type == TYPE_OBJECT) {
-        pProp->childrenCount = -1;
-    }
-    if(pProp->type == TYPE_USER_DEFINED) {
+    }else if(pProp->type == TYPE_USER_DEFINED) {
         pProp->type = TYPE_VOID;
-    }else if(pProp->type == TYPE_SINGLE || pProp->type == TYPE_VARIANT) {
-        pProp->type = TYPE_OBJECT;
-    }else if(pProp->type == TYPE_LONG || pProp->type == TYPE_INTEGER) {
+    }else if(pProp->type == TYPE_LONG || pProp->type == TYPE_INTEGER || pProp->type == TYPE_NUMBER) {
         pProp->type = TYPE_INT;
-    }
-
-	if(pProp->fullName.length() > 1) {
-        if(pProp->type == TYPE_OBJECT) {
-			tstring fullName = pProp->fullName;
-			if(fullName.substr(0, 1) == DOT) {
-				fullName = fullName.substr(1);
-			}
-            pProp->classname = getObjectType(fullName, stackDepth);
-            tstring toString = fullName;
-            if(pProp->classname == TYPE_FUNCTION) {
-                if(!(featureSet & SHOW_FUNCTIONS)) {
-                    return NULL;
+    }else if(pProp->type == TYPE_STRING) {
+        pProp->type = TYPE_STRING;
+    }else {
+        pProp->type = TYPE_OBJECT;
+        pProp->childrenCount = -1;
+	    if(pProp->fullName.length() > 1) {
+            if(propertyInfo.m_bstrType == TYPE_OBJECT) {
+			    tstring fullName = pProp->fullName;
+			    if(fullName.substr(0, 1) == DOT) {
+				    fullName = fullName.substr(1);
+			    }
+                pProp->classname = getObjectType(fullName, stackDepth);
+                tstring toString = fullName;
+                if(pProp->classname == TYPE_FUNCTION) {
+                    if(!(featureSet & SHOW_FUNCTIONS)) {
+                        return NULL;
+                    }
+                    toString.append(TO_STRING);
+                    tstring value = evalToString(toString, stackDepth);
+                    pProp->value = value.substr(1, value.length()-2);
+                    pProp->classname = value.find(NATIVE_CODE) != tstring::npos ? NATIVE_FUNCTION : SCRIPT_FUNCTION;
+                    pProp->type = TYPE_FUNCTION;
                 }
-                toString.append(TO_STRING);
-                tstring value = evalToString(toString, stackDepth);
-                pProp->value = value.substr(1, value.length()-2);
-                pProp->classname = value.find(NATIVE_CODE) != tstring::npos ? NATIVE_FUNCTION : SCRIPT_FUNCTION;
-                pProp->type = TYPE_FUNCTION;
+            }else {
+                pProp->classname = propertyInfo.m_bstrType;
             }
         }
     }

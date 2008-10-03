@@ -42,11 +42,11 @@
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -54,7 +54,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JToggleButton;
 import javax.swing.Action;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
@@ -102,12 +104,10 @@ public final class FiltersDescriptor {
     public synchronized Action[] getFilterActions() {
         if (filterActions == null) {
             List<Action> list = new ArrayList<Action>();
-            Map<Item, SortAction> map = new HashMap<Item, SortAction>();
             for (Item item : filters) {
                 if (item.getGroup() != null) {
-                    SortAction action = new SortAction(item, map);
+                    SortAction action = new SortAction(item);
                     list.add(action);
-                    map.put(item, action);
                 }
             } // for
             int size = list.size();
@@ -373,46 +373,55 @@ public final class FiltersDescriptor {
     //     Filter Actions Support
     // **************************************************************************
     
-    static final class SortAction extends AbstractAction implements Presenter.Popup {
+    private static final class SortAction extends AbstractAction implements Presenter.Popup {
     
-        private JRadioButtonMenuItem menuItem;
         private Item filterItem;
-        private Map<Item, SortAction> itemToSortAction;
 
         /** Creates a new instance of SortByNameAction */
-        SortAction (Item item, Map<Item, SortAction> map) {
+        SortAction (Item item) {
             this.filterItem = item;
-            this.itemToSortAction = map;
             putValue(Action.NAME, item.getDisplayName());
             putValue(Action.SMALL_ICON, item.getIcon());
         }
 
         public final JMenuItem getPopupPresenter() {
             JMenuItem result = obtainMenuItem();
-            updateMenuItem();
             return result;
         }
 
         protected final JRadioButtonMenuItem obtainMenuItem () {
-            if (menuItem == null) {
-                menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
-                menuItem.setAction(this);
-            }
+            JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME));
+            menuItem.setAction(this);
+            menuItem.addHierarchyListener(new ParentChangeListener(menuItem));
+            menuItem.setSelected(filterItem.isSelected);
             return menuItem;
         }
 
-        protected void updateMenuItem () {
-            JRadioButtonMenuItem mi = obtainMenuItem();
-            mi.setSelected(filterItem.isSelected());
+        public void actionPerformed(ActionEvent e) {
+            filterItem.setSelected(!filterItem.isSelected);
         }
 
-        public void actionPerformed(ActionEvent e) {
-            for (Map.Entry<Item, SortAction> entry : itemToSortAction.entrySet()) {
-                Item item = entry.getKey();
-                SortAction action = entry.getValue();
-                item.setSelected(item == filterItem);
-                action.updateMenuItem();
+        private class ParentChangeListener implements HierarchyListener {
+
+            private JRadioButtonMenuItem menuItem;
+
+            public ParentChangeListener(JRadioButtonMenuItem menuItem) {
+                this.menuItem = menuItem;
             }
+
+            public void hierarchyChanged(HierarchyEvent e) {
+                JComponent parent = (JComponent) e.getChangedParent();
+                if (parent == null) {
+                    return ;
+                }
+                ButtonGroup group = (ButtonGroup) parent.getClientProperty(getClass().getName()+" buttonGroup");
+                if (group == null) {
+                    group = new ButtonGroup();
+                }
+                group.add(menuItem);
+                menuItem.removeHierarchyListener(this);
+            }
+
         }
 
     }

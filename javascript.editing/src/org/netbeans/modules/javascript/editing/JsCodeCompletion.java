@@ -2180,8 +2180,16 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                 while (it.hasNext()) {
                     Node node = it.next();
 
-                    if (node.getType() == org.mozilla.nb.javascript.Token.CALL ||
-                            node.getType() == org.mozilla.nb.javascript.Token.NEW) {
+                    int nodeType = node.getType();
+                    if (nodeType == org.mozilla.nb.javascript.Token.FUNCTION) {
+                        // See for example issue 149001
+                        // If the call is outside the current function scope,
+                        // we don't want to include it!
+                        break;
+                    }
+
+                    if (nodeType == org.mozilla.nb.javascript.Token.CALL ||
+                            nodeType == org.mozilla.nb.javascript.Token.NEW) {
                         call = node;
                         index = AstUtilities.findArgumentIndex(call, astOffset, path);
                         break;

@@ -109,7 +109,7 @@ public class PackageWidget extends ContainerNode
     
     
     private UMLLabelWidget stereotypeWidget = null;
-    private UMLLabelWidget taggedValuesWidget = null;
+    private MultiLineTaggedValueWidget taggedValuesWidget = null;
     private EditableCompartmentWidget nameWidget = null;
 
     private ContainerWidget container = null;
@@ -172,12 +172,11 @@ public class PackageWidget extends ContainerNode
         stereotypeWidget.setBorder(BODY_NAME_BORDER);
         updateStereotypes(data.getAppliedStereotypesAsString());
 
-        taggedValuesWidget = new UMLLabelWidget(getScene(),
+        taggedValuesWidget = new MultiLineTaggedValueWidget(getScene(),
                                                 getWidgetID() + "." + UMLNameWidget.taggedValueID,
                                                 NbBundle.getMessage(PackageWidget.class, "LBL_taggedValue"));
-        taggedValuesWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
-        taggedValuesWidget.setBorder(BODY_NAME_BORDER);
-        updateTaggedValues(data.getTaggedValuesAsString());
+        //taggedValuesWidget.setBorder(BODY_NAME_BORDER);
+        taggedValuesWidget.updateTaggedValues(data.getTaggedValuesAsList());
 
         nameWidget = new EditableCompartmentWidget(getScene(),
                                                    getWidgetID() + "." + UMLNameWidget.nameCompartmentWidgetID,
@@ -318,16 +317,6 @@ public class PackageWidget extends ContainerNode
         }
     }
 
-    private void updateTaggedValues(String taggedValues)
-    {
-        taggedValuesWidget.setVisible(taggedValues.length() > 0);
-        if (taggedValues.length() > 0)
-        {
-            taggedValuesWidget.setLabel("{" + taggedValues + "}");
-            taggedValuesWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
-        }
-    }
-
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
@@ -355,15 +344,7 @@ public class PackageWidget extends ContainerNode
             {
                 // There is a specific tagged value event.  Therefore we have to
                 // check everytime the element is modified.
-                String taggedValues = element.getTaggedValuesAsString();
-                if (taggedValues.length() > 0)
-                {
-                    taggedValuesWidget.setLabel("{" + taggedValues + "}");
-                    taggedValuesWidget.setVisible(true);
-                } else
-                {
-                    taggedValuesWidget.setVisible(false);
-                }
+                taggedValuesWidget.updateTaggedValues(element.getTaggedValuesAsList());
             }
         }
     }

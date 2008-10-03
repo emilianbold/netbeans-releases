@@ -235,11 +235,13 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         }
         
         if (key == null || SimpleValueNames.SPACES_PER_TAB.equals(key)) {
-            int nue = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, getDefInt(SimpleValueNames.SPACES_PER_TAB, 4));
-            if (nue != (Integer) sNumberOfSpacesPerIndent.getValue()) {
-                sNumberOfSpacesPerIndent.setValue(nue);
+            if (prefs.get(SimpleValueNames.INDENT_SHIFT_WIDTH, null) == null) {
+                int nue = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, getDefInt(SimpleValueNames.SPACES_PER_TAB, 4));
+                if (nue != (Integer) sNumberOfSpacesPerIndent.getValue()) {
+                    sNumberOfSpacesPerIndent.setValue(nue);
+                }
+                needsRefresh = true;
             }
-            needsRefresh = true;
         }
         
         if (key == null || SimpleValueNames.TAB_SIZE.equals(key)) {

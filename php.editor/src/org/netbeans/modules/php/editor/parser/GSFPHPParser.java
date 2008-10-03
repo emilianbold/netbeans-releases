@@ -286,7 +286,14 @@ public class GSFPHPParser implements Parser {
             }
         }
         if (sanitizing == Sanitize.MISSING_CURLY) {
-            sanitizeCurly (context);
+            return sanitizeCurly (context);
+        }
+        if (sanitizing == Sanitize.SYNTAX_ERROR_BLOCK) {
+            List<PHP5ErrorHandler.SyntaxError> syntaxErrors = errorHandler.getSyntaxErrors();
+            if (syntaxErrors.size() > 0) {
+                PHP5ErrorHandler.SyntaxError error =  syntaxErrors.get(0);
+                return sanitizeRemoveBlock(context, error.getCurrentToken().left);
+            }
         }
         return false;
     }
@@ -401,6 +408,35 @@ public class GSFPHPParser implements Parser {
         return false;
     }
 
+    private boolean sanitizeRemoveBlock(Context context, int index) {
+        String source = context.getSource();
+        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), shortTags, aspTags);
+        Symbol token = null;
+        int start = -1;
+        int end = -1;
+        try {
+            token = scanner.next_token();
+            while (token.sym != ASTPHP5Symbols.EOF && end == -1) {
+                if (token.sym == ASTPHP5Symbols.T_CURLY_OPEN && token.left < index) {
+                    start = token.right;
+                }
+                if (token.sym == ASTPHP5Symbols.T_CURLY_CLOSE && token.left >= index ) {
+                    end = token.right - 1;
+                }
+                token = scanner.next_token();
+            }
+        }
+        catch (IOException exception) {
+            LOGGER.log(Level.INFO, "Exception during removing block", exception);   //NOI18N
+        }
+        if (start < end) {
+            context.sanitizedSource = source.substring(0, start) + Utils.getSpaces(end-start) + source.substring(end);
+            context.sanitizedRange = new OffsetRange(start, end);
+            return true;
+        }
+        return false;
+    }
+
     private PHPParseResult sanitize(final Context context, final Sanitize sanitizing, PHP5ErrorHandler errorHandler) throws Exception {
         switch(sanitizing) {
             case NONE:
@@ -411,8 +447,10 @@ public class GSFPHPParser implements Parser {
                 return parseBuffer(context, Sanitize.SYNTAX_ERROR_PREVIOUS, errorHandler);
             case SYNTAX_ERROR_PREVIOUS:
                 return parseBuffer(context, Sanitize.SYNTAX_ERROR_PREVIOUS_LINE, errorHandler);
-           case SYNTAX_ERROR_PREVIOUS_LINE:
+            case SYNTAX_ERROR_PREVIOUS_LINE:
                 return parseBuffer(context, Sanitize.EDITED_LINE, errorHandler);
+            case EDITED_LINE:
+                return parseBuffer(context, Sanitize.SYNTAX_ERROR_BLOCK, errorHandler);
             default:
                 int end = context.getSource().length();
                 // add the ast error, some features can recognized that there is something wrong.
@@ -454,6 +492,8 @@ public class GSFPHPParser implements Parser {
         SYNTAX_ERROR_PREVIOUS,
         /** remove line with error */
         SYNTAX_ERROR_PREVIOUS_LINE,
+        /** try to delete the whole block, where is the error*/
+        SYNTAX_ERROR_BLOCK,
         /** Try to remove the trailing . or :: at the caret line */
         EDITED_DOT, 
         /** Try to remove the trailing . or :: at the error position, or the prior

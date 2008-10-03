@@ -54,6 +54,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -227,7 +228,7 @@ public abstract class IndexedElement extends JsElement {
                 return null;
             }
 
-            document = NbUtilities.getBaseDocument(fileObject, true);
+            document = GsfUtilities.getDocument(fileObject, true);
         }
 
         return document;

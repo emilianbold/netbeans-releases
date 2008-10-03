@@ -40,7 +40,7 @@
 # definition of tokens
 TOKEN:keyword:( "select" | "from" | " where" | "group by" | "order by" | "inner" | "join" | "outer" | "left" | "right" | "as" | "full" | "with" | "fetch" | "all" | "distinct" | "properties" | "new" | "is" | "null" | "empty" | "member" | "of" | "case" | "when" | "else" | "then" | "end" )
 TOKEN:operator:( "{" | "}" | "(" | ")" | "+" | "-" | "*" | "/" | "=" | ">" | "<" | ">=" | "<=" | "<>" | "!=" | "||" | "concat" | "like" | "and" | "or" | "not" | "in" | "max" | "min" | "avg" | "sum" | "count" | "index" | "str")
-TOKEN:identifier:( ["a"-"z"] ["a"-"z" "0"-"9"]* )
+TOKEN:identifier:( ["A"-"Z"]* ["."]* ["a"-"z" "0"-"9"]* )
 TOKEN:whitespace:( [" " "\t" "\n" "\r"]+ )
 
 # parser should ignore whitespaces
@@ -88,11 +88,11 @@ INDENT "(:)"
 
 
 # code completion
-COMPLETION:keyword, operator, identifier, whitespace: {
-    text1:"select";
-    text2:"from";
-    text3:"where";
-}
+#COMPLETION:keyword, operator, identifier, whitespace: {
+#    text1:"select";
+#    text2:"from";
+##    text3:"where";
+#}
 
 
 

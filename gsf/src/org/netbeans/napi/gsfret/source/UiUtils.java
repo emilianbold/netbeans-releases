@@ -88,10 +88,6 @@ public final class UiUtils {
     private UiUtils() {
     }
 
-    public static BaseDocument getDocument(FileObject fileObject, boolean openIfNecessary) {
-        return GsfUtilities.getDocument(fileObject, openIfNecessary);
-    }
-
     /** Gets correct icon for given ElementKind.
      *@param modifiers Can be null for empty modifiers collection
      */
