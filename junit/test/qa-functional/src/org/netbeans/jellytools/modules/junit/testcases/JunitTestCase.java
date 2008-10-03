@@ -5,7 +5,7 @@
  *
  */
 
-package org.netbeans.test.junit.testcase;
+package org.netbeans.jellytools.modules.junit.testcases;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -31,41 +31,41 @@ import org.netbeans.test.junit.utils.Utilities;
  * @author ms159439
  */
 public class JunitTestCase extends JellyTestCase {
-    
-    /** Should we create goldenfiles? */ 
+
+    /** Should we create goldenfiles? */
     private static boolean CREATE_GOLDENFILES = false;
-    
+
     /** Create test Dialog label */
     protected static final String CREATE_TESTS_DIALOG = Bundle.getString(
             "org.netbeans.modules.junit.Bundle", "JUnitCfgOfCreate.Title");
-    
-    /** PrintWriter used for writing goldenfiles */ 
+
+    /** PrintWriter used for writing goldenfiles */
     protected static PrintWriter goldenWriter = null;
 
     /** Error log */
     protected static PrintStream err;
-    
+
     /** Standard log */
     protected static PrintStream log;
-    
+
     /** Current test workdir */
     private String workDir = "/tmp";
-    
+
     /** Filter used to replace author and file creation time */
     protected StringFilter filter;
-    
+
     static {
         if (System.getProperty("create.goldenfiles") != null &&
                 System.getProperty("create.goldenfiles").equals("true")) {
             CREATE_GOLDENFILES=true;
         }
     }
-    
+
     /** Creates a new instance of JunitTestCase */
     public JunitTestCase(String testName) {
         super(testName);
     }
-    
+
     /**
      * Sets up logging facilities.
      */
@@ -87,7 +87,7 @@ public class JunitTestCase extends JellyTestCase {
         filter.addReplaceFilter("@author ", "\n", "@author Tester\n");
         filter.addReplaceFilter("Created on ", "\n", "Created on Date\n");
     }
-    
+
     /**
      * Tears down logging facilities
      */
@@ -125,7 +125,7 @@ public class JunitTestCase extends JellyTestCase {
                 ex.printStackTrace();
             }
             log("Passive mode: generate golden file into "+f.getAbsolutePath());
-            
+
         } else {
 //            ref(filter.filter(new EditorOperator(Utilities.TEST_CLASS_NAME + "Test.java").getText()));
 //            compareReferenceFiles();
@@ -133,5 +133,5 @@ public class JunitTestCase extends JellyTestCase {
         log.close();
         err.close();
     }
-    
+
 }
