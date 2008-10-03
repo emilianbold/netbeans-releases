@@ -319,6 +319,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/issue148856.php", "test148856Func(1))->^", false);
     }
     
+    public void test148219() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue148219.php", "$newBook->^", false);
+    }
+    
     public void test142919() throws Exception {
         checkCompletion("testfiles/completion/lib/issue142919.php", "echo $param^", false);
     }
