@@ -977,8 +977,6 @@ public class TSDiagramConverter
         int margin=60;
         for (EdgeInfo einfo : einfos)
         {
-            if(einfo.getProperty(BENDSPROPERTY)!=null)
-            {
                 ArrayList<Point> points=new ArrayList<Point>();
                 Point point0=new Point(0,0);
                 if(einfo.getSourcePE()!=null && presIdNodeInfoMap.get(einfo.getSourcePE().getXMIID())!=null)
@@ -986,15 +984,17 @@ public class TSDiagramConverter
                     point0=presIdNodeInfoMap.get(einfo.getSourcePE().getXMIID()).getPosition();
                 }
                 points.add(point0);
-                
-                ArrayList<Point> tmp=(ArrayList<Point>) einfo.getProperty(BENDSPROPERTY);
-                for(int i=0;i<tmp.size();i++)
+                if(einfo.getProperty(BENDSPROPERTY)!=null)
                 {
-                    Point p=tmp.get(i);
-                    Point loc=new Point(p);
-                    loc.x-=minX-margin;
-                    loc.y=maxY+margin-loc.y;
-                    points.add(loc);
+                    ArrayList<Point> tmp=(ArrayList<Point>) einfo.getProperty(BENDSPROPERTY);
+                    for(int i=0;i<tmp.size();i++)
+                    {
+                        Point p=tmp.get(i);
+                        Point loc=new Point(p);
+                        loc.x-=minX-margin;
+                        loc.y=maxY+margin-loc.y;
+                        points.add(loc);
+                    }
                 }
                 
                 Point pointN=new Point(0,0);
@@ -1010,7 +1010,6 @@ public class TSDiagramConverter
                 }
                 //
                 einfo.setWayPoints(points);
-            }
         }
     }
     
