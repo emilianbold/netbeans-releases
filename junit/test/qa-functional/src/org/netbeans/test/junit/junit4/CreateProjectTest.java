@@ -1,5 +1,6 @@
-package org.netbeans.test.junit4;
+package org.netbeans.test.junit.junit4;
 
+import org.netbeans.jellytools.modules.junit.testcases.ExtJellyTestCaseForJunit4;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -25,7 +26,7 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.junit.utils.Utilities;
 
-public class CreateProjectTest extends ExtJellyTestCase {
+public class CreateProjectTest extends ExtJellyTestCaseForJunit4 {
 
     public CreateProjectTest(String testName) {
         super(testName);

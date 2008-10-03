@@ -45,7 +45,7 @@
  * Created on August 2, 2006, 1:39 PM
  */
 
-package org.netbeans.test.junit.testcreation;
+package org.netbeans.test.junit.creation;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
@@ -61,7 +61,7 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.test.junit.testcase.JunitTestCase;
+import org.netbeans.jellytools.modules.junit.testcases.JunitTestCase;
 import org.netbeans.test.junit.utils.Utilities;
 
 /**
@@ -92,7 +92,7 @@ public class CreateTestTest extends JunitTestCase {
 //        NbTestSuite suite = new NbTestSuite(CreateTestTest.class);
 //        return suite;
           return NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateTestTest.class).addTest(
-                  "testCreateTestByPopup",
+                  "testCreateTestByPopup"/*,
                   "testCreateTestByPopup2",
                   "testCreateTestByPopup3",
                   "testCreateTestByPopup4",
@@ -101,7 +101,7 @@ public class CreateTestTest extends JunitTestCase {
                   "testCreateWOHints",
                   "testCreateWOJavadoc",
                   "testCreateWOsetUp",
-                  "testCreateWOtearDown")
+                  "testCreateWOtearDown"*/)
                   .enableModules(".*").clusters(".*"));
     }
     
@@ -123,7 +123,7 @@ public class CreateTestTest extends JunitTestCase {
         Utilities.takeANap(Utilities.ACTION_TIMEOUT);
         
         ref(filter.filter(new EditorOperator(Utilities.TEST_CLASS_NAME + "Test.java").getText()));
-        compareReferenceFiles();
+        compareReferenceFiles(this.getName()+".ref",this.getName()+".pass",this.getName()+".diff");
     }
     
     /**

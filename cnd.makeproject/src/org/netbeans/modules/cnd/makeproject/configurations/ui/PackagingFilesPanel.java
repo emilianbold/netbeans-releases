@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -59,6 +60,7 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -287,10 +289,15 @@ public class PackagingFilesPanel extends ListEditorPanel {
             
             @Override
             public void run() {
-                ArrayList<PackagerFileElement> listToAdd = new ArrayList<PackagerFileElement>();
+                final ArrayList<PackagerFileElement> listToAdd = new ArrayList<PackagerFileElement>();
                 addFilesFromDirectory(listToAdd, dir, dir, progressPanel);
-                addObjectsAction(listToAdd);
-                progressDialog.setVisible(false);
+                
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        addObjectsAction(listToAdd);
+                        progressDialog.setVisible(false);
+                    }
+                });
             }
         }
         
@@ -410,8 +417,6 @@ public class PackagingFilesPanel extends ListEditorPanel {
             getTargetList().getColumnModel().getColumn(5).setMaxWidth(200);
         }
         //
-        getTargetList().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        getTargetList().getSelectionModel().addListSelectionListener(new TargetSelectionListener());
         // Left align table header
         ((DefaultTableCellRenderer) getTargetList().getTableHeader().getDefaultRenderer()).setHorizontalAlignment(SwingConstants.LEFT);
     }
@@ -428,10 +433,8 @@ public class PackagingFilesPanel extends ListEditorPanel {
 
     @Override
     protected void ensureIndexIsVisible(int selectedIndex) {
-        // FIXUP...
-        //targetList.ensureIndexIsVisible(selectedIndex);
-        //java.awt.Rectangle rect = targetList.getCellRect(selectedIndex, 0, true);
-        //targetList.scrollRectToVisible(rect);
+	Rectangle rect = getTargetList().getCellRect(selectedIndex, 0, true);
+	getTargetList().scrollRectToVisible(rect);
     }
 
     @Override
@@ -444,6 +447,8 @@ public class PackagingFilesPanel extends ListEditorPanel {
             targetList = new MyTable();
             setData(null);
             getListLabel().setLabelFor(targetList);
+            getTargetList().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            getTargetList().getSelectionModel().addListSelectionListener(new TargetSelectionListener());
         }
         return targetList;
     }

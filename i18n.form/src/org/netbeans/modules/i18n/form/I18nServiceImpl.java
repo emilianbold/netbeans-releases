@@ -227,6 +227,7 @@ public class I18nServiceImpl implements I18nService {
         if (newI18nString != null && newI18nString.getKey() != null) {
             // valid new value - make sure it is up-to-date in the properties file
             JavaResourceHolder rh = (JavaResourceHolder) newI18nString.getSupport().getResourceHolder();
+            String key = newI18nString.getKey();
 
             if (rh.getResource() == null) { // find or create properties file
                 DataObject propertiesDO = getPropertiesDataObject(srcDataObject.getPrimaryFile(), bundleName);
@@ -234,15 +235,21 @@ public class I18nServiceImpl implements I18nService {
                     propertiesDO = createPropertiesDataObject(srcDataObject.getPrimaryFile(), bundleName);
                     if (propertiesDO == null)
                         return;
+                } else if (oldI18nString == null && newI18nString.getValue() == null) {
+                    // if the value itself is null we actually want to update it from the properties file
+                    rh.setResource(propertiesDO);
+                    newI18nString.setValue(rh.getValueForKey(key));
+                    newI18nString.setComment(rh.getCommentForKey(key));
+                    return;
                 }
                 rh.setResource(propertiesDO);
 
                 // make sure we use free (unique) key
-                newI18nString.setKey(rh.findFreeKey(newI18nString.getKey()));
+                key = rh.findFreeKey(key);
+                newI18nString.setKey(key);
             }
 
             rh.setLocalization(localeSuffix);
-            String key = newI18nString.getKey();
             if (!isValueUpToDate(rh, newI18nString)) {
                 if (newI18nString.allData != null) { // restore complete data across all locales
                     rh.setAllData(key, newI18nString.allData);
