@@ -96,22 +96,16 @@ public class CreateRubyProject  extends org.netbeans.modules.performance.utiliti
                 } else if ("null.nbGlassPane".equals(c.getName())) {
                     return false;
                 } else {
-                    Container cont = c;
-                    do {
-                        cn = cont.getName();
-                        if ("StatusLine".equalsIgnoreCase(cn)) {
-                            return false;
-                        }
-                        cont = cont.getParent();
-                    } while (cont != null);
                     return true;
                 }
             }
 
             public String getFilterName() {
-                return "Ignores 1) DiffSidebar, 2) TreeView$ExplorerTree, 3) JRootPane under MainWindow, 4) nbGlassPane and 5) StatusLine content";
+                return "Ignores 1) DiffSidebar, 2) TreeView$ExplorerTree, 3) JRootPane under MainWindow, and 4) nbGlassPane";
             }
         });
+
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
 
         closeAllModal();
     }
