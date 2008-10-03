@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.performance.guitracker;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.util.LinkedList;
 
@@ -128,7 +129,7 @@ public class LoggingRepaintManager extends RepaintManager {
     @Override
     public void addDirtyRegion(JComponent c, int x, int y, int w, int h) {
         synchronized (this) {
-            String log = logJComponentAndItsParents(c) + ", " + x + "," + y 
+            String log = logContainerAndItsParents(c) + ", " + x + "," + y
                     + "," + w + "," + h + ", " + Thread.currentThread().getName();
 
             // fix for issue 73361, It looks like the biggest cursor is on Sol 10 (11,19) in textfields
@@ -145,15 +146,15 @@ public class LoggingRepaintManager extends RepaintManager {
         super.addDirtyRegion(c, x, y, w, h);
     }
 
-    public static String logContainer(Container c) {
+    public static String logComponent(Component c) {
         return c.getClass().getName() + "/" + c.getName();
     }
 
-    public static String logJComponentAndItsParents(JComponent c) {
+    public static String logContainerAndItsParents(Container c) {
         if (DEBUG_MODE) {
-            return logContainer(c) + getContainersChain(c);
+            return logComponent(c) + getContainersChain(c);
         } else {
-            return logContainer(c);
+            return logComponent(c);
         }
     }
 
@@ -164,7 +165,7 @@ public class LoggingRepaintManager extends RepaintManager {
             if (container == null) {
                 break;
             }
-            ret.append(" <- ").append(logContainer(container));
+            ret.append(" <- ").append(logComponent(container));
         } while (true);
         return ret.toString();
     }
@@ -269,6 +270,27 @@ public class LoggingRepaintManager extends RepaintManager {
             return "Ignores StatusLine content";
         }
         
+    };
+
+    /**
+     * Ignores paints from ExplorerTree
+     */
+    public static final RegionFilter IGNORE_EXPLORER_TREE_FILTER =
+            new RegionFilter() {
+
+        public boolean accept(JComponent c) {
+            String cn = c.getClass().getName();
+            if ("org.openide.explorer.view.TreeView$ExplorerTree".equals(cn)) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        public String getFilterName() {
+            return "Ignores TreeView$ExplorerTree";
+        }
+
     };
 
     /**
