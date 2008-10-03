@@ -39,17 +39,14 @@
 
 package org.netbeans.modules.languages.yaml;
 
-import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStreamWriter;
 import org.jruby.util.ByteList;
 import org.jvyamlb.Composer;
-import org.jvyamlb.DefaultYAMLConfig;
-import org.jvyamlb.DefaultYAMLFactory;
 import org.jvyamlb.PositioningComposerImpl;
 import org.jvyamlb.PositioningParserImpl;
 import org.jvyamlb.PositioningScannerImpl;
 import org.jvyamlb.ResolverImpl;
-import org.jvyamlb.YAMLConfig;
-import org.jvyamlb.YAMLFactory;
 import org.jvyamlb.exceptions.PositionedParserException;
 import org.jvyamlb.nodes.Node;
 import org.netbeans.api.lexer.Token;
@@ -68,6 +65,7 @@ import org.netbeans.modules.gsf.api.PositionManager;
 import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.gsf.spi.DefaultError;
+import org.openide.util.NbBundle;
 
 /**
  * Parser for YAML. Delegates to the YAML parser shipped with JRuby (jvyamlb)
@@ -83,31 +81,70 @@ public class YamlParser implements Parser {
         }
     }
     
-    
-    public static Node load(String source, final InputStream io, final YAMLFactory fact, final YAMLConfig cfg) {
-        ByteList byteList;
-        try {
-            byteList = new ByteList(source.getBytes("UTF-8"));
-            //byteList = new ByteList(ByteList.plain(source),false);
-        } catch(Exception e) {
-            return null;
-        }
-
-
-        Composer composer = new PositioningComposerImpl(new PositioningParserImpl(new PositioningScannerImpl(byteList)), new ResolverImpl());
-        return composer.getNode();
-    }
-    
     private ParserResult parse(String source, ParserFile file) {
-        //new ParserImpl(scn,YAML.config().version("1.0")),new ResolverImpl()));
-        //new org.
-        //Scanner scanner = new org.jvyamlb.ScannerImpl(source);
-        //ParserImpl parser = new ParserImpl(scanner);
-        //InputStream stream = new StringBufferInputStream(source);
         try {
-            Node yaml = load(source, null, new DefaultYAMLFactory(), new DefaultYAMLConfig());
+            if (source.length() > 512*1024) {
+                YamlParserResult result = new YamlParserResult(null, this, file, false, null, null);
+                DefaultError error = new DefaultError(null, NbBundle.getMessage(YamlParser.class, "TooLarge"), null, file.getFileObject(), 0, 0, Severity.WARNING);
+                result.addError(error);
+                return result;
+            }
+            source.length();
+            ByteList byteList = null;
+            int[] byteToUtf8 = null;
+            int[] utf8toByte = null;
+
+            byte[] bytes = source.getBytes("UTF-8"); // NOI18N
+            if (bytes.length == source.length()) {
+                // No position translations necessary - this should be fast
+                byteList = new ByteList(bytes);
+            } else {
+                // There's some encoding happening of unicode characters.
+                // I need to produce functions to translate between a byte offset
+                // and a unicode offset.
+                // I couldn't find an API for this in the various Charset functions.
+                // So for now, here is a fantastically lame but functional way to do it:
+                // I'm encoding the string, one character at a time, flushing after
+                // each operation to compute the current byte offset. I then build
+                // up an array of these offsets such that I can do quick translations.
+                ByteArrayOutputStream out = new ByteArrayOutputStream(2*source.length());
+                OutputStreamWriter writer = new OutputStreamWriter(out, "UTF-8"); // NOI18N
+                utf8toByte = new int[source.length()];
+                int currentPos = 0;
+                for (int i = 0, n = source.length(); i < n; i++) {
+                    writer.write(source.charAt(i));
+                    writer.flush(); // flush because otherwise we don't know the correct offset
+                    utf8toByte[i] = currentPos;
+                    currentPos = out.size();
+                }
+
+                if (currentPos > 0) {
+                    byteToUtf8 = new int[currentPos];
+                    for (int i = 0, n = utf8toByte.length; i < n; i++) {
+                        byteToUtf8[utf8toByte[i]] = i;
+                    }
+                    // Fill in holes - these are the middles of unicode encodings.
+                    int last = 0;
+                    for (int i = 0, n = byteToUtf8.length; i < n; i++) {
+                        int p = byteToUtf8[i];
+                        if (p == 0) {
+                            byteToUtf8[i] = last;
+                        } else {
+                            last = p;
+                        }
+                    }
+                } else {
+                    byteToUtf8 = new int[0];
+                }
+
+                byteList = new ByteList(out.toByteArray());
+            }
+
+            Composer composer = new PositioningComposerImpl(new PositioningParserImpl(new PositioningScannerImpl(byteList)), new ResolverImpl());
+            Node yaml = composer.getNode();
+
             //Object yaml = YAML.load(stream);
-            return new YamlParserResult(yaml, this, file, true);
+            return new YamlParserResult(yaml, this, file, true, byteToUtf8, utf8toByte);
         } catch (Exception ex) {
             int pos = 0;
             if (ex instanceof PositionedParserException) {
@@ -115,7 +152,7 @@ public class YamlParser implements Parser {
                 pos = ppe.getPosition().offset;
             }
 
-            YamlParserResult result = new YamlParserResult(null, this, file, false);
+            YamlParserResult result = new YamlParserResult(null, this, file, false, null, null);
             String message = ex.getMessage();
             if (message != null && message.length() > 0) {
                 // Strip off useless prefixes to make errors more readable

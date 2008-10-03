@@ -95,7 +95,7 @@ public class DiscoveryUtils {
     public static final boolean ignoreFolder(File file){
         if (file.isDirectory()) {
             String name = file.getName();
-            return name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals("SunWS_cache"); // NOI18N
+            return name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals("SunWS_cache") || name.equals(".svn"); // NOI18N
         }
         return false;
     }

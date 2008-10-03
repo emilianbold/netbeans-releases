@@ -110,6 +110,7 @@ import org.netbeans.modules.gsfret.source.util.LowMemoryEvent;
 import org.netbeans.modules.gsfret.source.util.LowMemoryListener;
 import org.netbeans.modules.gsfret.source.util.LowMemoryNotifier;
 import org.netbeans.modules.gsf.spi.DefaultParserFile;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -883,7 +884,7 @@ long parseTime = -1;
                             
                         if (document == null) {
                             // Ensure document is forced open such that info.getDocument() will not yield null
-                            UiUtils.getDocument(currentInfo.getFileObject(), true);
+                            GsfUtilities.getDocument(currentInfo.getFileObject(), true);
                             document = currentInfo.getDocument();
                         } else {
                             // If you have a plain text file and try to assign a new mime type

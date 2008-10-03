@@ -60,7 +60,7 @@ public final class TestKit {
     public static final String CLONE_SUF_0 = "_clone0";
     public static final String CLONE_SUF_1 = "_clone1";
     public final static String LOGGER_NAME = "org.netbeans.modules.mercurial.t9y";
-    public final static int TIME_OUT = 15;
+    public static int TIME_OUT = 15;
 
     public static File prepareProject(String prj_category, String prj_type, String prj_name) throws Exception {
         //create temporary folder for test

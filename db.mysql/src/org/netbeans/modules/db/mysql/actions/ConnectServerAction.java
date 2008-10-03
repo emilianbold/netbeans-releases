@@ -79,7 +79,7 @@ public class ConnectServerAction extends CookieAction {
         
         DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
         
-        return server != null && !server.isConnected() && server.checkRunning(1000);
+        return server != null && server.checkRunning(1000) && !server.isConnected();
     }
 
     @Override

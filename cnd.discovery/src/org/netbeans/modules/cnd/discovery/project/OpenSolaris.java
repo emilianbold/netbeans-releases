@@ -404,9 +404,9 @@ public class OpenSolaris extends KnownProject {
         String latest = null;
         String logfolder = root + "/log"; // NOI18N
         File log = new File(logfolder);
-        if (log.exists() && log.isDirectory()) {
+        if (log.exists() && log.isDirectory() && log.canRead()) {
             for (File when : log.listFiles()) {
-                if (when.isDirectory()) {
+                if (when.exists() && when.isDirectory() && when.canRead()) {
                     for (File l : when.listFiles()) {
                         String current = l.getAbsolutePath();
                         if (current.endsWith("/nightly.log")) { // NOI18N

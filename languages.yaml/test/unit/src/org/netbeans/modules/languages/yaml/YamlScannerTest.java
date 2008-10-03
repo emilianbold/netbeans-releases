@@ -180,4 +180,8 @@ public class YamlScannerTest extends YamlTestBase {
     public void test143747b() throws Exception {
         checkFolds("testfiles/unicode.yml");
     }
+
+    public void testUnicodePositions() throws Exception {
+        checkFolds("testfiles/unicode2.yml");
+    }
 }

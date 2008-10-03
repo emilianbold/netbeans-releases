@@ -67,6 +67,8 @@ implements ActionListener, Runnable, Callable<JButton> {
     private final boolean exceptionOnly;
     public static final PropertyChangeSupport SUPPORT = new PropertyChangeSupport(Controller.getDefault());
     static final int MAX_LOGS = 1000;
+    /** Maximum allowed size of log file 20MB */
+    static final long MAX_LOGS_SIZE = 20L * 1024L * 1024L;
     private static Task lastRecord = Task.EMPTY;
     private static RequestProcessor FLUSH = new RequestProcessor("Flush UI Logs"); // NOI18N
     private static boolean flushOnRecord;

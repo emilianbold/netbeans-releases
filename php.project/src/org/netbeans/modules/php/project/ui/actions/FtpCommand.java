@@ -88,6 +88,10 @@ public abstract class FtpCommand extends Command {
 
     @Override
     public final void invokeAction(Lookup context) throws IllegalArgumentException {
+        if (!isRunConfigurationValid()) {
+            // property not set yet
+            return;
+        }
         RUNNABLES.add(getContextRunnable(context));
         TASK.schedule(0);
     }

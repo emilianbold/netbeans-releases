@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.ruby;
 
+import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
+import org.netbeans.modules.ruby.elements.IndexedMethod;
 
 /**
  *
@@ -74,6 +76,32 @@ public class RubyCodeCompleterTest extends RubyTestBase {
 //            files.add(fo);
 //        }
 //    }
+
+
+    @Override
+    protected void checkCall(GsfTestCompilationInfo info, int caretOffset, String expectedParameter, boolean expectSuccess) {
+        IndexedMethod[] methodHolder = new IndexedMethod[1];
+        int[] paramIndexHolder = new int[1];
+        int[] anchorOffsetHolder = new int[1];
+        int lexOffset = caretOffset;
+        int astOffset = caretOffset;
+        boolean ok = RubyCodeCompleter.computeMethodCall(info, lexOffset, astOffset, methodHolder, paramIndexHolder, anchorOffsetHolder, null);
+
+        if (expectSuccess) {
+            assertTrue(ok);
+        } else if (!ok) {
+            return;
+        }
+        IndexedMethod method = methodHolder[0];
+        assertNotNull(method);
+        int index = paramIndexHolder[0];
+        assertTrue(index >= 0);
+        String parameter = method.getParameters().get(index);
+        // The index doesn't work right at test time - not sure why
+        // it doesn't have all of the gems...
+        //assertEquals(fqn, method.getFqn());
+        assertEquals(expectedParameter, parameter);
+    }
     
     public void checkCompletion(String file, String caretLine) throws Exception {
         checkCompletion(file, caretLine, false);
@@ -82,7 +110,7 @@ public class RubyCodeCompleterTest extends RubyTestBase {
     public void testPrefix1() throws Exception {
         checkPrefix("testfiles/cc-prefix1.rb");
     }
-    
+
     public void testPrefix2() throws Exception {
         checkPrefix("testfiles/cc-prefix2.rb");
     }
@@ -110,7 +138,7 @@ public class RubyCodeCompleterTest extends RubyTestBase {
     public void testPrefix8() throws Exception {
         checkPrefix("testfiles/cc-prefix8.rb");
     }
-    
+
     public void testAutoQuery1() throws Exception {
         assertAutoQuery(QueryType.NONE, "foo^", "o");
         assertAutoQuery(QueryType.NONE, "foo^", " ");
@@ -167,15 +195,15 @@ public class RubyCodeCompleterTest extends RubyTestBase {
     public void testCompletion2() throws Exception {
         checkCompletion("testfiles/completion/lib/test2.rb", "Result is #{@^myfield} and #@another.");
     }
-     
+
     public void testCompletion3() throws Exception {
         checkCompletion("testfiles/completion/lib/test2.rb", "Result is #{@myfield} and #@a^nother.");
     }
-    
+
     public void testCompletion4() throws Exception {
         checkCompletion("testfiles/completion/lib/test2.rb", "Hell^o World");
     }
-    
+
     public void testCompletion5() throws Exception {
         checkCompletion("testfiles/completion/lib/test2.rb", "/re^g/");
     }
@@ -194,6 +222,10 @@ public class RubyCodeCompleterTest extends RubyTestBase {
 
 //    
 //    // TODO: Test open classes, class inheritance, relative symbols, finding classes, superclasses, def completion, ...
+
+    public void checkComputeMethodCall(String file, String caretLine, String fqn, String param, boolean expectSuccess) throws Exception {
+        checkComputeMethodCall(file, caretLine, param, expectSuccess);
+    }
 
     public void testCall1() throws Exception {
         checkComputeMethodCall("testfiles/calls/call1.rb", "create_table(^firstarg,  :id => true)",
@@ -289,7 +321,7 @@ public class RubyCodeCompleterTest extends RubyTestBase {
     public void testAttributes() throws Exception {
         checkCompletion("testfiles/completion/lib/song.rb", "ss.^");
     }
-    
+
     // TODO - test more non-fc calls (e.g. x.foo)
     // TODO test with splat args (more args than are in def list)
     // TODO test with long arg lists

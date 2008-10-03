@@ -61,9 +61,13 @@ made subject to such option by the copyright holder.
     <entry category="private" javaType="java.lang.String" name="caret-type-overwrite-mode" xml:space="preserve">
         <value><![CDATA[block-caret]]></value>
     </entry>
+    <!-- #137560 - this can be uncommented when we clean the languages not to override the 'All Languages'
+         setting; this setting is not controlled no the per-language basis and its hardcoded default value
+         is 'false'.
     <entry category="private" javaType="java.lang.Boolean" name="code-folding-enable" xml:space="preserve">
         <value><![CDATA[false]]></value>
     </entry>
+    -->
     <entry category="private" javaType="java.lang.Boolean" name="completion-auto-popup" xml:space="preserve">
         <value><![CDATA[true]]></value>
     </entry>

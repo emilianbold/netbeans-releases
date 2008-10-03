@@ -138,7 +138,7 @@ public class AstElement extends JsElement {
                 }
             } else if (node.isStringNode()) {
                 name = node.getString();
-            } else if (node.getType() == Token.CALL) {
+            } else if (node.getType() == Token.CALL || node.getType() == Token.NEW) {
                 name = AstUtilities.getCallName(node, false);
             }
         }

@@ -460,8 +460,13 @@ public abstract class GsfTestBase extends NbTestCase {
 
     protected void assertDescriptionMatches(String relFilePath,
             String description, boolean includeTestName, String ext) throws Exception {
+        assertDescriptionMatches(relFilePath, description, includeTestName, ext, true);
+    }
+
+    protected void assertDescriptionMatches(String relFilePath,
+            String description, boolean includeTestName, String ext, boolean checkFileExistence) throws Exception {
         File rubyFile = getDataFile(relFilePath);
-        if (!rubyFile.exists()) {
+        if (checkFileExistence && !rubyFile.exists()) {
             NbTestCase.fail("File " + rubyFile + " not found.");
         }
 
@@ -689,7 +694,7 @@ public abstract class GsfTestBase extends NbTestCase {
         assertDescriptionMatches(relFilePath, annotatedSource, false, ".errors");
     }
 
-    private String annotateErrors(String text, List<Error> errors) {
+    protected String annotateErrors(String text, List<Error> errors) {
         List<String> descs = new ArrayList<String>();
         for (Error error : errors) {
             StringBuilder desc = new StringBuilder();
@@ -2604,7 +2609,7 @@ public abstract class GsfTestBase extends NbTestCase {
         org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
     }
     
-    public void checkComputeMethodCall(String file, String caretLine, String fqn, String param, boolean expectSuccess) throws Exception {
+    public void checkComputeMethodCall(String file, String caretLine, String param, boolean expectSuccess) throws Exception {
         initializeClassPaths();
         
         QueryType type = QueryType.COMPLETION;
@@ -2624,7 +2629,7 @@ public abstract class GsfTestBase extends NbTestCase {
         assertNotNull(pr);
         
         CodeCompletionHandler cc = getCodeCompleter();
-        assertNotNull("getSemanticAnalyzer must be implemented", cc);
+        assertNotNull("getCodeCompleter must be implemented", cc);
 
         boolean upToOffset = type == QueryType.COMPLETION;
         String prefix = cc.getPrefix(ci, caretOffset, upToOffset);

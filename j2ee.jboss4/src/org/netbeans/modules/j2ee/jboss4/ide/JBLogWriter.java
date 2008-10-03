@@ -97,8 +97,12 @@ public final class JBLogWriter {
             
     //output pane's writer
     private final OutputWriter out;
+    //output pane's writer
+    private final OutputWriter err;    
     //server output reader
     private volatile BufferedReader reader;
+    //server error reader
+    private volatile BufferedReader errorReader;
     //server instance name
     private final String instanceName;
     //server process
@@ -115,11 +119,13 @@ public final class JBLogWriter {
     
     //used to remember the last part of the output read from the server process
     //the part is used in the subsequent reading as the beginning of the line, see the issue #81951
-    private String trailingLine = "";    
-    
+    private LineReader lineReader = new LineReader();    
+
+    private LineReader errorLineReader = null;
     
     private JBLogWriter(InputOutput io, String instanceName) {
         this.out = (io != null ? io.getOut() : null);
+        this.err = (io != null ? io.getErr() : null);
         this.instanceName = instanceName;
     }
     
@@ -157,7 +163,7 @@ public final class JBLogWriter {
                     }
                 }
             }
-        }, LOGGER_TYPE.FILE);
+        }, null, LOGGER_TYPE.FILE);
     }
     
     /**
@@ -173,6 +179,8 @@ public final class JBLogWriter {
         this.process = process;
         this.startServer = startServer;
         this.reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        this.errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+        this.errorLineReader = new LineReader();
         
         //start the logging thread
         startWriter(new LineProcessor() {
@@ -222,7 +230,19 @@ public final class JBLogWriter {
                 }
             }
             
-        }, LOGGER_TYPE.PROCESS);
+        },
+        new LineProcessor() {
+
+            public void processLine(String line) {
+                //all lines are written to the output pane
+                if (line != null) {
+                    if (err != null) {
+                        err.println(line);
+                    }
+                }
+            }
+        },
+        LOGGER_TYPE.PROCESS);
         
         try {
             synchronized (START_LOCK) {
@@ -281,7 +301,7 @@ public final class JBLogWriter {
      *
      * The method is also responsible for the correct switching between the threads with different LOGGER_TYPE
      */
-    private synchronized void startWriter(LineProcessor lineProcessor, LOGGER_TYPE type) {
+    private synchronized void startWriter(LineProcessor lineProcessor, LineProcessor errorLineProcessor, LOGGER_TYPE type) {
         
         if (isRunning() || (logWriterThread != null && logWriterThread.isAlive())) {
             //logger reading the log file is not stopped when the server is stopped outside of the IDE
@@ -293,7 +313,7 @@ public final class JBLogWriter {
         
         this.type = type;
         
-        logWriterThread = new LogThread(THREAD_NAME, lineProcessor);
+        logWriterThread = new LogThread(THREAD_NAME, lineProcessor, errorLineProcessor);
         logWriterThread.start();
         
     }
@@ -347,7 +367,9 @@ public final class JBLogWriter {
      * The method is reading the lines from the reader until no input is avalable.
      * @return true if at least one line was available on the input, false otherwise
      */
-    private boolean processInput(LineProcessor lineProcessor, final LOGGER_TYPE type) {
+    private boolean processInput(LineProcessor lineProcessor,
+            LineProcessor errorLineProcessor, final LOGGER_TYPE type) {
+
         synchronized (READER_LOCK) {
             boolean ready = false;
             try {
@@ -355,10 +377,14 @@ public final class JBLogWriter {
                     while (reader.ready()) {
                         //reader.readLine() was hanging on Windows, thus replaced by own readLine() method
                         //see issue #81951
-                        ready = readLine(lineProcessor);
+                        ready = lineReader.readLine(reader, lineProcessor);
                     }
-                }
-                else {
+                    if (errorReader != null && errorLineReader != null) {
+                        while (errorReader.ready()) {
+                            errorLineReader.readLine(errorReader, errorLineProcessor);
+                        }
+                    }
+                } else {
                     while (reader.ready()) {
                         String line = reader.readLine();
                         lineProcessor.processLine(line);
@@ -372,72 +398,84 @@ public final class JBLogWriter {
         }
     }
     
-    /**
-     * According to the issue #81951, the BufferedReader.read() method must be used 
-     * instead of the BufferedReader.readLine() method, otherwise it hangs on Windows 
-     * in the underlying native method call after the server process has been stopped. 
-     * On Linux the BufferedReader.readLine() method correctly returns.
-     *
-     * Parsing is done manually to simulate behavior of the BufferedReader.readLine() method. 
-     * According to this, a line is considered to be terminated by any one
-     * of a line feed ('\n'), a carriage return ('\r'), or a carriage return
-     * followed immediately by a line feed.
-     *
-     * The method is processing each line read using the given LineProcessor. The remaining text
-     * (following the last line) is remembered for the next reading in the instance variable.
-     *
-     * The method is not able to discover whether there will be some additional reading or not, thus
-     * theoretically there are several events when the remaining text might not be processed.
-     * The first kind of event is when the server process has been started or some other event has occured
-     * (e.g. deploying) which causes the server process to log but not to stop.
-     * It is not possible to discover that no other input will be read and if the last logged line 
-     * is not ended by the 'new-line' character(s) then the remaing text is printed out not until
-     * the next input is read.
-     * The second kind of event is when the server process has been stopped. The log writer thread 
-     * is finished in this case and has opportunity to write out the remaing text.
-     * Actually it seems that the JBoss server is logging the whole lines only so the reading is working well
-     * in all cases.
-     */
-    private boolean readLine(LineProcessor lineProcessor) throws IOException {
-        char[] cbuf = new char[128];
-        int size = -1;
-        if ((size = reader.read(cbuf)) != -1) {
-            //prepend the text from the last reading to the text actually read
-            String lines = (trailingLine != null ? trailingLine : "");
-            lines += new String(cbuf, 0, size);
-            int tlLength = (trailingLine != null ? trailingLine.length() : 0);
-            int start = 0;
-            for (int i = 0; i < size; i++) {//going through the text read and searching for the new line
-                //we see '\n' or '\r', *not* '\r\n'
-                if (cbuf[i] == '\r' && (i+1 == size || cbuf[i+1] != '\n') || cbuf[i] == '\n') {
-                    String line = lines.substring(start, tlLength + i);
-                    //move start to the character right after the new line
-                    start = tlLength + (i + 1);
-                    lineProcessor.processLine(line);
-                }
-                else //we see '\r\n'
-                if (cbuf[i] == '\r' && (i+1 < size) && cbuf[i+1] == '\n') {
-                    String line = lines.substring(start, tlLength + i);
-                    //skip the '\n' character
-                    i += 1;
-                    //move start to the character right after the new line
-                    start = tlLength + (i + 1);
-                    lineProcessor.processLine(line);
-                }
-            }
-            if (start < lines.length()) {
-                //new line was not found at the end of the input, the remaing text is stored for the next reading
-                trailingLine = lines.substring(start);
-            }
-            else {
-                //null and not empty string to indicate that there is no valid input to write out;
-                //an empty string means that a new line character may be written out according 
-                //to the LineProcessor implementation
-                trailingLine = null; 
-            }
-            return true;
+    private static class LineReader {
+        private String trailingLine = "";
+
+        public String getTrailingLine() {
+            return trailingLine;
         }
-        return false;
+        
+        /**
+         * According to the issue #81951, the BufferedReader.read() method must be used
+         * instead of the BufferedReader.readLine() method, otherwise it hangs on Windows
+         * in the underlying native method call after the server process has been stopped.
+         * On Linux the BufferedReader.readLine() method correctly returns.
+         *
+         * Parsing is done manually to simulate behavior of the BufferedReader.readLine() method.
+         * According to this, a line is considered to be terminated by any one
+         * of a line feed ('\n'), a carriage return ('\r'), or a carriage return
+         * followed immediately by a line feed.
+         *
+         * The method is processing each line read using the given LineProcessor. The remaining text
+         * (following the last line) is remembered for the next reading in the instance variable.
+         *
+         * The method is not able to discover whether there will be some additional reading or not, thus
+         * theoretically there are several events when the remaining text might not be processed.
+         * The first kind of event is when the server process has been started or some other event has occured
+         * (e.g. deploying) which causes the server process to log but not to stop.
+         * It is not possible to discover that no other input will be read and if the last logged line
+         * is not ended by the 'new-line' character(s) then the remaing text is printed out not until
+         * the next input is read.
+         * The second kind of event is when the server process has been stopped. The log writer thread
+         * is finished in this case and has opportunity to write out the remaing text.
+         * Actually it seems that the JBoss server is logging the whole lines only so the reading is working well
+         * in all cases.
+         */
+        private boolean readLine(BufferedReader reader, LineProcessor lineProcessor) throws IOException {
+            char[] cbuf = new char[128];
+            int size = -1;
+            if ((size = reader.read(cbuf)) != -1) {
+                //prepend the text from the last reading to the text actually read
+                String lines = (trailingLine != null ? trailingLine : "");
+                lines += new String(cbuf, 0, size);
+                int tlLength = (trailingLine != null ? trailingLine.length() : 0);
+                int start = 0;
+                for (int i = 0; i < size; i++) {//going through the text read and searching for the new line
+                    //we see '\n' or '\r', *not* '\r\n'
+                    if (cbuf[i] == '\r' && (i+1 == size || cbuf[i+1] != '\n') || cbuf[i] == '\n') {
+                        String line = lines.substring(start, tlLength + i);
+                        //move start to the character right after the new line
+                        start = tlLength + (i + 1);
+                        if (lineProcessor != null) {
+                            lineProcessor.processLine(line);
+                        }
+                    }
+                    else //we see '\r\n'
+                    if (cbuf[i] == '\r' && (i+1 < size) && cbuf[i+1] == '\n') {
+                        String line = lines.substring(start, tlLength + i);
+                        //skip the '\n' character
+                        i += 1;
+                        //move start to the character right after the new line
+                        start = tlLength + (i + 1);
+                        if (lineProcessor != null) {
+                            lineProcessor.processLine(line);
+                        }
+                    }
+                }
+                if (start < lines.length()) {
+                    //new line was not found at the end of the input, the remaing text is stored for the next reading
+                    trailingLine = lines.substring(start);
+                }
+                else {
+                    //null and not empty string to indicate that there is no valid input to write out;
+                    //an empty string means that a new line character may be written out according
+                    //to the LineProcessor implementation
+                    trailingLine = null;
+                }
+                return true;
+            }
+            return false;
+        }
     }
     
     /**
@@ -484,11 +522,14 @@ public final class JBLogWriter {
 
         private final LineProcessor lineProcessor;
 
+        private final LineProcessor errorLineProcessor;
+
         private volatile boolean read = true;
 
-        public LogThread(String name, LineProcessor lineProcessor) {
+        public LogThread(String name, LineProcessor lineProcessor, LineProcessor errorLineProcessor) {
             super(name);
             this.lineProcessor = lineProcessor;
+            this.errorLineProcessor = errorLineProcessor;
         }
 
         public boolean isRunning() {
@@ -524,7 +565,7 @@ public final class JBLogWriter {
                     }
                 }
 
-                boolean ready = processInput(lineProcessor, type);
+                boolean ready = processInput(lineProcessor, errorLineProcessor, type);
                 if (type == LOGGER_TYPE.FILE) {
                     if (ready) {
                         // some input was read, remember the file size
@@ -558,7 +599,10 @@ public final class JBLogWriter {
             }
 
             //print the remaining message from the server process after it has stopped, see the issue #81951
-            lineProcessor.processLine(trailingLine);
+            lineProcessor.processLine(lineReader.getTrailingLine());
+            if (errorLineProcessor != null && errorLineReader != null) {
+                errorLineProcessor.processLine(errorLineReader.getTrailingLine());
+            }
 
             if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.log(Level.FINER, "FINISH thread " + Thread.currentThread().getId());

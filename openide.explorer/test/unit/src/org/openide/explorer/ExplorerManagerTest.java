@@ -64,6 +64,10 @@ public class ExplorerManagerTest extends NbTestCase
     private Keys keys;
     private Node root;
     private LinkedList<PropertyChangeEvent> events;
+
+    static {
+        ExplorerManager.SCHEDULE_REMOVE_ASYNCH = false;
+    }
     
     public ExplorerManagerTest(String testName) {
         super(testName);

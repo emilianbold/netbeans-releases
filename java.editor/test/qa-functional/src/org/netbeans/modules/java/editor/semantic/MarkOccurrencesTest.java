@@ -48,6 +48,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.editor.options.MarkOccurencesSettings;
@@ -208,27 +209,27 @@ public class MarkOccurrencesTest extends NbTestCase {
         if(ec != null) ec.close();
     }
     
-    static boolean firstStart = true;
+//    static boolean firstStart = true;
     
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        if(firstStart) {
-            js = openFile("Test.java");
-            sleep(2000);
-            try {
-                Caret c = editorPane.getCaret();
-                c.setDot(66);
-                sleep(2000);
-                c.setDot(272);
-                sleep(2000);                
-            } catch(Exception e) {
-                //ignoring
-            } finally {
-                closeFile();
-            }            
-            firstStart = false;
-        }
+//        if(firstStart) {
+//            js = openFile("Test.java");
+//            sleep(2000);
+//            try {
+//                Caret c = editorPane.getCaret();
+//                c.setDot(66);
+//                sleep(2000);
+//                c.setDot(272);
+//                sleep(2000);
+//            } catch(Exception e) {
+//                //ignoring
+//            } finally {
+//                closeFile();
+//            }
+//            firstStart = false;
+//        }
     }
     
     
@@ -267,6 +268,7 @@ public class MarkOccurrencesTest extends NbTestCase {
         }
         
         public void run(CompilationController parameter) throws Exception {
+            parameter.toPhase(Phase.RESOLVED);
             foundMarks = null;
             Document doc = getDocument();
             CancellableTask<CompilationInfo> task  = factory.createTask(fileObject);//new MarkOccurrencesHighlighter(fileObject);
@@ -302,12 +304,12 @@ public class MarkOccurrencesTest extends NbTestCase {
         dataObject = DataObject.find(fileObject);
         JavaSource js = JavaSource.forFileObject(fileObject);
         factory = new MarkOccurrencesHighlighterFactory();
-        sleep(500);
+        //sleep(500);
         final EditorCookie ec = dataObject.getCookie(EditorCookie.class);
         ec.openDocument();
         ec.open();
         
-        sleep(500);
+        //sleep(500);
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
                 JEditorPane[] panes = ec.getOpenedPanes();
@@ -322,11 +324,14 @@ public class MarkOccurrencesTest extends NbTestCase {
     private void setAndCheck(int pos,SimpleMark[] marks) throws IOException {
         Caret c = editorPane.getCaret();
         c.setDot(pos);
-        sleep(2500);
-        js.runUserActionTask(new MyTask() ,false);
-        sleep(500);
-        Arrays.sort(marks);
-        //assertEquals("Wrong number of highlight marks",marks.length,highlights.length);
+        foundMarks=null;
+        int cycles = 0;
+        while(foundMarks==null && cycles<10) {
+            sleep(200);
+            cycles++;
+            js.runUserActionTask(new MyTask() ,false);
+        }        
+        Arrays.sort(marks);        
         String etalon = "";
         for (int i = 0; i < marks.length; i++) {
             SimpleMark m = marks[i];
