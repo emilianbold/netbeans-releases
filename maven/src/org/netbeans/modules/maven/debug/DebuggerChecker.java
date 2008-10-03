@@ -43,8 +43,11 @@ import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -53,6 +56,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
@@ -70,6 +74,8 @@ import org.openide.windows.OutputWriter;
  * @author mkleint
  */
 public class DebuggerChecker implements LateBoundPrerequisitesChecker, ExecutionResultChecker {
+    private static final String ARGLINE = "argLine"; //NOI18N
+    private static final String MAVENSUREFIREDEBUG = "maven.surefire.debug"; //NOI18N
     private Logger LOGGER = Logger.getLogger(DebuggerChecker.class.getName());
 
     public boolean checkRunConfig(RunConfig config, ExecutionContext context) {
@@ -77,13 +83,46 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
             //cannot act on execution without a project instance..
             return true;
         }
-        
-        if ("true".equals(config.getProperties().getProperty(Constants.ACTION_PROPERTY_JPDALISTEN)) ||
-            "maven".equals(config.getProperties().getProperty(Constants.ACTION_PROPERTY_JPDALISTEN))) {//NOI18N
-                //NOI18N
-            if ("maven".equals(config.getProperties().getProperty(Constants.ACTION_PROPERTY_JPDALISTEN)) //NOI18N
-                && !config.getProperties().contains("Env.MAVEN_OPTS")) { //NOI18N
+
+        boolean debug = "true".equalsIgnoreCase(config.getProperties().getProperty(Constants.ACTION_PROPERTY_JPDALISTEN));//NOI18N
+        boolean mavenDebug = "maven".equalsIgnoreCase(config.getProperties().getProperty(Constants.ACTION_PROPERTY_JPDALISTEN)); //NOI18N
+        if (debug || mavenDebug) {
+            if (mavenDebug && !config.getProperties().contains("Env.MAVEN_OPTS")) { //NOI18N
                 config.setProperty("Env.MAVEN_OPTS", "-Xdebug -Djava.compiler=none -Xnoagent -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address}"); //NOI18N
+            }
+            if (debug && ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equalsIgnoreCase(config.getActionName())
+                      && config.getGoals().contains("surefire:test")) { //NOI18N - just a safeguard
+                String newArgs = config.getProperties().getProperty(MAVENSUREFIREDEBUG); //NOI18N
+                String oldArgs = config.getProperties().getProperty(ARGLINE); //NOI18N
+                NbMavenProject nbprj = config.getProject().getLookup().lookup(NbMavenProject.class);
+
+                String ver = PluginPropertyUtils.getPluginVersion(nbprj.getMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE); //NOI18N
+                //make sure we have both old surefire-plugin and new surefire-plugin covered
+                // in terms of property definitions.
+
+                if (ver == null) {
+                    ver = "2.4"; //assume 2.4+, will be true for 2.0.9+ where //NOI18N
+                    //defined explicitly, in older versions it will be the latest version.
+                }
+                ArtifactVersion twopointfour = new DefaultArtifactVersion("2.4"); //NOI18N
+                ArtifactVersion current = new DefaultArtifactVersion(ver); //NOI18N
+                int compare = current.compareTo(twopointfour);
+                if (oldArgs != null && newArgs == null && compare >= 0) {
+                    //this case is for custom user mapping in nbactions.xml
+                    // we can move it to new property safely IMHO.
+                    Properties prop = config.getProperties();
+                    prop.put( MAVENSUREFIREDEBUG,oldArgs);//NOI18N
+                    prop.remove(ARGLINE);//NOI18N
+                    config.setProperties(prop);
+                }
+                if (newArgs != null && compare < 0) {
+                    oldArgs = (oldArgs == null ? "" : oldArgs) + " " + newArgs;
+                    Properties prop = config.getProperties();
+                    prop.setProperty( ARGLINE,oldArgs);//NOI18N
+                    // in older versions this property id dangerous
+                    prop.remove(MAVENSUREFIREDEBUG);//NOI18N
+                    config.setProperties(prop);
+                }
             }
             try {
                 JPDAStart start = new JPDAStart(context.getInputOutput());

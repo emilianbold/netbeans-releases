@@ -82,6 +82,7 @@ public class PluginPropertyUtils {
         assert project != null : "Requires a maven project instance"; //NOI18N
         return getPluginProperty(project.getOriginalMavenProject(), groupId, artifactId, property, goal);
     }
+
     /**
      * tries to figure out if the property of the given plugin is customized in the
      * current project and returns it's value if so, otherwise null
@@ -130,6 +131,44 @@ public class PluginPropertyUtils {
         }
         return toRet;
     }
+
+    /**
+     * tries to figure out if the a plugin is defined in the project
+     * and return the version declared.
+     * @return version string or null
+     */
+    public static String getPluginVersion(MavenProject prj, String groupId, String artifactId) {
+        String toRet = null;
+        if (prj.getBuildPlugins() == null) {
+            return toRet;
+        }
+        for (Object obj : prj.getBuildPlugins()) {
+            Plugin plug = (Plugin)obj;
+            if (artifactId.equals(plug.getArtifactId()) &&
+                   groupId.equals(plug.getGroupId())) {
+                toRet = plug.getVersion();
+            }
+        }
+        if (toRet == null &&
+                //TODO - the plugin configuration probably applies to
+                //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
+                (Constants.PLUGIN_COMPILER.equals(artifactId) || //NOI18N
+                 Constants.PLUGIN_SUREFIRE.equals(artifactId) || //NOI18N
+                 Constants.PLUGIN_RESOURCES.equals(artifactId))) {  //NOI18N
+            if (prj.getPluginManagement() != null) {
+                for (Object obj : prj.getPluginManagement().getPlugins()) {
+                    Plugin plug = (Plugin)obj;
+                    if (artifactId.equals(plug.getArtifactId()) &&
+                        groupId.equals(plug.getGroupId())) {
+                        toRet = plug.getVersion();
+                        break;
+                    }
+                }
+            }
+        }
+        return toRet;
+    }
+
     
     private static String checkConfiguration(MavenProject prj, Object conf, String property) {
         if (conf != null && conf instanceof Xpp3Dom) {
