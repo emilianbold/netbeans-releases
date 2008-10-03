@@ -76,7 +76,7 @@ public final class MemberResolverImpl {
             if (CsmKindUtilities.isClass(cls)){
                 List<CsmMember> res = new ArrayList<CsmMember>();
                 getClassMembers((CsmClass)cls, name, res);
-                getSuperClasses((CsmClass)cls, name, res, new HashSet<CsmClass>());
+                getSuperClasses((CsmClass)cls, name, res, new HashSet<CharSequence>());
                 return res.iterator();
             }
         }
@@ -94,11 +94,11 @@ public final class MemberResolverImpl {
         }
     }
 
-    private void getSuperClasses(CsmClass cls, CharSequence name, List<CsmMember> res, Set<CsmClass> antiLoop){
-        if (antiLoop.contains(cls)){
+    private void getSuperClasses(CsmClass cls, CharSequence name, List<CsmMember> res, Set<CharSequence> antiLoop){
+        if (antiLoop.contains(cls.getQualifiedName())){
             return;
         }
-        antiLoop.add(cls);
+        antiLoop.add(cls.getQualifiedName());
         for(CsmInheritance inh : cls.getBaseClasses()){
             CsmVisibility v = inh.getVisibility();
             switch (v){

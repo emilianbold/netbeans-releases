@@ -598,14 +598,14 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         }
         CsmClass cls = (CsmClass)classifier;
         CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter("operator ", false, true, false); // NOI18N
-        return getOperatorCheckBaseClasses(cls, filter, opKind, new HashSet<CsmClass>());
+        return getOperatorCheckBaseClasses(cls, filter, opKind, new HashSet<CharSequence>());
     }
 
-    private static CsmFunction getOperatorCheckBaseClasses(CsmClass cls, CsmFilter filter, CsmFunction.OperatorKind opKind, Set<CsmClass> antiLoop) {
-        if (antiLoop.contains(cls)) {
+    private static CsmFunction getOperatorCheckBaseClasses(CsmClass cls, CsmFilter filter, CsmFunction.OperatorKind opKind, Set<CharSequence> antiLoop) {
+        if (antiLoop.contains(cls.getQualifiedName())) {
             return null;
         }
-        antiLoop.add(cls);        
+        antiLoop.add(cls.getQualifiedName());
         Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(cls, filter);
         while (it.hasNext()) {
             CsmMember member = it.next();
