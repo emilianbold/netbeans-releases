@@ -249,7 +249,7 @@ public class InfoPanel extends javax.swing.JPanel {
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                thread.makeCurrent();
+                debuggingView.makeThreadCurrent(thread);
             }
         });
         return item;
