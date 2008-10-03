@@ -254,7 +254,8 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
     private void validateCategory(String error) {
         category.setErrorMessage(error);
-        category.setValid(error == null);
+        // #148957 always allow to save customizer
+        category.setValid(true);
     }
 
     private FileObject getWebRoot() {

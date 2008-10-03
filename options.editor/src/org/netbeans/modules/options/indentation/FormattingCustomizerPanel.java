@@ -65,6 +65,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
 import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
@@ -142,6 +143,20 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
     // this is called when OK button is clicked to store the controlled preferences
     public void actionPerformed(ActionEvent e) {
         pf.applyChanges();
+
+        // Find mimeTypes that do not have a customizer
+        Set<String> mimeTypes = new HashSet(EditorSettings.getDefault().getAllMimeTypes());
+        mimeTypes.removeAll(selector.getMimeTypes());
+
+        // and make sure that they do NOT override basic settings from All Languages
+        Preferences p = ProjectUtils.getPreferences(pf.getProject(), IndentUtils.class, true);
+        for(String mimeType : mimeTypes) {
+            try {
+                p.node(mimeType).removeNode();
+            } catch (BackingStoreException bse) {
+                LOG.log(Level.WARNING, null, bse);
+            }
+        }
     }
 
     // ------------------------------------------------------------------------

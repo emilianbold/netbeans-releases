@@ -96,12 +96,12 @@ public class ClassBreakpointsTest extends JellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(ClassBreakpointsTest.class).addTest(
+                    "testClassBreakpointCreation",
                     "testClassBreakpointPrefilledInClass",
                     "testClassBreakpointPrefilledInInitializer",
                     "testClassBreakpointPrefilledInConstructor",
                     "testClassBreakpointPrefilledInMethod",
                     "testClassBreakpointPrefilledInSecondClass",
-                    "testClassBreakpointCreation",
                     "testClassBreakpointFunctionalityOnPrimaryClass",
                     "testClassBreakpointFunctionalityOnSecondClass",
                     "testClassBreakpointFunctionalityWithFilter"
@@ -131,16 +131,34 @@ public class ClassBreakpointsTest extends JellyTestCase {
     /**
      *
      */
-    public void testClassBreakpointPrefilledInClass() throws Throwable {
-        //open source
-        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-        new OpenAction().performAPI(beanNode);
-        EditorOperator eo = new EditorOperator("MemoryView.java");
-        
+    public void testClassBreakpointCreation() throws Throwable {
         try {
-            NbDialogOperator dialog = Utilities.newBreakpoint(37);
+            //open source
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode);
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            NbDialogOperator dialog = Utilities.newBreakpoint(73);
+            setBreakpointType(dialog, "Class");
+            new JTextFieldOperator(dialog, 0).setText("examples.advanced.MemoryView");
+            dialog.ok();
+            Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
+            assertEquals("Class breakpoint was not created.", "Class MemoryView load / unload", jTableOperator.getValueAt(0, 0).toString());
+        } catch (Throwable th) {
+            Utilities.captureScreen(this);
+            throw th;
+        }
+    }
+
+    /**
+     *
+     */
+    public void testClassBreakpointPrefilledInClass() throws Throwable {
+        try {
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            NbDialogOperator dialog = Utilities.newBreakpoint(37);            
             assertTrue("Class breakpoint is not pre-selected", new JComboBoxOperator(dialog, 1).getSelectedItem().equals("Class"));
-            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JEditorPaneOperator(dialog, 0).getText());
+            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 0).getText());
             dialog.cancel();
         } catch (Throwable th) {
             Utilities.captureScreen(this);
@@ -155,7 +173,7 @@ public class ClassBreakpointsTest extends JellyTestCase {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(45);
             assertTrue("Class breakpoint is not pre-selected", new JComboBoxOperator(dialog, 1).getSelectedItem().equals("Class"));
-            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JEditorPaneOperator(dialog, 0).getText());
+            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 0).getText());
             dialog.cancel();
         } catch (Throwable th) {
             Utilities.captureScreen(this);
@@ -170,7 +188,7 @@ public class ClassBreakpointsTest extends JellyTestCase {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(51);
             setBreakpointType(dialog, "Class");
-            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JEditorPaneOperator(dialog, 0).getText());
+            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 0).getText());
             dialog.cancel();
         } catch (Throwable th) {
             Utilities.captureScreen(this);
@@ -185,7 +203,7 @@ public class ClassBreakpointsTest extends JellyTestCase {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(80);
             setBreakpointType(dialog, "Class");
-            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JEditorPaneOperator(dialog, 0).getText());
+            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 0).getText());
             dialog.cancel();
         } catch (Throwable th) {
             Utilities.captureScreen(this);
@@ -200,25 +218,8 @@ public class ClassBreakpointsTest extends JellyTestCase {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(154);
             setBreakpointType(dialog, "Class");
-            assertEquals("Class Name was not set to correct value.", "examples.advanced.Helper", new JEditorPaneOperator(dialog, 0).getText());
+            assertEquals("Class Name was not set to correct value.", "examples.advanced.Helper", new JTextFieldOperator(dialog, 0).getText());
             dialog.cancel();
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
-    }
-
-    /**
-     *
-     */
-    public void testClassBreakpointCreation() throws Throwable {
-        try {
-            NbDialogOperator dialog = Utilities.newBreakpoint(73);
-            setBreakpointType(dialog, "Class");
-            dialog.ok();
-            Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
-            assertEquals("Class breakpoint was not created.", "Class MemoryView load / unload", jTableOperator.getValueAt(0, 0).toString());
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -269,13 +270,12 @@ public class ClassBreakpointsTest extends JellyTestCase {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(73);
             setBreakpointType(dialog, "Class");
-            new JEditorPaneOperator(dialog, 0).setText("examples.advanced.*");
+            new JTextFieldOperator(dialog, 0).setText("examples.advanced.*");
             new JCheckBoxOperator(dialog, 0).changeSelection(true);
-            new JTextFieldOperator(dialog, 0).setText("*.MemoryView");
+            new JTextFieldOperator(dialog, 1).setText("*.MemoryView");
             dialog.ok();
 
             new DebugProjectAction().performMenu();
-            Utilities.getDebugToolbar().waitComponentVisible(true);
             //Class breakpoint hit for class examples.advanced.Helper.");
             Utilities.waitStatusText("Class breakpoint hit for class examples.advanced.Helper");
             new ContinueAction().perform();

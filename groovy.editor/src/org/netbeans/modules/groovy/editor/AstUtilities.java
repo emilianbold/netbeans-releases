@@ -463,27 +463,34 @@ public class AstUtilities {
         return sb.toString();
     }
 
-    public static OffsetRange getNextIdentifierByName(BaseDocument doc, String fieldName, int startOffset) {
+    public static OffsetRange getNextIdentifierByName(final BaseDocument doc, final String fieldName, final int startOffset) {
         // since Groovy 1.5.6 the start offset is on 'def' on field/method declaration:
         // ^def foo = ...
         // ^Map bar = ...
         // find first token that is identifier and that matches given name
-        TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, startOffset);
-        if (ts != null) {
-            Token<? extends GroovyTokenId> token = ts.token();
-            if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), fieldName)) {
-                int offset = ts.offset();
-                return new OffsetRange(offset, offset + fieldName.length());
-            }
-            while (ts.moveNext()) {
-                token = ts.token();
-                if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), fieldName)) {
-                    int offset = ts.offset();
-                    return new OffsetRange(offset, offset + fieldName.length());
+        final OffsetRange[] result = new OffsetRange[] { OffsetRange.NONE };
+        doc.render(new Runnable() {
+            public void run() {
+                TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, startOffset);
+                if (ts != null) {
+                    Token<? extends GroovyTokenId> token = ts.token();
+                    if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), fieldName)) {
+                        int offset = ts.offset();
+                        result[0] = new OffsetRange(offset, offset + fieldName.length());
+                        return;
+                    }
+                    while (ts.moveNext()) {
+                        token = ts.token();
+                        if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), fieldName)) {
+                            int offset = ts.offset();
+                            result[0] = new OffsetRange(offset, offset + fieldName.length());
+                            return;
+                        }
+                    }
                 }
             }
-        }
-        return OffsetRange.NONE;
+        });
+        return result[0];
     }
 
     /**

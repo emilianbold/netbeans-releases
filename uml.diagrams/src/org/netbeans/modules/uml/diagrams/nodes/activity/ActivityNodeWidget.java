@@ -46,6 +46,7 @@ import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivity
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.diagrams.nodes.EditableCompartmentWidget;
+import org.netbeans.modules.uml.diagrams.nodes.MultiLineTaggedValueWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
@@ -61,7 +62,7 @@ public abstract class ActivityNodeWidget extends UMLNodeWidget
 {
     protected LabelWidget stereotypeWidget = null;
     protected LabelWidget nameWidget = null;
-    protected LabelWidget taggedValueWidget = null;
+    protected MultiLineTaggedValueWidget taggedValueWidget = null;
     private String contextPaletteRes = "UML/context-palette/Activity";
     protected static ResourceBundle bundle = NbBundle.getBundle(EditableCompartmentWidget.class);
 
@@ -189,34 +190,20 @@ public abstract class ActivityNodeWidget extends UMLNodeWidget
         return (nameWidget != null && nameWidget.isEnabled() && nameWidget.isVisible());
     }
 
-    protected LabelWidget createTaggedValueWidget()
+    protected MultiLineTaggedValueWidget createTaggedValueWidget()
     {
         if (taggedValueWidget == null)
         {
-            taggedValueWidget = new UMLLabelWidget(this.getScene(),
+            taggedValueWidget = new MultiLineTaggedValueWidget(this.getScene(),
                                                    getWidgetID() + ".taggedValue", //NO I18N
                                                    bundle.getString("LBL_taggedValue"));
-            taggedValueWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
-            taggedValueWidget.setForeground(null);
         }
-        taggedValueWidget.removeFromParent();
         return taggedValueWidget;
     }
 
     protected void enableTaggedValueWidget(IElement elem)
     {
-        String taggedValues = elem.getTaggedValuesAsString();
-
-        if (taggedValues.length() > 0 && taggedValueWidget != null)
-        {
-            taggedValueWidget.setVisible(true);
-            taggedValueWidget.setLabel("{" + taggedValues + "}");
-        }
-        else
-        {
-            taggedValueWidget.setLabel("");
-            taggedValueWidget.setVisible(false);
-        }
+        taggedValueWidget.updateTaggedValues(elem.getTaggedValuesAsList());
     }
 
     @Override

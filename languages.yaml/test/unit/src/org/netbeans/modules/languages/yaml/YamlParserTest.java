@@ -39,6 +39,11 @@
 
 package org.netbeans.modules.languages.yaml;
 
+import java.util.List;
+import org.netbeans.modules.gsf.GsfTestCompilationInfo;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.ParserResult;
+
 /**
  *
  * @author Tor Norbye
@@ -58,5 +63,27 @@ public class YamlParserTest extends YamlTestBase {
 
     public void testErrors3() throws Exception {
         checkErrors("testfiles/error3.yaml");
+    }
+
+    public void testHuge() throws Exception {
+        StringBuilder sb = new StringBuilder();
+        String s = readFile(getTestFile("testfiles/database.yml"));
+        while (sb.length() < 1024*1024) {
+            sb.append(s);
+        }
+        String huge = sb.toString();
+        String relFilePath = "generated-huge.yml";
+        GsfTestCompilationInfo info = getInfoForText(huge, relFilePath);
+        String text = info.getText();
+        assertNotNull(text);
+
+        ParserResult pr = info.getEmbeddedResult(info.getPreferredMimeType(), 0);
+        assertNotNull(pr);
+
+        List<Error> diagnostics = pr.getDiagnostics();
+        String annotatedSource = annotateErrors(text, diagnostics);
+        assertDescriptionMatches("testfiles/" + relFilePath, annotatedSource, false, ".errors", false);
+        // Make sure we actually skipped parsing this large document!
+        assertNull(((YamlParserResult)pr).getObject());
     }
 }

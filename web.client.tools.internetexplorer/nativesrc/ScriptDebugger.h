@@ -115,6 +115,8 @@ static const tstring TYPE_INTEGER =             _T("Integer");
 static const tstring TYPE_INT =                 _T("int");
 static const tstring TYPE_LONG =                _T("Long");
 static const tstring TYPE_ERROR =               _T("Error");
+static const tstring TYPE_NUMBER =              _T("Number");
+static const tstring TYPE_STRING =              _T("String");
 
 static const tstring FUNCTION =                 _T("function");
 static const tstring ARGUMENTS =                _T("arguments");

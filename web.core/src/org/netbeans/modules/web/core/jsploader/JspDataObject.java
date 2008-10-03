@@ -110,6 +110,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     
     transient volatile private Lookup currentLookup;
     
+    transient private String encoding = null;
+
     public JspDataObject(FileObject pf, final UniFileLoader l) throws DataObjectExistsException {
         super(pf, l);
         getCookieSet().add(BaseJspEditorSupport.class, new CookieSet.Factory() {
@@ -192,35 +194,30 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return "text/x-java"; // NOI18N
     }
     
-    // this is just a flag for obtaining encoding at first time.
-    private boolean isEncodingRetrieved = false;
-    
     public String getFileEncoding() {
-        if (!isEncodingRetrieved){
-            updateFileEncoding(false);
-            isEncodingRetrieved = true;
+        if (encoding == null){
+            updateFileEncoding(false); //from file
         }
-        String retrievedEncoding = (String)getPrimaryFile().getAttribute(ATTR_FILE_ENCODING);
-        retrievedEncoding = retrievedEncoding != null ? retrievedEncoding : DEFAULT_ENCODING;
-
-        if (LOGGER.isLoggable(Level.FINER)) {
-            LOGGER.log(Level.FINER, "Retrieved encoding for " + getPrimaryFile().getNameExt()  //NOI18N
-                    + " is " + retrievedEncoding);  //NOI18N
-        }
-        return retrievedEncoding;
+        return encoding;
     }
     
     void updateFileEncoding(boolean fromEditor) {
-        TagLibParseSupport tlps = (TagLibParseSupport)getCookie(TagLibParseSupport.class);
+        TagLibParseSupport tlps = (TagLibParseSupport) getCookie(TagLibParseSupport.class);
         if (tlps != null) {
-            String encoding = tlps.getCachedOpenInfo(true, fromEditor).getEncoding();
-            try {
-                getPrimaryFile().setAttribute(ATTR_FILE_ENCODING, encoding);
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, null, e);
-            }
+            encoding = tlps.getCachedOpenInfo(true, fromEditor).getEncoding();
         }
-        
+
+        if (encoding == null) {
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.log(Level.FINER, "Retrieved encoding is null for file " + getPrimaryFile().getNameExt());//NOI18N
+            }
+            encoding = DEFAULT_ENCODING;
+        }
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "Encoding updated for file " + getPrimaryFile().getNameExt() //NOI18N
+                    + " to " + encoding);  //NOI18N
+        }
+
     }
     
     private void initialize() {
@@ -276,22 +273,22 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                     servletDataObjectDate = dObj.getPrimaryFile().lastModified();
                 }
                 // set the encoding of the generated servlet
-                String encoding = compileData.getServletEncoding();
-                if (encoding != null) {
-                    if (!"".equals(encoding)) {  //NOI18N
+                String servletEncoding = compileData.getServletEncoding();
+                if (servletEncoding != null) {
+                    if (!"".equals(servletEncoding)) {  //NOI18N
                         try {
-                            Charset.forName(encoding);
+                            Charset.forName(servletEncoding);
                         } catch (IllegalArgumentException ex) {
-                            IOException t = new IOException(NbBundle.getMessage(JspDataObject.class, "FMT_UnsupportedEncoding", encoding));  //NOI18N
+                            IOException t = new IOException(NbBundle.getMessage(JspDataObject.class, "FMT_UnsupportedEncoding", servletEncoding));  //NOI18N
                             t.initCause(ex);
                             Logger.getLogger("global").log(Level.INFO, null, t);  //NOI18N
                         }
                     } else
-                        encoding = null;
+                        servletEncoding = null;
                 }
                 try {
                     // actually set the encoding
-                    servletFileObject.setAttribute(ATTR_FILE_ENCODING, encoding); //NOI18N
+                    servletFileObject.setAttribute(ATTR_FILE_ENCODING, servletEncoding); //NOI18N
                 } catch (IOException ex) {
                     Logger.getLogger("global").log(Level.INFO, null, ex);  //NOI18N
                 }

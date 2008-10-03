@@ -60,7 +60,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.annotations.CheckForNull;
-import org.netbeans.modules.javascript.editing.NbUtilities;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -103,14 +103,14 @@ public class LexUtilities {
             }
             BaseDocument doc = (BaseDocument) info.getDocument();
             if (doc == null && forceOpen) {
-                doc = NbUtilities.getBaseDocument(info.getFileObject(), true);
+                doc = GsfUtilities.getDocument(info.getFileObject(), true);
             }
             
             return doc;
         } catch (ClassCastException ex) {
             // TESTS! If data object for GSF isn't found it will be a FilterDocument
             // rather than a BaseDocument
-            return NbUtilities.getBaseDocument(info.getFileObject(), true);
+            return GsfUtilities.getDocument(info.getFileObject(), true);
         }
     }
 

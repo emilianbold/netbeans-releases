@@ -275,7 +275,7 @@ public class AssociateDlg implements IETContextMenuHandler
 		{
 			// Display the GUI to the user
 			Frame parent = ProductHelper.getProxyUserInterface().getWindowHandle();
-			AssociateDlgGUI pGUI = new AssociateDlgGUI(parent, true);
+			AssociateDialogUI pGUI = new AssociateDialogUI(parent, true);
 			if (pGUI != null)
 			{
 				pGUI.setResults(pResults);

@@ -168,6 +168,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             // in the caret section
             EditorCookie ec = lookup.lookup(EditorCookie.class);
             if (isFromEditor(ec)) {
+                // TODO - use editor registry
                 JTextComponent textC = ec.getOpenedPanes()[0];
                 Document d = textC.getDocument();
                 if (!(d instanceof BaseDocument)) {

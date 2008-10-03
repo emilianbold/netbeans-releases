@@ -563,15 +563,15 @@ public class J2SEActionProviderTest extends NbTestCase {
 
         context = Lookups.fixed(someSource1);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
-        assertEquals ("COMMAND_COMPILE_SINGLE must be enabled on one source", !cos, enabled);
+        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on one source", enabled);
 
         context = Lookups.fixed(someSource1, someSource2);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
-        assertEquals("COMMAND_COMPILE_SINGLE must be enabled on multiple sources", !cos, enabled);
+        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on multiple sources", enabled);
 
         context = Lookups.fixed(someTest1, someTest2);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
-        assertEquals("COMMAND_COMPILE_SINGLE must be enabled on multiple tests",!cos, enabled);
+        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on multiple tests", enabled);
 
         context = Lookups.fixed(someSource1, someTest1);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
@@ -579,28 +579,28 @@ public class J2SEActionProviderTest extends NbTestCase {
 
         context = Lookups.fixed(sourcePkg1);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
-        assertEquals ("COMMAND_COMPILE_SINGLE must be enabled on one src package",!cos, enabled);
+        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on one src package", enabled);
 
         context = Lookups.fixed(sourcePkg1, sourcePkg2);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
-        assertEquals ("COMMAND_COMPILE_SINGLE must be enabled on multiple src packages", !cos, enabled);
+        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on multiple src packages", enabled);
 
         context = Lookups.fixed(sourcePkg1, someSource1);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
-        assertEquals ("COMMAND_COMPILE_SINGLE must be enabled on mixed src packages/files", !cos, enabled);
+        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on mixed src packages/files", enabled);
 
 
         context = Lookups.fixed(testPkg1);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
-        assertEquals ("COMMAND_COMPILE_SINGLE must be enabled on one test package", !cos, enabled);
+        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on one test package", enabled);
 
         context = Lookups.fixed(testPkg1, testPkg2);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
-        assertEquals ("COMMAND_COMPILE_SINGLE must be enabled on multiple test packages", !cos, enabled);
+        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on multiple test packages", enabled);
 
         context = Lookups.fixed(testPkg1, someTest1);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
-        assertEquals ("COMMAND_COMPILE_SINGLE must be enabled on mixed test packages/files", !cos, enabled);
+        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on mixed test packages/files", enabled);
 
         context = Lookups.fixed(DataFolder.findFolder(projdir));
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
@@ -667,7 +667,7 @@ public class J2SEActionProviderTest extends NbTestCase {
 
         context = Lookups.fixed(someTest1);
         enabled = actionProvider.isActionEnabled(JavaProjectConstants.COMMAND_DEBUG_FIX, context);
-        assertEquals("COMMAND_DEBUG_FIX must be enabled on one test", !cos, enabled);
+        assertTrue("COMMAND_DEBUG_FIX must be enabled on one test", enabled);
 
         context = Lookups.fixed(someTest1, someTest2);
         enabled = actionProvider.isActionEnabled(JavaProjectConstants.COMMAND_DEBUG_FIX, context);
@@ -675,7 +675,7 @@ public class J2SEActionProviderTest extends NbTestCase {
 
         context = Lookups.fixed(someSource1);
         enabled = actionProvider.isActionEnabled(JavaProjectConstants.COMMAND_DEBUG_FIX, context);
-        assertEquals("COMMAND_DEBUG_FIX must be enabled on one source", !cos, enabled);
+        assertTrue("COMMAND_DEBUG_FIX must be enabled on one source", enabled);
 
         context = Lookups.fixed(someSource1, someSource2);
         enabled = actionProvider.isActionEnabled(JavaProjectConstants.COMMAND_DEBUG_FIX, context);

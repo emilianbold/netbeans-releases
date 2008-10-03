@@ -122,11 +122,11 @@ public class ThreadBreakpointsTest extends JellyTestCase {
      *
      */
     public void testThreadBreakpointCreation() throws Throwable {
-        //open source
-        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-        new OpenAction().performAPI(beanNode);
-        EditorOperator eo = new EditorOperator("MemoryView.java");
         try {
+            //open source
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode);
+            EditorOperator eo = new EditorOperator("MemoryView.java");
             new NewBreakpointAction().perform();
             NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
             setBreakpointType(dialog, "Thread");

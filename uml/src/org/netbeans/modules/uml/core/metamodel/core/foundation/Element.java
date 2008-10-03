@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.uml.core.metamodel.core.foundation;
 
+import java.util.ArrayList;
 import java.util.MissingResourceException;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import java.util.Iterator;
@@ -50,7 +51,6 @@ import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Node;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
-import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchRetriever;
 import org.netbeans.modules.uml.core.eventframework.EventState;
@@ -63,7 +63,6 @@ import org.netbeans.modules.uml.core.metamodel.profiles.ProfileManager;
 import org.netbeans.modules.uml.core.metamodel.structure.IArtifact;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.metamodel.structure.ISourceFileArtifact;
-import org.netbeans.modules.uml.core.metamodel.structure.SourceFileArtifact;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.CollectionType;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguage;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageManager;
@@ -657,6 +656,22 @@ public class Element extends BaseElement implements IElement
        }
        
        return retVal.toString();
+   }
+   
+   public List<String> getTaggedValuesAsList()
+   {
+       ETList < ITaggedValue > values = getTaggedValues();
+       List<String> retList = new ArrayList<String>();
+       
+       // create a list of Strings of "name=value" 
+       for(ITaggedValue value : values)
+       {
+           String newVal = value.getNameWithAlias();
+           newVal += ("=");
+           newVal += value.getDataValue();
+           retList.add(newVal);
+       }
+       return retList;
    }
    
    /**

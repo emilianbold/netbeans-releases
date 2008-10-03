@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.db.mysql;
 
-import java.beans.PropertyChangeEvent;
+import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.List;
@@ -52,6 +52,16 @@ import org.openide.nodes.Node.Cookie;
  * @author David
  */
 public interface DatabaseServer extends Cookie {
+    /**
+     * Get the icon for this server
+     */
+    public Image getIcon();
+
+    /**
+     * Does the server have a configuration error
+     */
+    public boolean hasConfigurationError();
+
     /**
      * Connect to the server.  If we already have a connection, close
      * it and open a new one.  NOTE this is synchronous and can not be

@@ -379,18 +379,27 @@ public class JavaCodegen implements ICodeGenerator
                             if (!(src instanceof ISourceFileArtifact))
                                 continue;
                             
-                            File ascFile = new File(((ISourceFileArtifact)src)
-                                .getSourceFile());
+                            ParsedInfo ascInfo = null;
+                            
+                            String fileName = ((ISourceFileArtifact)src).getSourceFile();
+                            File ascFile = new File(fileName);
                             
                             if (targetFiles.contains(ascFile))
                                 continue;
                             
-                            if (!inSubdir(new File(targetFolderName), ascFile))
-                                continue;
+                            try {
+                                if (!inSubdir(new File(targetFolderName), ascFile))
+                                    continue;
 
-                            ParsedInfo ascInfo = 
-                                merger.parse(ascFile.getCanonicalPath(),
-                                             REIntegrationUtil.getEncoding(ascFile.getCanonicalPath()));
+                                ascInfo = merger.parse(ascFile.getCanonicalPath(),
+                                                       REIntegrationUtil.getEncoding(ascFile.getCanonicalPath()));
+                            } 
+                            catch (IOException iox)   
+                            {          
+                                task.log(task.SUMMARY, LOG_INDENT 
+                                         + getBundleMessage("MSG_ErrorAccessingExistingSource", 
+                                                            fileName)); // NOI18N
+                            }
 
                             if (ascInfo == null)
                                 continue;
@@ -558,6 +567,7 @@ public class JavaCodegen implements ICodeGenerator
                         continue;
                     }
 
+
                     try
                     {
                         if (!(fmap.existingSourcePath == null && ascfiles.size() == 0))
@@ -704,8 +714,19 @@ public class JavaCodegen implements ICodeGenerator
                         if (src instanceof ISourceFileArtifact)
                         {
                             String srcPath = ((ISourceFileArtifact) src).getFileName();
+                            String canonicalSrcPath = null;
+                            try 
+                            {
+                                canonicalSrcPath = new File(srcPath).getCanonicalPath();
+                            }
+                            catch (IOException iox)   
+                            {                                
+                                task.log(task.SUMMARY, LOG_INDENT 
+                                         + getBundleMessage("MSG_ErrorAccessingExistingSource", 
+                                                            srcPath)); // NOI18N
+                            }                            
                             if (! (new File(fmap.targetFilePath).getCanonicalPath()
-                                   .equals(new File(srcPath).getCanonicalPath()))) 
+                                   .equals(canonicalSrcPath))) 
                             {
                                 theSameSet = false;
                             }
