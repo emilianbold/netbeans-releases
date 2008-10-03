@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.junit3;
+package org.netbeans.jellytools.modules.junit.testcases;
 
 import java.util.ArrayList;
 import org.netbeans.jellytools.EditorOperator;
@@ -52,7 +52,7 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
  *
  * @author Jiri Vagner, Pavel Pribyl
  */
-public abstract class ExtJellyTestCase extends JellyTestCase {
+public abstract class ExtJellyTestCaseForJunit3 extends JellyTestCase {
 
     private static int MY_WAIT_MOMENT = 500;
 
@@ -63,7 +63,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
     public Boolean DELETE_FILES = false;
 
     /** Constructor required by JUnit */
-    public ExtJellyTestCase(String testName) {
+    public ExtJellyTestCaseForJunit3(String testName) {
         super(testName);
     }
 
