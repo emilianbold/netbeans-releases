@@ -113,7 +113,7 @@ public class DebugSingleCommand extends DebugCommand {
                             invokeAction(context);
                         }
                     } else {
-                        dbgStarter.start(getProject(), runnable, startFile, isScriptSelected());
+                        startDebugger(dbgStarter, runnable, startFile, isScriptSelected());
                     }
                 }
             } else {

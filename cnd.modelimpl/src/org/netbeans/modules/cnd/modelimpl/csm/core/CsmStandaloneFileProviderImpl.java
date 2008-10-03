@@ -40,6 +40,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -66,6 +67,7 @@ import org.netbeans.modules.cnd.loaders.CDataObject;
 import org.netbeans.modules.cnd.loaders.CndDataObject;
 import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.netbeans.modules.cnd.loaders.HDataObject;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -130,7 +132,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         ProjectBase project = null;
         synchronized (this) {
             // findFile is expensive - don't call it twice!
-            CsmFile csmFile = ModelImpl.instance().findFile(name); 
+            CsmFile csmFile = ModelImpl.instance().findFile(name);
             if (csmFile != null) {
                 return csmFile;
             }
@@ -140,8 +142,16 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 project = ModelImpl.instance().addProject(platformProject, name, true);
             }
         }
-        if (project != null) {
-            return project.getFile(javaIoFile);
+        if (project != null && project.isValid()) {
+            try {
+                return project.getFile(javaIoFile);
+            } catch (BufferUnderflowException ex) {
+                // FIXUP: IZ#148840
+                DiagnosticExceptoins.register(ex);
+            } catch (IllegalStateException ex) {
+                // project can be closed
+                DiagnosticExceptoins.register(ex);
+            }
         }
         return null;
     }
@@ -195,18 +205,29 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         return false;
     }
 
-    synchronized public void notifyClosed(CsmFile file) {
-        if (TRACE) trace("checking file %s", file.toString()); //NOI18N
-        FileImpl fileImpl = (FileImpl) file;
+    synchronized public void notifyClosed(CsmFile csmFile) {
+        if (TRACE) trace("checking file %s", csmFile.toString()); //NOI18N
+        FileImpl fileImpl = (FileImpl) csmFile;
         for (CsmProject project : ModelImpl.instance().projects()) {
-            if (project.getPlatformProject() instanceof NativeProjectImpl) {
-                if (((ProjectBase)project).getFile(fileImpl.getFile()) != null) {
+            Object platformProject = project.getPlatformProject();
+            if (platformProject instanceof NativeProjectImpl) {
+                File file = fileImpl.getFile();
+                if (((ProjectBase)project).getFile(file) != null) {
+                    DataObject dao = NativeProjectImpl.getDataObject(file);
+                    if (dao instanceof CndDataObject) {
+                        CndDataObject dataObject = (CndDataObject) dao;
+                        NativeFileItemSet set = dataObject.getLookup().lookup(NativeFileItemSet.class);
+                        if (set != null) {
+                            NativeProjectImpl impl = (NativeProjectImpl) platformProject;
+                            set.remove(impl.findFileItem(file));
+                        }
+                    }
                     scheduleProjectRemoval(project);
                 }
             }
         }
     }
-    
+
     private void scheduleProjectRemoval(final CsmProject project) {
         if (TRACE) trace("schedulling removal %s", project.toString()); //NOI18N
         ModelImpl.instance().enqueueModelTask(new Runnable() {
@@ -224,7 +245,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         assert TRACE : "Should not be called if TRACE is off!"; //NOI18N
         System.err.printf("### Standalone provider:  %s\n", String.format(pattern, args)); //NOI18N
     }
-    
+
     private static final class NativeProjectImpl implements NativeProject {
 
         private final List<String> sysIncludes;
@@ -266,7 +287,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                     }
                 }
             }
-            
+
             if (prototype == null) {
                 NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
                 if (set != null) {
@@ -291,11 +312,14 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             }
             NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, sysMacros, usrMacros);
             impl.addFile(file);
-            if (getDataObject(file) instanceof CndDataObject) {
-                CndDataObject dataObject = (CndDataObject) getDataObject(file);
-                MyNativeFileItemSet set = new MyNativeFileItemSet();
-                set.add(impl.findFileItem(file));                
-                dataObject.addCookie(set);
+            if (dao instanceof CndDataObject) {
+                CndDataObject dataObject = (CndDataObject) dao;
+                NativeFileItemSet set = dataObject.getLookup().lookup(NativeFileItemSet.class);
+                if (set == null) {
+                    set = new MyNativeFileItemSet();
+                    dataObject.addCookie(set);
+                }
+                set.add(impl.findFileItem(file));
             }
             return impl;
         }
@@ -518,10 +542,10 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             return false;
         }
     }
-    
+
     static private class MyNativeFileItemSet implements NativeFileItemSet {
         private List<NativeFileItem> items = new ArrayList<NativeFileItem>(1);
-        
+
         public synchronized Collection<NativeFileItem> getItems() {
             return new ArrayList<NativeFileItem>(items);
         }

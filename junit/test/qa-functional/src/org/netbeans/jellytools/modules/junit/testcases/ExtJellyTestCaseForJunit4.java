@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.junit4;
+package org.netbeans.jellytools.modules.junit.testcases;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -68,7 +68,7 @@ import org.netbeans.jemmy.operators.Operator;
  *
  * @author Jiri Vagner
  */
-public abstract class ExtJellyTestCase extends JellyTestCase {
+public abstract class ExtJellyTestCaseForJunit4 extends JellyTestCase {
 
     private static int MY_WAIT_MOMENT = 500;
 
@@ -79,7 +79,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
     public Boolean DELETE_FILES = false;
 
     /** Constructor required by JUnit */
-    public ExtJellyTestCase(String testName) {
+    public ExtJellyTestCaseForJunit4(String testName) {
         super(testName);
     }
 

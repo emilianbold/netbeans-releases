@@ -147,7 +147,7 @@ public class HijackAction extends AbstractAction {
         Mnemonics.setLocalizedText(unHijackButton, NbBundle.getMessage(HijackAction.class, "CTL_UnhijackDialog_Unhijack")); //NOI18N
         
         dd.setOptions(new Object[] {unHijackButton, DialogDescriptor.CANCEL_OPTION}); // NOI18N
-        dd.setHelpCtx(new HelpCtx(HijackAction.class));
+        dd.setHelpCtx(new HelpCtx("org.netbeans.modules.clearcase.ui.hijack.Unhijack"));
                 
         panel.putClientProperty("contentTitle", contextTitle);  // NOI18N
         panel.putClientProperty("DialogDescriptor", dd); // NOI18N
