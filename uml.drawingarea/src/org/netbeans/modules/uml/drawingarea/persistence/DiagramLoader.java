@@ -1322,7 +1322,7 @@ class DiagramLoader
         for (int i = callMsgIndex; i < messageList.size(); i++)
         {
             IMessage iMessage = (IMessage)messageList.get(i);
-            if (iMessage.getKind() == IMessageKind.MK_RESULT) {
+            if (iMessage.getKind() == IMessageKind.MK_RESULT && iMessage.getSendingMessage().equals(callMessage)) {
                 return iMessage;
             }
         }
