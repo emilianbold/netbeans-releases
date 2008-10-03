@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.maven.cos;
 
+import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -163,12 +164,23 @@ public class CosChecker implements PrerequisitesChecker {
                         jvmProps.add("-D" + key.getKey() + "=" + key.getValue()); //NOI18N
                     }
                 }
+                String argLine = PluginPropertyUtils.getPluginProperty(config.getProject(), Constants.GROUP_APACHE_PLUGINS,
+                        Constants.PLUGIN_SUREFIRE, "argLine", "test"); //NOI18N
+                if (argLine != null) {
+                    try {
+                        String[] arr = CommandLineUtils.translateCommandline(argLine);
+                        jvmProps.addAll(Arrays.asList(arr));
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                //TODO jvm args from the argLine exec property,
+                //add and for debugging, remove the debugging ones..
 
                 ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
                 //TODO - additionalClasspathElements parameter in surefire plugin..
                 params.put(JavaRunner.PROP_EXECUTE_CLASSPATH, cpp.getProjectClassPaths(ClassPath.EXECUTE)[1]);
 
-                //TODO jvm args, add and for debugging, remove the debugging ones..
                 params.put(JavaRunner.PROP_RUN_JVMARGS, jvmProps);
                 String action2Quick = action2Quick(actionName);
                 boolean supported = JavaRunner.isSupported(action2Quick, params);
