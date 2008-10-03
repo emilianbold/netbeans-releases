@@ -1113,11 +1113,21 @@ protected static int repeat = 4
     }
 
     /**
+     * Workaround for issue 148463. Disables PHP from opening readme html when
+     * PHP Sample Project is created
+     * Invoke this from suite() method
+     */
+    public static void disablePHPReadmeHTML() {
+        System.setProperty("org.netbeans.modules.php.samples.donotopenreadmehtml", "true");
+    }
+
+    /**
      * This method should be called from suite() method to initialize 
      * environment before performance tests are executed
      */
     public static void prepareForMeasurements() {
         disableStatusBarEffects();
+        disablePHPReadmeHTML();
     }
 
 }

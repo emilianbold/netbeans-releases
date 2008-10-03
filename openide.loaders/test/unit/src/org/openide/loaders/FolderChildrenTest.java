@@ -536,6 +536,7 @@ public class FolderChildrenTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails // in FolderChildrenLazyTest in NB-Core-Build #1478
     public void testRenameOpenComponent() throws Exception {
         JspLoader.cnt = 0;
         Pool.setLoader(JspLoader.class);
