@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.junit.testcreation;
+package org.netbeans.test.junit.creation;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
@@ -53,9 +53,9 @@ import org.netbeans.jemmy.operators.JMenuOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.test.junit.testcase.JunitTestCase;
+import org.netbeans.jellytools.modules.junit.testcases.JunitTestCase;
 import org.netbeans.test.junit.utils.Utilities;
-import org.netbeans.test.junit4.CreateProjectTest;
+import org.netbeans.test.junit.junit4.CreateProjectTest;
 
 /**
  * Tests "Goto Test" action
