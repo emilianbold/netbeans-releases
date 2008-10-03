@@ -328,7 +328,7 @@ public final class CsmInheritanceUtilities {
      */
     private static List<CsmInheritance> findInheritanceChain(CsmClass child, CsmClass parent) {
         List<CsmInheritance> res = new ArrayList<CsmInheritance>();
-        Set<CsmClass> handledClasses = new HashSet<CsmClass>();
+        Set<CharSequence> handledClasses = new HashSet<CharSequence>();
         if (findInheritanceChain(child, parent, res, handledClasses)) {
             return res;
         } else {
@@ -347,10 +347,10 @@ public final class CsmInheritanceUtilities {
     
     private static boolean findInheritanceChain(CsmClass child, CsmClass parent, 
                                         List<CsmInheritance> res, 
-                                        Set<CsmClass> handledClasses) {
+                                        Set<CharSequence> handledClasses) {
         // remember visited childs
         // quick exit, if already handled before
-        if (child == null || !handledClasses.add(child)) {
+        if (child == null || !handledClasses.add(child.getQualifiedName())) {
             return false;
         }
         // quick escapement if child doesn't have base classes
