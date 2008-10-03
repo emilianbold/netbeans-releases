@@ -235,7 +235,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
             size += vis.getChildren().getChildCount();
         } else */
         if (depth-- > 0) {
-            Enumeration it = vis.getChildren().children();
+            Enumeration it = vis.children();
             while (it.hasMoreElements()) {
                 VisualizerNode v = (VisualizerNode) it.nextElement();
                 // count node v
@@ -263,7 +263,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
             return (VisualizerNode) vis.getChildAt(indx);
         }
 
-        Enumeration it = vis.getChildren().children();
+        Enumeration it = vis.children();
         while (it.hasMoreElements()) {
             VisualizerNode v = (VisualizerNode) it.nextElement();
 
@@ -487,6 +487,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
         Info() {
         }
 
+        @Override
         public String toString() {
             return "Info[childrenCount=" + childrenCount + ", depth=" + depth + // NOI18N
             ", index=" + index; // NOI18N
