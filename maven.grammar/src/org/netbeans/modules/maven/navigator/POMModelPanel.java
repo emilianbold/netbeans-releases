@@ -56,6 +56,7 @@ import org.apache.maven.model.CiManagement;
 import org.apache.maven.model.Contributor;
 import org.apache.maven.model.Developer;
 import org.apache.maven.model.IssueManagement;
+import org.apache.maven.model.License;
 import org.apache.maven.model.MailingList;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Organization;
@@ -318,6 +319,22 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                 }
             }, key, "Contributors", contributors));
 
+            @SuppressWarnings("unchecked")
+            List<List> licenses = getValue(models, "getLicenses", Model.class);
+            nds.add(new ListNode(Lookup.EMPTY, new ChildrenCreator() {
+                public Children createChildren(Object value, ModelLineage lineage) {
+                    @SuppressWarnings("unchecked")
+                    License ml = (License)value;
+                    List<License> lst = Collections.<License>singletonList(ml);
+                    return new LicenseChildren(lst, lineage);
+                }
+
+                public String createName(Object value) {
+                    String[] name = getStringValue(new Object[] {value}, "getName", License.class);
+                    return name.length > 0 ? name[0] : "License";
+                }
+            }, key, "Licenses", licenses));
+
             List<Properties> props = getValue(models, "getProperties", Model.class);
             nds.add(new ObjectNode(Lookup.EMPTY, new PropsChildren(props, key), key, "Properties", props));
             return nds.toArray(new Node[0]);
@@ -513,18 +530,43 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         protected Node[] createNodes(List<Contributor> key) {
             Contributor[] models = key.toArray(new Contributor[key.size()]);
             List<Node> nds = new ArrayList<Node>();
-            String[] vals = getStringValue(models, "getName", Developer.class);
+            String[] vals = getStringValue(models, "getName", Contributor.class);
             nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Name", vals));
-            vals = getStringValue(models, "getEmail", Developer.class);
+            vals = getStringValue(models, "getEmail", Contributor.class);
             nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Email", vals));
-            vals = getStringValue(models, "getUrl", Developer.class);
+            vals = getStringValue(models, "getUrl", Contributor.class);
             nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Url", vals));
-            vals = getStringValue(models, "getOrganization", Developer.class);
+            vals = getStringValue(models, "getOrganization", Contributor.class);
             nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Organization", vals));
-            vals = getStringValue(models, "getOrganizationUrl", Developer.class);
+            vals = getStringValue(models, "getOrganizationUrl", Contributor.class);
             nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Organization Url", vals));
-            vals = getStringValue(models, "getTimezone", Developer.class);
+            vals = getStringValue(models, "getTimezone", Contributor.class);
             nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Timezone", vals));
+            return nds.toArray(new Node[0]);
+        }
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="License Children">
+    private static class LicenseChildren extends Children.Keys<List<License>> {
+        private ModelLineage lineage;
+        public LicenseChildren(List<License> list, ModelLineage lin) {
+            setKeys(new List[] {list});
+            lineage = lin;
+        }
+
+        @Override
+        protected Node[] createNodes(List<License> key) {
+            License[] models = key.toArray(new License[key.size()]);
+            List<Node> nds = new ArrayList<Node>();
+            String[] vals = getStringValue(models, "getName", License.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Name", vals));
+            vals = getStringValue(models, "getUrl", License.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Url", vals));
+            vals = getStringValue(models, "getDistribution", License.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Distribution", vals));
+            vals = getStringValue(models, "getComments", License.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Comments", vals));
             return nds.toArray(new Node[0]);
         }
     }
