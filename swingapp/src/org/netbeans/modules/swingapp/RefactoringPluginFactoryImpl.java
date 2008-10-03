@@ -167,9 +167,13 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
 
                         // we need to rename/move the resource map before form gets updated
                         RefactoringInfo refInfo = refactoring.getContext().lookup(RefactoringInfo.class);
-                        if (refInfo != null && refInfo.isForm()) {
-                            assert isJavaFileOfForm(srcFile) && srcFile.equals(refInfo.getPrimaryFile());
-                            refInfo.getUpdateForFile(srcFile).addPrecedingFileChange(update);
+                        if (refInfo != null) {
+                            FileObject refFile = refInfo.getOriginalFiles()[0];
+                            if (refFile.existsExt("form")) { // NOI18N
+                                refInfo.getUpdateForFile(srcFile).addPrecedingFileChange(update);
+                            } else { // the source file is not a form - but we still do the update
+                                refactoringElements.addFileChange(refactoring, update);
+                            }
                         } else { // the source file is not a form - but we still do the update
                             refactoringElements.addFileChange(refactoring, update);
                         }

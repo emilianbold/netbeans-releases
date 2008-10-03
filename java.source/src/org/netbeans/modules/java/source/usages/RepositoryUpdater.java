@@ -293,10 +293,23 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
     }
     
-    public void rootsChanged(Collection<ClassPath> changedCp) {
+    public void rootsChanged(Collection<ClassPath> changedCp, File binary) {
         assert changedCp != null;
         if (LOGGER.isLoggable(Level.FINER)) {
             LOGGER.log(Level.FINER, "modified roots changedCp={0}", changedCp.toString());
+        }
+
+        FileObject fo = binary != null ? FileUtil.toFileObject(binary) : null;
+
+        if (fo != null && isBinary(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
+            final URL root = getOwningBinaryRoot(fo);
+            if (root != null) {
+                try {
+                    submit(Work.binary(fo, root));
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
         
         List<URL> roots = new LinkedList<URL>();

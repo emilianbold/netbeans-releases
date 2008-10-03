@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.modules.web.client.tools.common.launcher.Launcher;
 import org.netbeans.modules.web.client.tools.common.launcher.Launcher.LaunchDescriptor;
@@ -105,19 +106,32 @@ public class IEExtensionManager {
             if(!queryForBHO(bhoFilePath)) {
                 //Wait for user to agree for registering our BHO
                 if(displayBHORegisterDialog()) {
-                    if (registerBHO(bhoFilePath)) {
+                    if (registerBHO(bhoFilePath))
                         return true;
-                    }else {
-                        Log.getLogger().log(Level.INFO, NbBundle.getMessage(IEExtensionManager.class, "UNABLE_TO_REGISTER"));
-                    }
+                    //registration fails
+                    handleFailedRegistration();
                 }
-            }else {
+            } else {
                 return true;
             }
         } catch (IOException ioe) {
             Log.getLogger().log(Level.INFO, ioe.getLocalizedMessage());
         }
         return false;
+    }
+    
+    private static void handleFailedRegistration() {
+        final String message = NbBundle.getMessage(IEExtensionManager.class, "UNABLE_TO_REGISTER");                    
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                String os = System.getProperty("os.name").toLowerCase();
+                DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message (
+                        (os != null && os.contains("vista"))?
+                            message + "\n" + NbBundle.getMessage(IEExtensionManager.class, "UNABLE_TO_REGISTER_EXT"):
+                            message, NotifyDescriptor.ERROR_MESSAGE));
+            }
+        });        
     }
 
     private static boolean queryForBHO(String bhoFilePath) {

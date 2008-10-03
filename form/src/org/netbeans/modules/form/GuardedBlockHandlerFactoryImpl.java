@@ -105,7 +105,7 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
             boolean preloadForm = false;
             boolean canRegenerate = false;
 
-            if (refInfo.getPrimaryFile().equals(changedFile) && refInfo.isForm()) {
+            if (refInfo.containsOriginalFile(changedFile)) {
                 // the change started in this form
                 switch (refInfo.getChangeType()) {
                 case VARIABLE_RENAME: // renaming field or local variable of initComponents
@@ -115,9 +115,13 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
                     canRegenerate = true;
                     break;
                 case CLASS_MOVE:
-                    // can't preload the form - it must be loaded and
+                    // don't preload the form here - it should be loaded and
                     // regenareted *after* moved to the new location
-                    canRegenerate = true;
+                    if (refInfo.getOriginalFiles().length == 1) {
+                        canRegenerate = true;
+                    } // otherwise it is very likely the change is caused by moving
+                      // some other class used in this form - needs to be replaced
+                      // without loading (and regenerating) the form
                 }
             } else { // change originated in another class
                 if (first) {

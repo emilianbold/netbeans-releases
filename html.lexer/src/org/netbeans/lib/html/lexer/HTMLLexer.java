@@ -764,14 +764,13 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     break;
                     
                 case ISI_HTML_COMMENT_WS:       // DONE
-                    if( isWS( actChar ) ) break;  // Consume all WS
                     switch( actChar ) {
                         case '>':
                             lexerState = INIT;
                             return token(HTMLTokenId.BLOCK_COMMENT);
                         default:
                             lexerState = ISI_HTML_COMMENT;
-                            input.backup(1);
+                            input.backup(2); //backup everything except the first comma
                             break;
                     }
                     break;
