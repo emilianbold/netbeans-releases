@@ -54,6 +54,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Assert;
 
 /**
@@ -81,6 +83,8 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         pw = new PrintWriter(msgs);
         CountingSecurityManager.prefix = prefix;
         allowed = allowedFiles;
+
+        Logger.getLogger("org.netbeans.TopSecurityManager").setLevel(Level.OFF);
     }
 
     static void assertReflection(int maxCount, String whitelist) {
