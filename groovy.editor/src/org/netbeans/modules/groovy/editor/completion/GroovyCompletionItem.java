@@ -157,14 +157,6 @@ import org.openide.util.ImageUtilities;
         }
     }
 
-    
-
-
-
-
-/**
-     * 
-     */
     class JavaMethodItem extends GroovyCompletionItem {
 
         private final String simpleName;
@@ -494,9 +486,9 @@ import org.openide.util.ImageUtilities;
         private static final String NEW_CSTR   = "org/netbeans/modules/groovy/editor/resources/new_constructor_16.png"; //NOI18N
         private boolean expand; // should this item expand to a constructor body?
         private final String paramListString;
-        private final List<CodeCompleter.ParamDesc> paramList;
+        private final List<CodeCompleter.ParameterDescriptor> paramList;
 
-        ConstructorItem(String name, String paramListString, List<CodeCompleter.ParamDesc> paramList, int anchorOffset, CodeCompleter.CompletionRequest request, boolean expand) {
+        ConstructorItem(String name, String paramListString, List<CodeCompleter.ParameterDescriptor> paramList, int anchorOffset, CodeCompleter.CompletionRequest request, boolean expand) {
             super(null, anchorOffset, request);
             this.name = name;
             this.expand = expand;
@@ -573,12 +565,12 @@ import org.openide.util.ImageUtilities;
             
             // sb.append("${cursor}"); // NOI18N
 
-            for (CodeCompleter.ParamDesc paramDesc : paramList) {
+            for (CodeCompleter.ParameterDescriptor paramDesc : paramList) {
                 
                 LOG.log(Level.FINEST, "-------------------------------------------------------------------");
-                LOG.log(Level.FINEST, "paramDesc.fullTypeName : {0}", paramDesc.fullTypeName);
-                LOG.log(Level.FINEST, "paramDesc.typeName     : {0}", paramDesc.typeName);
-                LOG.log(Level.FINEST, "paramDesc.name         : {0}", paramDesc.name);
+                LOG.log(Level.FINEST, "paramDesc.fullTypeName : {0}", paramDesc.getFullTypeName());
+                LOG.log(Level.FINEST, "paramDesc.typeName     : {0}", paramDesc.getTypeName());
+                LOG.log(Level.FINEST, "paramDesc.name         : {0}", paramDesc.getName());
                 
                 sb.append("${"); //NOI18N
 
@@ -586,7 +578,7 @@ import org.openide.util.ImageUtilities;
                 sb.append(Integer.toString(id));
                 
                 sb.append(" default=\""); // NOI18N
-                sb.append(paramDesc.name);
+                sb.append(paramDesc.getName());
                 sb.append("\""); // NOI18N
 
                 sb.append("}"); //NOI18N
@@ -610,14 +602,12 @@ import org.openide.util.ImageUtilities;
         }
     }
 
-
-    /**
-     * 
-     */
     class FieldItem extends GroovyCompletionItem {
 
         private final String name;
+
         private final javax.lang.model.element.ElementKind ek;
+        
         private final String typeName;
 
         FieldItem(String name, int anchorOffset, CodeCompleter.CompletionRequest request, javax.lang.model.element.ElementKind ek, String typeName) {
@@ -660,9 +650,6 @@ import org.openide.util.ImageUtilities;
         }
     }
 
-    /**
-     * 
-     */
     class LocalVarItem extends GroovyCompletionItem {
 
         private final Variable var;
@@ -704,9 +691,6 @@ import org.openide.util.ImageUtilities;
         }
     }
 
-    /**
-     *
-     */
     class NewVarItem extends GroovyCompletionItem {
 
         private final String var;
