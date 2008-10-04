@@ -41,6 +41,7 @@ package org.netbeans.modules.db.mysql.actions;
 import org.netbeans.modules.db.mysql.impl.StartManager;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.DatabaseServer.ServerState;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog.Tab;
 import org.openide.nodes.Node;
@@ -78,8 +79,14 @@ public class StartAction extends CookieAction {
         
         DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
 
-        return server != null && !server.checkRunning(1000) && !server.hasConfigurationError() && !StartManager.getDefault().isStartRequested();
+        if (server == null) {
+            return false;
+        }
 
+        ServerState state = server.getState();
+
+        // Don't be too picky here, you never know what's really going on for sure...
+        return state != ServerState.CONNECTED && !StartManager.getDefault().isStartRequested();
     }
 
     @Override
