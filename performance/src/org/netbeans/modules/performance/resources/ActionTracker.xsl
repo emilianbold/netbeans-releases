@@ -14,6 +14,7 @@
                 tr.user_action { background:#b5ffb0; }
                 tr.user_action_measured { background:#9cff95; font-weight:bold; }
                 tr.app_message { background:#eeeedd; }
+                tr.app_message_ignored { background:#eeeedd;color:#909090; }
                 tr.app_message_measured { background:#fffd6d; font-weight:bold; }
                 tr.config_message { background:#ffffcc; }
                 tr.trace_message { background:#d9d9ff; }
@@ -45,26 +46,32 @@
         <xsl:variable name="cName">
             <xsl:value-of select="@type"/>
         </xsl:variable>
-        <xsl:if test='not(contains(@name,"IGNORED"))'>
-            <xsl:choose>
-                <xsl:when test='@measured'>
-                    <tr class='{$cName}_measured'>
-                        <td align="right"><xsl:value-of select="@diff"/></td>
-                        <td align="left"><xsl:value-of select="@name"/></td>
-                        <td align="left"><xsl:value-of select="@type"/></td>
-                        <td align="center"><xsl:value-of select="@time"/></td>
-                    </tr>
-                </xsl:when>
-                <xsl:otherwise>
-                    <tr class='{$cName}'>
-                        <td align="right"><xsl:value-of select="@diff"/></td>
-                        <td align="left"><xsl:value-of select="@name"/></td>
-                        <td align="left"><xsl:value-of select="@type"/></td>
-                        <td align="center"><xsl:value-of select="@time"/></td>
-                    </tr>
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:if>
+        <xsl:choose>
+            <xsl:when test='@measured'>
+                <tr class='{$cName}_measured'>
+                    <td align="right"><xsl:value-of select="@diff"/></td>
+                    <td align="left"><xsl:value-of select="@name"/></td>
+                    <td align="left"><xsl:value-of select="@type"/></td>
+                    <td align="center"><xsl:value-of select="@time"/></td>
+                </tr>
+            </xsl:when>
+            <xsl:when test='contains(@name,"IGNORED")'>
+                <tr class='{$cName}_ignored'>
+                    <td align="right"><xsl:value-of select="@diff"/></td>
+                    <td align="left"><xsl:value-of select="@name"/></td>
+                    <td align="left"><xsl:value-of select="@type"/></td>
+                    <td align="center"><xsl:value-of select="@time"/></td>
+                </tr>
+            </xsl:when>
+            <xsl:otherwise>
+                <tr class='{$cName}'>
+                    <td align="right"><xsl:value-of select="@diff"/></td>
+                    <td align="left"><xsl:value-of select="@name"/></td>
+                    <td align="left"><xsl:value-of select="@type"/></td>
+                    <td align="center"><xsl:value-of select="@time"/></td>
+                </tr>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 
 </xsl:stylesheet>

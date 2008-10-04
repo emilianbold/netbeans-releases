@@ -57,15 +57,18 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
+import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
@@ -583,19 +586,45 @@ public class DefaultProjectActionHandler implements ActionListener {
                 }
             }
             if (IpeUtils.isPathAbsolute(executable)) {
+                Configuration conf = pae.getConfiguration();
+                boolean ok = true;
+                
+                if (conf instanceof MakeConfiguration && !((MakeConfiguration) conf).getDevelopmentHost().isLocalhost()) {
+                    ok = verifyRemoteExecutable(((MakeConfiguration) conf).getDevelopmentHost().getName(), executable);
+                } else {
                     // FIXUP: getExecutable should really return fully qualified name to executable including .exe
                     // but it is too late to change now. For now try both with and without.
-                File file = new File(executable);
-                    if (!file.exists())
-                    file = new File(executable + ".exe"); // NOI18N
+                    File file = new File(executable);
+                    if (!file.exists()) {
+                        file = new File(executable + ".exe"); // NOI18N
+                    }
                     if (!file.exists() || file.isDirectory()) {
-                        String errormsg = getString("EXECUTABLE_DOESNT_EXISTS", pae.getExecutable()); // NOI18N
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
-                        return false;
+                        ok = false;
                     }
                 }
+                if (!ok) {
+                    String errormsg = getString("EXECUTABLE_DOESNT_EXISTS", pae.getExecutable()); // NOI18N
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+                    return false;
+                }
+            }
             return true;
         }
+    }
+    
+    /**
+     * Verify a remote executable exists, is executable, and is not a directory.
+     * 
+     * @param hkey The remote host
+     * @param executable The file to remotely check
+     * @return true if executable exists and is an executable, otherwise false
+     */
+    private boolean verifyRemoteExecutable(String hkey, String executable) {
+        CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
+        if (cmd != null) {
+            return cmd.run(hkey, "test -x " + executable + " -a -f " + executable, null) == 0; // NOI18N
+        }
+        return false;
     }
 
     private static final class StopAction extends AbstractAction {
