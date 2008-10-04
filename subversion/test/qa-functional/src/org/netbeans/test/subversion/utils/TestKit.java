@@ -54,7 +54,7 @@ public final class TestKit {
     public final static String IGNORED_STATUS = "[Ignored ]";
     public final static String UPTODATE_STATUS = "";
     public final static String LOGGER_NAME = "org.netbeans.modules.subversion.t9y";
-    public final static int TIME_OUT = 15;
+    public static int TIME_OUT = 15;
     
     public static File prepareProject(String category, String project, String project_name) throws Exception {
         //create temporary folder for test

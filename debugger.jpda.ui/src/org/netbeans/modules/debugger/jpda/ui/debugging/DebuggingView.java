@@ -98,6 +98,7 @@ import org.netbeans.api.debugger.jpda.DeadlockDetector.Deadlock;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
+import org.netbeans.api.debugger.jpda.ThreadsCollector;
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingTreeModel;
 import org.netbeans.modules.debugger.jpda.ui.views.ViewModelListener;
 
@@ -532,10 +533,15 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 ExplorerManager.PROP_NODE_CHANGE.equals(propertyName)) {
             refreshView();
         } else if (JPDADebugger.PROP_CURRENT_THREAD.equals(propertyName)) {
-            JPDAThread currentThread = debugger.getCurrentThread();
-            JPDAThread thread = threadMadeCurrentRef != null ? threadMadeCurrentRef.get() : null;
-            if (thread == currentThread) {
-                threadToScrollRef = new WeakReference(thread);
+            JPDAThread currentThread;
+            synchronized (this) {
+                currentThread = (debugger != null) ? debugger.getCurrentThread() : null;
+            }
+            if (currentThread != null) {
+                JPDAThread thread = threadMadeCurrentRef != null ? threadMadeCurrentRef.get() : null;
+                if (thread == currentThread) {
+                    threadToScrollRef = new WeakReference(thread);
+                }
             }
             refreshView();
         } else if (propertyName.equals (ExplorerManager.PROP_SELECTED_NODES)) {
@@ -732,9 +738,14 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             int sx = (rightPanel.getWidth() - ClickableIcon.CLICKABLE_ICON_WIDTH) / 2;
             int sy = 0;
 
-            JPDAThread currentThread = debugger != null ? debugger.getCurrentThread() : null;
+            JPDAThread currentThread;
+            ThreadsCollector tc;
+            synchronized (DebuggingView.this) {
+                currentThread = debugger != null ? debugger.getCurrentThread() : null;
+                tc = debugger != null ? debugger.getThreadsCollector() : null;
+            }
             // collect all deadlocked threads
-            Set<Deadlock> deadlocks = debugger != null ? debugger.getThreadsCollector().getDeadlockDetector().getDeadlocks() : Collections.EMPTY_SET;
+            Set<Deadlock> deadlocks = tc != null ? tc.getDeadlockDetector().getDeadlocks() : Collections.EMPTY_SET;
             if (deadlocks == null) {
                 deadlocks = Collections.EMPTY_SET;
             }

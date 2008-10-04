@@ -495,7 +495,7 @@ public class MakeActionProvider implements ActionProvider {
                     return;
                 } else if (conf.isCompileConfiguration()) {
                     RunProfile runProfile = null;
-                    if (Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_WINDOWS) {
+                    if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
                         // On Windows we need to add paths to dynamic libraries from subprojects to PATH
                         runProfile = conf.getProfile().cloneProfile();
                         Set subProjectOutputLocations = conf.getSubProjectOutputLocations();
@@ -622,13 +622,17 @@ public class MakeActionProvider implements ActionProvider {
                     actionEvents.clear();
                     break;
                 }
-                String buildCommand = "bash"; // NOI18N
+                String buildCommand;
+                String args;
                 if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
-                    buildCommand = "sh"; // NOI18N
+                    buildCommand = "cmd.exe"; // NOI18N
+                    args = "/c sh"; // NOI18N
+                } else {
+                    buildCommand = "bash"; // NOI18N
+                    args = "";
                 }
-                String args = "";
                 if (conf.getPackagingConfiguration().getVerbose().getValue()) {
-                    args += "-x "; // NOI18N
+                    args += " -x "; // NOI18N
                 }
                 args += "nbproject/Package-" + conf.getName() + ".bash"; // NOI18N
                 RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getPlatform().getValue());
@@ -703,12 +707,14 @@ public class MakeActionProvider implements ActionProvider {
                             }
                             outputFile = conf.expandMacros(outputFile);
                             // Clean command
-                            String commandLine = "rm -rf " + outputFile; // NOI18N
-                            String args = ""; // NOI18N
-                            int index = commandLine.indexOf(' '); // NOI18N
-                            if (index > 0) {
-                                args = commandLine.substring(index+1);
-                                commandLine = commandLine.substring(0, index);
+                            String commandLine;
+                            String args;
+                            if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+                                commandLine = "cmd.exe"; // NOI18N
+                                args = "/c rm -rf " + outputFile; // NOI18N
+                            } else {
+                                commandLine = "rm"; // NOI18N
+                                args = "-rf " + outputFile; // NOI18N
                             }
                             RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
                             profile.setArgs(args);
@@ -724,7 +730,7 @@ public class MakeActionProvider implements ActionProvider {
                             // Build commandLine
                             commandLine = getMakeCommand(pd, conf) + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
                             args = ""; // NOI18N
-                            index = commandLine.indexOf(' '); // NOI18N
+                            int index = commandLine.indexOf(' '); // NOI18N
                             if (index > 0) {
                                 args = commandLine.substring(index+1);
                                 commandLine = commandLine.substring(0, index);
@@ -923,7 +929,7 @@ public class MakeActionProvider implements ActionProvider {
         return DefaultProjectActionHandler.getInstance().getCustomDebugActionHandlerProvider() != null;
     }
 
-    private String getMakeCommand(MakeConfigurationDescriptor pd, MakeConfiguration conf) {
+    private static String getMakeCommand(MakeConfigurationDescriptor pd, MakeConfiguration conf) {
         String cmd = null;
         CompilerSet cs = conf.getCompilerSet().getCompilerSet();
         if (cs != null) {

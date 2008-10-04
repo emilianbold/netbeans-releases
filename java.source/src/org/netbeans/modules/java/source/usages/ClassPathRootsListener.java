@@ -213,7 +213,7 @@ public class ClassPathRootsListener implements PropertyChangeListener {
                             Collection<ClassPath> cps = file2ClassPaths.get(f);
 
                             if (cps != null) {
-                                fireRootsChanged(Collections.unmodifiableCollection(new LinkedList<ClassPath>(cps)));
+                                fireRootsChanged(Collections.unmodifiableCollection(new LinkedList<ClassPath>(cps)), f);
                             }
                         }
                     };
@@ -298,7 +298,7 @@ public class ClassPathRootsListener implements PropertyChangeListener {
         return null;
     }
     
-    private void fireRootsChanged(Collection<ClassPath> cps) {
+    private void fireRootsChanged(Collection<ClassPath> cps, File binary) {
         Map<ClassPathRootsChangedListener, Boolean> listeners = new IdentityHashMap<ClassPathRootsChangedListener, Boolean>();
         
         synchronized (this) {
@@ -317,7 +317,7 @@ public class ClassPathRootsListener implements PropertyChangeListener {
             return;
         
         for (ClassPathRootsChangedListener l : listeners.keySet()) {
-            l.rootsChanged(cps);
+            l.rootsChanged(cps, binary);
         }
     }
 
@@ -328,11 +328,11 @@ public class ClassPathRootsListener implements PropertyChangeListener {
                 LOGGER.log(Level.FINE, "classpath entries changed: cp={0} ({2}), entries={1}", new Object[] {cp, cp.entries(), System.identityHashCode(cp)});
             }
             handleClassPath(cp);
-            fireRootsChanged(Collections.singleton(cp));
+            fireRootsChanged(Collections.singleton(cp), null);
         }
     }
     
     public static interface ClassPathRootsChangedListener {
-        public void rootsChanged(Collection<ClassPath> forCPs);
+        public void rootsChanged(Collection<ClassPath> forCPs, File binary);
     }
 }
