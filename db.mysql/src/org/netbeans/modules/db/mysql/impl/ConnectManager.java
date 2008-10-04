@@ -41,11 +41,11 @@ package org.netbeans.modules.db.mysql.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.mysql.DatabaseServer;
-import org.netbeans.modules.db.mysql.impl.MySQLOptions;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.awt.StatusDisplayer;
@@ -62,6 +62,8 @@ public class ConnectManager {
     private final PropertyChangeListener listener = new ReconnectPropertyChangeListener();
 
     private static final Logger LOGGER = Logger.getLogger(ConnectManager.class.getName());
+
+    // Guarded by this
     private boolean reconnecting = false;
 
     private ConnectManager() {
@@ -106,6 +108,9 @@ public class ConnectManager {
                             }
                         });
                     }
+                } catch (TimeoutException te) {
+                    LOGGER.log(Level.INFO, te.getMessage(), te);
+                    Utils.displayErrorMessage(te.getMessage());
                 } finally {
                     setReconnecting(false);
                 }
@@ -134,14 +139,7 @@ public class ConnectManager {
         public void propertyChange(PropertyChangeEvent evt) {
             final DatabaseServer server = (DatabaseServer)evt.getSource();
             if (propertyChangeNeedsReconnect(evt)) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        // Run in task because checkRunning() can't be run on AWT thread
-                        if (server.checkRunning()) {
-                            reconnect(server);
-                        }
-                    }
-                });
+                reconnect(server);
             }
         }
     }
