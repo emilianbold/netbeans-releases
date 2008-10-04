@@ -92,17 +92,10 @@ import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.ListExpression;
-import org.codehaus.groovy.ast.expr.MapExpression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.RangeExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.reflection.CachedClass;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -1517,7 +1510,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         int position = request.lexOffset;
 
         TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, position);
-
+        
         int difference = ts.move(position);
 
         // get the active token:
@@ -1526,47 +1519,30 @@ public class CodeCompleter implements CodeCompletionHandler {
             active = (Token<? extends GroovyTokenId>) ts.token();
         }
 
-        // if we are right at the end of a line, a separator or a whitespace we gotta rewind.
-
-        // 1.) NO  str.^<NLS>
-        // 2.) NO  str.^subString
-        // 3.) NO  str.sub^String
-        // 4.) YES str.subString^<WHITESPACE-HERE>
-        // 5.) YES str.subString^<NLS>
-        // 6.) YES str.subString^()
-
-        if (active != null) {
-            if ((active.id() == GroovyTokenId.WHITESPACE && difference == 0)
-                    || active.id().primaryCategory().equals("separator")) {
-                LOG.log(Level.FINEST, "ts.movePrevious() - 1");
-                ts.movePrevious();
-            } else if (active.id() == GroovyTokenId.NLS) {
-                ts.movePrevious();
-                if (((Token<? extends GroovyTokenId>) ts.token()).id() == GroovyTokenId.DOT) {
-                    ts.moveNext();
-                } else {
-                    LOG.log(Level.FINEST, "ts.movePrevious() - 2");
-                }
-            }
+        if (ts.isValid()) {
+            LOG.log(Level.FINE, "Current token text {0}", ts.token().text().toString());
         }
 
+        // this should move us to dot or whitespace or NLS or prefix
         if (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
-            if (t.id() == GroovyTokenId.DOT || t.id() == GroovyTokenId.WHITESPACE
-                    || t.id() == GroovyTokenId.NLS) {
-                // no prefix
-                boolean moved = ts.moveNext();
-                if (moved) {
-                    t = (Token<? extends GroovyTokenId>) ts.token();
-                    if (t.id() != GroovyTokenId.IDENTIFIER) {
-                        return null;
-                    }
+
+
+            if (t.id() != GroovyTokenId.DOT && t.id() != GroovyTokenId.WHITESPACE
+                    && t.id() != GroovyTokenId.NLS) {
+                // is it prefix
+                if (t.id() != GroovyTokenId.IDENTIFIER) {
+                    return null;
+                } else {
+                    ts.movePrevious();
                 }
             }
         }
 
+        // now we should be on dot or in whitespace or NLS after the dot
         boolean remainingTokens = true;
         if (ts.token().id() != GroovyTokenId.DOT) {
+            
             // travel back on the token string till the token is neither a
             // WHITESPACE nor NLS
             while (ts.isValid() && (remainingTokens = ts.movePrevious()) && ts.offset() >= 0) {
@@ -1576,7 +1552,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                 }
             }
         }
-        // is the next token dot
+
         if (ts.token().id() != GroovyTokenId.DOT || !remainingTokens) {
             // no astpath
             return null;
@@ -2758,7 +2734,9 @@ public class CodeCompleter implements CodeCompletionHandler {
             // a couple of completions.
 
             assert request.ctx != null;
-            request.behindDot = checkBehindDot(request);
+
+            // FIXME this must be optimized
+            request.behindDot = getDotCompletionContext(request) != null;//checkBehindDot(request);
 
             if (request.behindDot) {
                 request.declaringClass = getBeforeDotDeclaringClass(request);

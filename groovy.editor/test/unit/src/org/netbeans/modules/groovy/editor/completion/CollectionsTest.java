@@ -84,4 +84,8 @@ public class CollectionsTest extends GroovyTestBase {
     public void testCollections4() throws Exception {
         checkCompletion(TEST_BASE + "" + "Collections1.groovy", "    1..10.d^", false);
     }
+    
+    public void testCollections5() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "    (1..10).^", false);
+    }    
 }
