@@ -134,15 +134,20 @@ import org.netbeans.modules.gsf.api.Index.SearchScope;
 
 public class CodeCompleter implements CodeCompletionHandler {
 
-    private static volatile boolean testMode = false;   // see setTesting(), thanks Petr. ;-)
-    private int anchor;
-    private final Logger LOG = Logger.getLogger(CodeCompleter.class.getName());
-    private String jdkJavaDocBase = null;
-    private String groovyJavaDocBase = null;
-    private String gapiDocBase = null;
-    Set<GroovyKeyword> keywords;
-    List<String> dfltImports = new ArrayList<String>();
+    private static final Logger LOG = Logger.getLogger(CodeCompleter.class.getName());
+    
+    private final List<String> dfltImports = new ArrayList<String>();
 
+    private int anchor;
+    
+    private String jdkJavaDocBase = null;
+
+    private String groovyJavaDocBase = null;
+
+    private String gapiDocBase = null;
+
+    private Set<GroovyKeyword> keywords;
+    
     public CodeCompleter() {
         JavaPlatformManager platformMan = JavaPlatformManager.getDefault();
         JavaPlatform platform = platformMan.getDefaultPlatform();
@@ -154,7 +159,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         }
 
         GroovySettings groovySettings = new GroovySettings();
-        String docroot = groovySettings.getGroovyDoc() + "/";
+        String docroot = groovySettings.getGroovyDoc() + "/"; // NOI18N
 
         groovyJavaDocBase = directoryNameToUrl(docroot + "groovy-jdk/"); // NOI18N
         gapiDocBase = directoryNameToUrl(docroot + "gapi/"); // NOI18N
@@ -162,31 +167,20 @@ public class CodeCompleter implements CodeCompletionHandler {
         LOG.log(Level.FINEST, "GDK Doc path: {0}", groovyJavaDocBase);
         LOG.log(Level.FINEST, "GAPI Doc path: {0}", gapiDocBase);
 
-        if (testMode) {
-            LOG.log(Level.FINEST, "Running in test-mode");
-        } else {
-            LOG.log(Level.FINEST, "Running in the IDE");
-        }
-
-        dfltImports.add("java.io");
-        dfltImports.add("java.lang");
-        dfltImports.add("java.net");
-        dfltImports.add("java.util");
-        dfltImports.add("groovy.util");
-        dfltImports.add("groovy.lang");
-
+        dfltImports.add("java.io"); // NOI18N
+        dfltImports.add("java.lang"); // NOI18N
+        dfltImports.add("java.net"); // NOI18N
+        dfltImports.add("java.util"); // NOI18N
+        dfltImports.add("groovy.util"); // NOI18N
+        dfltImports.add("groovy.lang"); // NOI18N
     }
 
-    /*Configures testing environment only*/
-    static void setTesting(boolean testing) {
-        testMode = testing;
-    }
-
-    String directoryNameToUrl(String dirname) {
+    private static String directoryNameToUrl(String dirname) {
         if (dirname == null) {
             return "";
         }
 
+        // FIXME use FileObject (?)
         File dirFile = new File(dirname);
 
         if (dirFile != null && dirFile.exists() && dirFile.isDirectory()) {
@@ -203,7 +197,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         }
     }
 
-    private void printASTNodeInformation(String description, ASTNode node) {
+    private static void printASTNodeInformation(String description, ASTNode node) {
 
         LOG.log(Level.FINEST, "--------------------------------------------------------");
         LOG.log(Level.FINEST, "{0}", description);
@@ -226,7 +220,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         LOG.log(Level.FINEST, "--------------------------------------------------------");
     }
 
-    private void printMethod(MetaMethod mm) {
+    private static void printMethod(MetaMethod mm) {
 
         LOG.log(Level.FINEST, "--------------------------------------------------");
         LOG.log(Level.FINEST, "getName()           : " + mm.getName());
@@ -1519,6 +1513,121 @@ public class CodeCompleter implements CodeCompletionHandler {
         String prefix = "";
     }
 
+    private DotCompletionContext getDotCompletionContext(final CompletionRequest request) {
+        int position = request.lexOffset;
+
+        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, position);
+
+        int difference = ts.move(position);
+
+        // get the active token:
+        Token<? extends GroovyTokenId> active = null;
+        if (ts.isValid() && ts.moveNext() && ts.offset() >= 0) {
+            active = (Token<? extends GroovyTokenId>) ts.token();
+        }
+
+        // if we are right at the end of a line, a separator or a whitespace we gotta rewind.
+
+        // 1.) NO  str.^<NLS>
+        // 2.) NO  str.^subString
+        // 3.) NO  str.sub^String
+        // 4.) YES str.subString^<WHITESPACE-HERE>
+        // 5.) YES str.subString^<NLS>
+        // 6.) YES str.subString^()
+
+        if (active != null) {
+            if ((active.id() == GroovyTokenId.WHITESPACE && difference == 0)
+                    || active.id().primaryCategory().equals("separator")) {
+                LOG.log(Level.FINEST, "ts.movePrevious() - 1");
+                ts.movePrevious();
+            } else if (active.id() == GroovyTokenId.NLS) {
+                ts.movePrevious();
+                if (((Token<? extends GroovyTokenId>) ts.token()).id() == GroovyTokenId.DOT) {
+                    ts.moveNext();
+                } else {
+                    LOG.log(Level.FINEST, "ts.movePrevious() - 2");
+                }
+            }
+        }
+
+        if (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
+            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            if (t.id() == GroovyTokenId.DOT || t.id() == GroovyTokenId.WHITESPACE
+                    || t.id() == GroovyTokenId.NLS) {
+                // no prefix
+                boolean moved = ts.moveNext();
+                if (moved) {
+                    t = (Token<? extends GroovyTokenId>) ts.token();
+                    if (t.id() != GroovyTokenId.IDENTIFIER) {
+                        return null;
+                    }
+                }
+            }
+        }
+
+        boolean remainingTokens = true;
+        if (ts.token().id() != GroovyTokenId.DOT) {
+            // travel back on the token string till the token is neither a
+            // WHITESPACE nor NLS
+            while (ts.isValid() && (remainingTokens = ts.movePrevious()) && ts.offset() >= 0) {
+                Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+                if (t.id() != GroovyTokenId.WHITESPACE && t.id() != GroovyTokenId.NLS) {
+                    break;
+                }
+            }
+        }
+        // is the next token dot
+        if (ts.token().id() != GroovyTokenId.DOT || !remainingTokens) {
+            // no astpath
+            return null;
+        }
+
+        // travel back on the token string till the token is neither a
+        // WHITESPACE nor NLS
+        Token<? extends GroovyTokenId> t = null;
+        while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
+            t = (Token<? extends GroovyTokenId>) ts.token();
+            if (t.id() != GroovyTokenId.WHITESPACE && t.id() != GroovyTokenId.NLS) {
+                break;
+            }
+        }
+
+        int lexOffset = ts.offset();
+
+        int astOffset = AstUtilities.getAstOffset(request.info, lexOffset);
+
+        AstPath realPath = getPath(request.info, request.doc, astOffset);
+
+        return new DotCompletionContext(lexOffset, astOffset, realPath);
+    }
+    
+    private static class DotCompletionContext {
+
+        private final int lexOffset;
+
+        private final int astOffset;
+
+        private final AstPath astPath;
+
+        public DotCompletionContext(int lexOffset, int astOffset, AstPath astPath) {
+            this.lexOffset = lexOffset;
+            this.astOffset = astOffset;
+            this.astPath = astPath;
+        }
+
+        public int getLexOffset() {
+            return lexOffset;
+        }
+
+        public int getAstOffset() {
+            return astOffset;
+        }
+
+        public AstPath getAstPath() {
+            return astPath;
+        }
+    }
+
     /**
      *
      * @param request
@@ -1929,29 +2038,6 @@ public class CodeCompleter implements CodeCompletionHandler {
 
     }
     
-    
-    class TypeHolder {
-        String name;
-        ElementKind kind;
-
-        public TypeHolder(String name, ElementKind kind) {
-            this.name = name;
-            this.kind = kind;
-        }
-
-        public ElementKind getKind() {
-            return kind;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        
-    }
-    
-    
-    
     List<TypeHolder> getElementListForPackageAsTypeHolder(final JavaSource javaSource, final String pkg, final String currentPackage) {
         LOG.log(Level.FINEST, "getElementListForPackageAsString(), Package :  {0}", pkg);
         
@@ -2054,39 +2140,25 @@ public class CodeCompleter implements CodeCompletionHandler {
             return request.declaringClass;
         }
 
-        /*
-         * Actually we don't care about the caret location path, but about
-         * the path to before-dot location. In future there may be need to
-         * make this more accurate.
-         */
-        int position = request.lexOffset - request.prefix.length() - 1;
-        int astOffset = AstUtilities.getAstOffset(request.info, position);
+        // FIXME move this up
+        DotCompletionContext dotCompletionContext = getDotCompletionContext(request);
 
-        AstPath realPath = getPath(request.info, request.doc, astOffset);
-
-        if (realPath == null) {
-            LOG.log(Level.FINEST, "path == null"); // NOI18N
+        if (dotCompletionContext == null || dotCompletionContext.getAstPath() == null
+                || dotCompletionContext.getAstPath().leaf() == null) {
             return null;
         }
 
-        // FIXME
-        request.beforeDotPath = realPath;
+        request.beforeDotPath = dotCompletionContext.getAstPath();
 
-        ASTNode closest = realPath.leaf();
+        ASTNode closest = request.beforeDotPath.leaf();
 
-        LOG.log(Level.FINEST, "getDeclaringClass() ----------------------------------------");
-        LOG.log(Level.FINEST, "Path : {0}", realPath);
-
-
-        if (closest == null) {
-            LOG.log(Level.FINEST, "closest == null"); // NOI18N
-            return null;
-        }
-
+        ClassNode declClass = null;
+        
         // experimental type inference
         if (closest instanceof VariableExpression) {
-            ModuleNode moduleNode = (ModuleNode) realPath.root();
-            TypeVisitor typeVisitor = new TypeVisitor(moduleNode.getContext(), realPath, request.doc, astOffset);
+            ModuleNode moduleNode = (ModuleNode) dotCompletionContext.getAstPath().root();
+            TypeVisitor typeVisitor = new TypeVisitor(moduleNode.getContext(),
+                    dotCompletionContext.getAstPath(), request.doc, dotCompletionContext.getAstOffset());
             typeVisitor.collect();
             ClassNode guessedType = typeVisitor.getGuessedType();
             if (guessedType != null) {
@@ -2094,74 +2166,27 @@ public class CodeCompleter implements CodeCompletionHandler {
             }
         }
 
-        ClassNode declClass = null;
+        if (declClass != null) {
+            // type inferred
+            request.declaringClass = declClass;
+        } else if (dotCompletionContext.getAstPath().leaf() instanceof Expression) {
+            Expression expression = (Expression) dotCompletionContext.getAstPath().leaf();
 
-        // Loop the path till we find something usefull.
-
-        for (Iterator<ASTNode> it = realPath.iterator(); it.hasNext();) {
-            ASTNode current = it.next();
-
-            printASTNodeInformation("Declaring-class, current is:", current);
-
-            declClass = getBeforeDotDeclaringClass(current);
-            if (declClass != null) {
-                break;
-            }
-        }
-
-        request.declaringClass = declClass;
-        return declClass;
-    }
-
-    private ClassNode getBeforeDotDeclaringClass(ASTNode current) {
-        printASTNodeInformation("Declaring-class, current is:", current);
-
-        Expression expression = null;
-        if (current instanceof VariableExpression) {
-            LOG.log(Level.FINEST, "* VariableExpression"); // NOI18N
-            expression = (VariableExpression) current;
-        } else if (current instanceof ExpressionStatement) {
-            LOG.log(Level.FINEST, "* ExpressionStatement"); // NOI18N
-            expression = ((ExpressionStatement) current).getExpression();
-        } else if (current instanceof PropertyExpression) {
-            LOG.log(Level.FINEST, "* PropertyExpression"); // NOI18N
-            // FIXME we should differ between accessed property and
-            // unfinished completion
-            expression = ((PropertyExpression) current).getObjectExpression();
-        } else if (current instanceof ConstructorCallExpression) {
-            LOG.log(Level.FINEST, "* ConstructorCallExpression"); // NOI18N
-            expression = (ConstructorCallExpression) current;
-        } else if (current instanceof MethodCallExpression) {
-            LOG.log(Level.FINEST, "* MethodCallExpression"); // NOI18N
-            // TODO unfortunately object expression is always of type java.lang.Object
-            // FIXME we should differ between called method and
-            // unfinished completion
-            expression = ((MethodCallExpression) current).getObjectExpression();
-        } else if (current instanceof ConstantExpression) {
-            LOG.log(Level.FINEST, "* ConstantExpression"); // NOI18N
-            expression = (ConstantExpression) current;
-        } else if (current instanceof MapExpression) {
-            LOG.log(Level.FINEST, "* MapExpression"); // NOI18N
-            expression = (MapExpression) current;
-        } else if (current instanceof ListExpression) {
-            LOG.log(Level.FINEST, "* ListExpression"); // NOI18N
-            expression = (ListExpression) current;
-        } else if (current instanceof RangeExpression) {
-            LOG.log(Level.FINEST, "* RangeExpression"); // NOI18N
-            expression = (RangeExpression) current;
-        }
-
-        if (expression != null) {
             // see http://jira.codehaus.org/browse/GROOVY-3050
             if (expression instanceof RangeExpression
                     && "java.lang.Object".equals(expression.getType().getName())) {
-                expression.setType(
-                        new ClassNode("groovy.lang.Range", ClassNode.ACC_PUBLIC | ClassNode.ACC_INTERFACE, null));
-            }
-            return expression.getType();
-        } else {
-            return null;
+                try {
+                    expression.setType(
+                            new ClassNode(Class.forName("groovy.lang.Range")));
+                } catch (ClassNotFoundException ex) {
+                    expression.setType(
+                            new ClassNode("groovy.lang.Range", ClassNode.ACC_PUBLIC | ClassNode.ACC_INTERFACE, null));
+                }
+            }            
+            request.declaringClass = expression.getType();
         }
+        
+        return request.declaringClass;
     }
 
     /**
@@ -2170,9 +2195,9 @@ public class CodeCompleter implements CodeCompletionHandler {
      * @param exe
      * @return
      */
-    static List<ParamDesc> getParameterList(ExecutableElement exe) {
+    private static List<ParameterDescriptor> getParameterList(ExecutableElement exe) {
 
-        List<ParamDesc> paramList = new ArrayList<ParamDesc>();
+        List<ParameterDescriptor> paramList = new ArrayList<ParameterDescriptor>();
 
         if (exe != null) {
             // generate a list of parameters
@@ -2197,7 +2222,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                     // todo: this needs to be replaced with values from the JavaDoc
                     String varName = "param" + String.valueOf(i);
 
-                    paramList.add(new ParamDesc(fullName, name, varName));
+                    paramList.add(new ParameterDescriptor(fullName, name, varName));
 
                     i++;
                 }
@@ -2326,7 +2351,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                                                     LOG.log(Level.FINEST, "Constructor call candidate added : {0}", constructorName);
 
                                                     String paramListString = getParameterListForMethod((ExecutableElement)encl);
-                                                    List<CodeCompleter.ParamDesc> paramList = getParameterList((ExecutableElement)encl);
+                                                    List<CodeCompleter.ParameterDescriptor> paramList = getParameterList((ExecutableElement)encl);
 
                                                     proposals.add(new ConstructorItem(constructorName, paramListString, paramList, anchor, request, false));
                                                 }
@@ -2434,15 +2459,10 @@ public class CodeCompleter implements CodeCompletionHandler {
                 }
             }
         }
-
-        
-        
+ 
         return true;
     }
 
-    /**
-     *
-     */
     private class MethodCompletionHelper implements Task<CompilationController> {
 
         private final CountDownLatch cnt;
@@ -3110,7 +3130,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         return ParameterInfo.NONE;
 
     }
-
+    
     // FIXME make it ordinary class and/or split it
     static class CompletionRequest {
 
@@ -3130,16 +3150,51 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
 
     // This is from JavaCompletionItem
-    static class ParamDesc {
+    static class ParameterDescriptor {
 
-        String fullTypeName;
-        String typeName;
-        String name;
+        private final String fullTypeName;
+        
+        private final String typeName;
+        
+        private final String name;
 
-        public ParamDesc(String fullTypeName, String typeName, String name) {
+        public ParameterDescriptor(String fullTypeName, String typeName, String name) {
             this.fullTypeName = fullTypeName;
             this.typeName = typeName;
             this.name = name;
         }
+
+        public String getName() {
+            return name;
+        }
+        
+        public String getTypeName() {
+            return typeName;
+        }
+        
+        public String getFullTypeName() {
+            return fullTypeName;
+        }
     }
+    
+    private static class TypeHolder {
+
+        private final String name;
+
+        private final ElementKind kind;
+
+        public TypeHolder(String name, ElementKind kind) {
+            this.name = name;
+            this.kind = kind;
+        }
+
+        public ElementKind getKind() {
+            return kind;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+    
 }
