@@ -57,12 +57,6 @@ public class NewVarsTest extends GroovyTestBase {
         Logger.getLogger(CodeCompleter.class.getName()).setLevel(Level.FINEST);
     }
 
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        CodeCompleter.setTesting(true);
-    }
-
     // uncomment this to have logging from GroovyLexer
     protected Level logLevel() {
         // enabling logging
