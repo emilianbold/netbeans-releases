@@ -40,11 +40,15 @@
 package org.netbeans.modules.db.mysql.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.api.explorer.NodeProvider;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.DatabaseServerManager;
@@ -52,22 +56,26 @@ import org.netbeans.modules.db.mysql.nodes.ServerNode;
 import org.netbeans.modules.db.mysql.util.DatabaseUtils;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  * Provides a node for working with a local MySQL Server instance
  * 
  * @author David Van Couvering
  */
-public class ServerNodeProvider implements NodeProvider {
+public final class ServerNodeProvider implements NodeProvider {
+    private static final Logger LOGGER = Logger.getLogger(NodeProvider.class.getName());
 
-    private static volatile ServerNodeProvider DEFAULT;
+    private static final ServerNodeProvider DEFAULT = new ServerNodeProvider();
     private static final MySQLOptions options = MySQLOptions.getDefault();
-    private final ArrayList<Node> nodes = new ArrayList<Node>();
+    private final List<Node> nodes = new ArrayList<Node>();
+    private final List<Node> unmodifiableNodes = Collections.unmodifiableList(nodes);
     private static final ArrayList<Node> emptyNodeList = new ArrayList<Node>();
     private final CopyOnWriteArrayList<ChangeListener> listeners = 
             new CopyOnWriteArrayList<ChangeListener>();
-    
-    public static synchronized ServerNodeProvider getDefault() {
+
+    private ServerNodeProvider() {
         // Issue 134577 - getDefault() is called by Lookup. If we try to
         // get the DatabaseServer or Installation implementations here, we cause
         // deadlocks, as this lookup will wait until the lookup calling
@@ -76,9 +84,9 @@ public class ServerNodeProvider implements NodeProvider {
         // So we lazily look up the DatabaseServer as part of the call
         // to getNodes(), which happens from application code and *not*
         // as part of lookup.
-        if ( DEFAULT == null ) {
-                DEFAULT = new ServerNodeProvider();
-        }
+    }
+    
+    public static ServerNodeProvider getDefault() {
         return DEFAULT;
     }
     
@@ -149,7 +157,7 @@ public class ServerNodeProvider implements NodeProvider {
         checkNodeArray();
         
         if ( options.isProviderRegistered() ) {
-            return nodes;
+            return unmodifiableNodes;
         } else {
             DatabaseServerManager.getDatabaseServer().disconnect();
             return emptyNodeList;
@@ -174,12 +182,22 @@ public class ServerNodeProvider implements NodeProvider {
     public void setRegistered(boolean registered) {
         boolean old = isRegistered();
         if ( registered != old ) {
-            DatabaseServer instance = DatabaseServerManager.getDatabaseServer();
+            final DatabaseServer instance = DatabaseServerManager.getDatabaseServer();
             options.setProviderRegistered(registered);
             
             if ( ! registered ) {
                 instance.disconnect();
-            } 
+            } else {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            instance.checkConfiguration();
+                        } catch (DatabaseException dbe) {
+                            LOGGER.log(Level.INFO, null, dbe);
+                        }
+                    }
+                });
+            }
             notifyChange();
         }
     }

@@ -70,7 +70,13 @@ public class ConnectionProcessor implements Runnable {
 
     void validateConnection() throws DatabaseException {
         try {
-            if (conn == null || conn.isClosed()) {
+            // A connection only needs to be validated if it already exists.
+            // We're trying to see if something went wrong to an existing connection...
+            if (conn == null) {
+                return;
+            }
+            
+            if (conn.isClosed()) {
                 conn = null;
                 throw new DatabaseException(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"));
             }

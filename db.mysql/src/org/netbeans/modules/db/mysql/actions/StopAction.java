@@ -78,8 +78,10 @@ public class StopAction extends CookieAction {
         }
         
         DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
-        
-        return server != null && server.checkRunning(1000) & !server.hasConfigurationError() && !StopManager.getDefault().isStopRequested();
+
+        // Don't be too picky about when to enable stop, as we really don't have
+        // 100% certainty about what exactly is up with the server
+        return server != null && !StopManager.getDefault().isStopRequested();
     }
 
     @Override
