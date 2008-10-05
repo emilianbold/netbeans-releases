@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.maven;
 
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import java.awt.Image;
@@ -64,6 +65,9 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.ArtifactHandler;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.embedder.MavenEmbedder;
@@ -434,6 +438,21 @@ public final class NbMavenProjectImpl implements Project {
 
     public String getArtifactRelativeRepositoryPath() {
         return getArtifactRelativeRepositoryPath(getOriginalMavenProject().getArtifact());
+    }
+    /**
+     * path of test artifact in local repository
+     * @return
+     */
+    public String getTestArtifactRelativeRepositoryPath() {
+        Artifact main = getOriginalMavenProject().getArtifact();
+        try {
+            ArtifactHandlerManager artifactHandlerManager = (ArtifactHandlerManager) getEmbedder().getPlexusContainer().lookup( ArtifactHandlerManager.ROLE );
+            Artifact test = new DefaultArtifact(main.getGroupId(), main.getArtifactId(), main.getVersionRange(),
+                            Artifact.SCOPE_TEST, "test-jar", "tests", artifactHandlerManager.getArtifactHandler("test-jar"));
+            return getArtifactRelativeRepositoryPath(test);
+        } catch (ComponentLookupException ex) {
+            throw new IllegalStateException("Cannot lookup ArtifactHandlerManager, broken plexus container.", ex);
+        }
     }
 
     public String getArtifactRelativeRepositoryPath(Artifact artifact) {
