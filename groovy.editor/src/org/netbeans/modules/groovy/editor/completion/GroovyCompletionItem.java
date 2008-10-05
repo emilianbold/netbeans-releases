@@ -225,9 +225,11 @@ import org.openide.util.ImageUtilities;
     }
     class MethodItem extends GroovyCompletionItem {
 
-        MetaMethod method;
-        boolean isGDK;
-        AstMethodElement methodElement;
+        private final MetaMethod method;
+
+        private final boolean isGDK;
+        
+        private final AstMethodElement methodElement;
 
         MethodItem(Class clz, MetaMethod method, int anchorOffset, CodeCompleter.CompletionRequest request, boolean isGDK) {
             super(null, anchorOffset, request);
@@ -614,16 +616,16 @@ import org.openide.util.ImageUtilities;
     class FieldItem extends GroovyCompletionItem {
 
         private final String name;
-
-        private final javax.lang.model.element.ElementKind ek;
         
         private final String typeName;
 
-        FieldItem(String name, int anchorOffset, CodeCompleter.CompletionRequest request, javax.lang.model.element.ElementKind ek, String typeName) {
+        private final int modifiers;
+
+        FieldItem(String name, int modifiers, int anchorOffset, CodeCompleter.CompletionRequest request, String typeName) {
             super(null, anchorOffset, request);
             this.name = name;
-            this.ek = ek;
             this.typeName = typeName;
+            this.modifiers = modifiers;
         }
 
         @Override
@@ -644,7 +646,8 @@ import org.openide.util.ImageUtilities;
         @Override
         public ImageIcon getIcon() {
             // todo: what happens, if i get a CCE here?
-            return (ImageIcon) ElementIcons.getElementIcon(ek, null);
+            return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.FIELD,
+                    toModel(modifiers));
         }
 
         @Override

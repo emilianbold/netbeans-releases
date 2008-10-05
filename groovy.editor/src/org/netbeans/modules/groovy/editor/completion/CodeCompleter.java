@@ -1048,10 +1048,10 @@ public class CodeCompleter implements CodeCompletionHandler {
             if(request.prefix.startsWith("$")) {
                 fieldName = request.prefix.substring(1);
                 anchorShift = 1;
-                }
+            }
             
             if (field.getName().startsWith(fieldName)) {
-                proposals.add(new FieldItem(field.getName(), anchor + anchorShift, request, ElementKind.FIELD, fieldTypeAsString));
+                proposals.add(new FieldItem(field.getName(), field.getModifiers(), anchor + anchorShift, request, fieldTypeAsString));
             }
 
         }
