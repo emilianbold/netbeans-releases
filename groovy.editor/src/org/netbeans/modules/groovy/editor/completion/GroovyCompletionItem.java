@@ -54,12 +54,14 @@ import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.groovy.editor.elements.KeywordElement;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import javax.lang.model.type.TypeMirror;
 import org.codehaus.groovy.ast.Variable;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.groovy.editor.NbUtilities;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.elements.GroovyElement;
+import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.modules.gsf.spi.DefaultCompletionProposal;
 import org.openide.util.ImageUtilities;
@@ -126,7 +128,7 @@ import org.openide.util.ImageUtilities;
             return ret;
         }
         
-    @Override
+        @Override
         public String getName() {
             return element.getName();
         }
@@ -161,10 +163,10 @@ import org.openide.util.ImageUtilities;
 
         private final String simpleName;
         private final String parameterString;
-        private final String returnType;
+        private final TypeMirror returnType;
         
 
-        JavaMethodItem(String simpleName, String parameterString, String returnType, int anchorOffset, CodeCompleter.CompletionRequest request) {
+        JavaMethodItem(String simpleName, String parameterString, TypeMirror returnType, int anchorOffset, CodeCompleter.CompletionRequest request) {
             super(null, anchorOffset, request);
             this.simpleName = simpleName;
             this.parameterString = parameterString;
@@ -189,7 +191,10 @@ import org.openide.util.ImageUtilities;
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
             // FIXME
-            String retType = NbUtilities.stripPackage(returnType);
+            String retType = "";
+            if (returnType != null) {
+                retType = Utilities.getTypeName(returnType, false).toString();
+            }
 
             formatter.appendText(retType);
 

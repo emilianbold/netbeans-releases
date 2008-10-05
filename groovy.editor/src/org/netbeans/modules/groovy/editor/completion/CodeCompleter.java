@@ -2431,7 +2431,8 @@ public class CodeCompleter implements CodeCompletionHandler {
 //                        sb.append(" ");
 //                    }
 
-                    proposals.add(new JavaMethodItem(indexedMethod.getName(), "", "", anchor, request));
+                    // FIXME what is this intended to do ?
+                    proposals.add(new JavaMethodItem(indexedMethod.getName(), "", null, anchor, request));
                 }
             }
         }
@@ -2474,7 +2475,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                         String simpleName = element.getSimpleName().toString();
                         String parameterString = getParameterListForMethod((ExecutableElement) element);
                         // FIXME this should be more accurate
-                        String returnType = ((ExecutableElement) element).getReturnType().toString();
+                        TypeMirror returnType = ((ExecutableElement) element).getReturnType();
 
                         if (simpleName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
                             proposals.add(new JavaMethodItem(simpleName, parameterString, returnType, anchor, request));

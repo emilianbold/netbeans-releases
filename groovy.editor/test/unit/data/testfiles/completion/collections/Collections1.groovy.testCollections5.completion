@@ -54,7 +54,7 @@ METHOD     getAt(String)                              List
 METHOD     getAt(String)                              Object
 METHOD     getAt(int)                                 Object
 METHOD     getClass()                                 Class
-METHOD     getClass()                                 Object>
+METHOD     getClass()                                 Class<? extends Object>
 METHOD     getFrom()                                  Comparable
 METHOD     getMetaClass()                             MetaClass
 METHOD     getMetaPropertyValues()                    List
