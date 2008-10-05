@@ -115,8 +115,6 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
 
     private boolean formFileRenameDone;
 
-    private List<RefactoringElementImplementation> preFileChanges;
-
     private List<BackupFacility.Handle> backups;
 
     // -----
@@ -153,13 +151,6 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
         return guardedCodeChanging;
     }
 
-    public void addPrecedingFileChange(RefactoringElementImplementation change) {
-        if (preFileChanges == null) {
-            preFileChanges = new LinkedList<RefactoringElementImplementation>();
-        }
-        preFileChanges.add(change);
-    }
-
     // -----
 
     // Transaction (registered via RefactoringElementsBag.registerTransaction)
@@ -190,12 +181,16 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
                     transactionDone = true;
                 }
                 break;
-            case CLASS_MOVE: // moving a component class used in the form (there can be more of them)
+            case CLASS_MOVE: // moving a class used in the form (there can be more of them)
                 if (!originalFile.equals(changingFile) && isGuardedCodeChanging()) {
                     componentChange(refInfo.getOldName(originalFile), refInfo.getNewName(originalFile));
-                    transactionDone = true;
-                } // If the form itself is moved as well, we are not able to process it
-                  // (not able to regenerate the code with new class names).
+                    transactionDone = !refInfo.containsOriginalFile(changingFile);
+                    // If a form is moved together with other java classes, it needs
+                    // to be checked here but also processed later in performChange
+                    // method. If it contained some of the moved components, we will
+                    // not be able to load it. But that is not for sure, so will try
+                    // anyway, at worst it won't be processed.
+                }
                 break;
             case CLASS_DELETE: // deleting form (more can be deleted, but here we only care about this form)
                 if (originalFile.equals(changingFile)) {
@@ -255,12 +250,6 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
         // file's name or location. We need the source file to be already
         // renamed/moved. The file changes are run after the "transactions".
 
-        if (preFileChanges != null) {
-            for (RefactoringElementImplementation change : preFileChanges) {
-                change.performChange();
-            }
-        }
-
         for (FileObject originalFile : refInfo.getOriginalFiles()) {
             // Looking through if this form is among original files - i.e. the
             // one being changed.
@@ -301,12 +290,6 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
         }
 
         undoFromBackups();
-
-        if (preFileChanges != null) {
-            for (RefactoringElementImplementation change : preFileChanges) {
-                change.undoChange();
-            }
-        }
     }
 
     // -----
@@ -373,11 +356,15 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
 
     private void formCopy() {
         if (refInfo.getRefactoring() instanceof SingleCopyRefactoring) {
+            FileObject oldFile = changingFile;
+            FormDataObject oldForm = formDataObject;
+            FileObject oldFolder = changingFile.getParent();
+
             SingleCopyRefactoring copyRef = (SingleCopyRefactoring)refInfo.getRefactoring();
             String newName = copyRef.getNewName(); // short name without extension
             Lookup target = copyRef.getTarget();
             FileObject targetFolder = URLMapper.findFileObject((URL)target.lookup(URL.class));
-            FileObject oldFolder = changingFile.getParent();
+            // will process the new copy - update changingFile and formDataObject fields
             changingFile = targetFolder.getFileObject(newName, "java"); // NOI18N
             try {
                 DataObject dobj = DataObject.find(changingFile);
@@ -393,11 +380,12 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
                 if (oldFolder == targetFolder) {
                     oldFolder = null;
                 }
-                String oldFormName = refInfo.getOldName(changingFile); // need a short name
-                oldFormName = oldFormName.substring(oldFormName.lastIndexOf('.')+1);
-                ResourceSupport.formMoved(formEditor.getFormModel(), oldFolder, oldFormName, true);
+                ResourceSupport.formMoved(formEditor.getFormModel(), oldFolder, oldFile.getName(), true);
                 updateForm(true);
             }
+            // set back to original so the operation can be repeated in redo
+            changingFile = oldFile;
+            formDataObject = oldForm;
         }
     }
 
