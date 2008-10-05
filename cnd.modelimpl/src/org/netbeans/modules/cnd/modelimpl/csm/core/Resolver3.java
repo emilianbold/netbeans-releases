@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
@@ -162,9 +163,9 @@ public class Resolver3 implements Resolver {
         if (isRecursionOnResolving(INFINITE_RECURSION)) {
             return null;
         }
-        Set<CharSequence> set = new HashSet<CharSequence>(100);
+        AntiLoop set = new AntiLoop(100);
         while (true) {
-            set.add(orig.getQualifiedName());
+            set.add(orig);
             if (CsmKindUtilities.isClassForwardDeclaration(orig)){
                 CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) orig;
                 CsmClass definition;
@@ -190,7 +191,7 @@ public class Resolver3 implements Resolver {
                     // have to stop with current 'orig' value
                     break;
                 }
-                if (set.contains(resovedClassifier.getQualifiedName())) {
+                if (set.contains(resovedClassifier)) {
                     // try to recover from this error
                     resovedClassifier = findOtherClassifier(orig);
                     if (resovedClassifier == null) {

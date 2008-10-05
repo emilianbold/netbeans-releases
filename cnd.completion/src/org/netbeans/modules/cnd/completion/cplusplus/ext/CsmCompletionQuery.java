@@ -66,9 +66,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
@@ -98,6 +96,7 @@ import org.netbeans.modules.cnd.completion.csm.CsmContext;
 import org.netbeans.modules.cnd.completion.csm.CsmContextUtilities;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
+import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
@@ -598,14 +597,14 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         }
         CsmClass cls = (CsmClass)classifier;
         CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter("operator ", false, true, false); // NOI18N
-        return getOperatorCheckBaseClasses(cls, filter, opKind, new HashSet<CharSequence>());
+        return getOperatorCheckBaseClasses(cls, filter, opKind, new AntiLoop());
     }
 
-    private static CsmFunction getOperatorCheckBaseClasses(CsmClass cls, CsmFilter filter, CsmFunction.OperatorKind opKind, Set<CharSequence> antiLoop) {
-        if (antiLoop.contains(cls.getQualifiedName())) {
+    private static CsmFunction getOperatorCheckBaseClasses(CsmClass cls, CsmFilter filter, CsmFunction.OperatorKind opKind, AntiLoop antiLoop) {
+        if (antiLoop.contains(cls)) {
             return null;
         }
-        antiLoop.add(cls.getQualifiedName());
+        antiLoop.add(cls);
         Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(cls, filter);
         while (it.hasNext()) {
             CsmMember member = it.next();

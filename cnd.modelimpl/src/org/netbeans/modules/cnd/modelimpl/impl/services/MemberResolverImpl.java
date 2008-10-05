@@ -41,10 +41,8 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
@@ -53,11 +51,11 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
-import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
+import org.netbeans.modules.cnd.modelutil.AntiLoop;
 
 /**
  *
@@ -76,7 +74,7 @@ public final class MemberResolverImpl {
             if (CsmKindUtilities.isClass(cls)){
                 List<CsmMember> res = new ArrayList<CsmMember>();
                 getClassMembers((CsmClass)cls, name, res);
-                getSuperClasses((CsmClass)cls, name, res, new HashSet<CharSequence>());
+                getSuperClasses((CsmClass)cls, name, res, new AntiLoop());
                 return res.iterator();
             }
         }
@@ -94,11 +92,11 @@ public final class MemberResolverImpl {
         }
     }
 
-    private void getSuperClasses(CsmClass cls, CharSequence name, List<CsmMember> res, Set<CharSequence> antiLoop){
-        if (antiLoop.contains(cls.getQualifiedName())){
+    private void getSuperClasses(CsmClass cls, CharSequence name, List<CsmMember> res, AntiLoop antiLoop){
+        if (antiLoop.contains(cls)){
             return;
         }
-        antiLoop.add(cls.getQualifiedName());
+        antiLoop.add(cls);
         for(CsmInheritance inh : cls.getBaseClasses()){
             CsmVisibility v = inh.getVisibility();
             switch (v){

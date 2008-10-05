@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
+import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.util.Lookup;
 
@@ -93,14 +94,14 @@ public abstract class CsmVirtualInfoQuery {
             if (method.isVirtual()) {
                 return true;
             }
-            return processClass(method.getSignature(), method.getContainingClass(), new HashSet<CharSequence>());
+            return processClass(method.getSignature(), method.getContainingClass(), new AntiLoop());
         }
 
-        private boolean processClass(CharSequence sig, CsmClass cls, Set<CharSequence> antilLoop){
-            if (cls == null || antilLoop.contains(cls.getQualifiedName())) {
+        private boolean processClass(CharSequence sig, CsmClass cls, AntiLoop antilLoop){
+            if (cls == null || antilLoop.contains(cls)) {
                 return false;
             }
-            antilLoop.add(cls.getQualifiedName());
+            antilLoop.add(cls);
             for(CsmMember m : cls.getMembers()){
                 if (CsmKindUtilities.isMethod(m)) {
                     CsmMethod met = (CsmMethod) m;
