@@ -641,7 +641,9 @@ abstract class EntrySupport {
 
             if (children.parent != null) {
                 // fire change of nodes
-                children.parent.fireSubNodesChange(false, arr, current);
+                if (children.entrySupport == this) {
+                    children.parent.fireSubNodesChange(false, arr, current);
+                }
 
                 // fire change of parent
                 Iterator it = nodes.iterator();
@@ -677,7 +679,7 @@ abstract class EntrySupport {
 
             Node n = children.parent;
 
-            if (n != null) {
+            if (n != null && children.entrySupport == this) {
                 n.fireSubNodesChange(true, arr, null);
             }
         }
@@ -1443,7 +1445,7 @@ abstract class EntrySupport {
          *  @param indices list of integers with indexes that changed
          */
         protected void fireSubNodesChangeIdx(boolean added, int[] idxs, Entry sourceEntry, List<Node> current, List<Node> previous) {
-            if (children.parent != null) {
+            if (children.parent != null && children.entrySupport == this) {
                 children.parent.fireSubNodesChangeIdx(added, idxs, sourceEntry, current, previous);
             }
         }

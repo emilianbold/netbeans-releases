@@ -1429,7 +1429,7 @@ public class FilterNode extends Node {
                 entrySupport = null;
             }
 
-            if (newOriginal == null) {
+            if (init || newOriginal == null) {
                 entrySupport().notifySetEntries();
 
                 if (LOG_ENABLED) {
@@ -1852,7 +1852,7 @@ public class FilterNode extends Node {
                 public String toString() {
                     return "FilterNodeEntry[" + origEntry + "]@" + Integer.toString(hashCode(), 16);
                 }
-            }            
+            }
         }
         
         interface FilterChildrenSupport {
