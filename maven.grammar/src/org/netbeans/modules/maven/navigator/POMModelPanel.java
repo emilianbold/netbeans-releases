@@ -44,6 +44,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -273,10 +274,9 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             @SuppressWarnings("unchecked")
             List<List> mailingLists = getValue(models, "getMailingLists", Model.class);
             nds.add(new ListNode(Lookup.EMPTY, new ChildrenCreator() {
-                public Children createChildren(Object value, ModelLineage lineage) {
+                public Children createChildren(List value, ModelLineage lineage) {
                     @SuppressWarnings("unchecked")
-                    MailingList ml = (MailingList)value;
-                    List<MailingList> lst = Collections.<MailingList>singletonList(ml);
+                    List<MailingList> lst = value;
                     return new MailingListChildren(lst, lineage);
                 }
 
@@ -289,10 +289,9 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             @SuppressWarnings("unchecked")
             List<List> developers = getValue(models, "getDevelopers", Model.class);
             nds.add(new ListNode(Lookup.EMPTY, new ChildrenCreator() {
-                public Children createChildren(Object value, ModelLineage lineage) {
+                public Children createChildren(List value, ModelLineage lineage) {
                     @SuppressWarnings("unchecked")
-                    Developer ml = (Developer)value;
-                    List<Developer> lst = Collections.<Developer>singletonList(ml);
+                    List<Developer> lst = value;
                     return new DeveloperChildren(lst, lineage);
                 }
 
@@ -306,10 +305,9 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             @SuppressWarnings("unchecked")
             List<List> contributors = getValue(models, "getContributors", Model.class);
             nds.add(new ListNode(Lookup.EMPTY, new ChildrenCreator() {
-                public Children createChildren(Object value, ModelLineage lineage) {
+                public Children createChildren(List value, ModelLineage lineage) {
                     @SuppressWarnings("unchecked")
-                    Contributor ml = (Contributor)value;
-                    List<Contributor> lst = Collections.<Contributor>singletonList(ml);
+                    List<Contributor> lst = value;
                     return new ContributorChildren(lst, lineage);
                 }
 
@@ -322,10 +320,9 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             @SuppressWarnings("unchecked")
             List<List> licenses = getValue(models, "getLicenses", Model.class);
             nds.add(new ListNode(Lookup.EMPTY, new ChildrenCreator() {
-                public Children createChildren(Object value, ModelLineage lineage) {
+                public Children createChildren(List value, ModelLineage lineage) {
                     @SuppressWarnings("unchecked")
-                    License ml = (License)value;
-                    List<License> lst = Collections.<License>singletonList(ml);
+                    List<License> lst = value;
                     return new LicenseChildren(lst, lineage);
                 }
 
@@ -344,7 +341,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
     // </editor-fold>
 
     private static interface ChildrenCreator {
-        Children createChildren(Object value, ModelLineage lineage);
+        Children createChildren(List value, ModelLineage lineage);
         String createName(Object value);
     }
 
@@ -642,6 +639,10 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     Exceptions.printStackTrace(ex);
                 }
             }
+            if (obj instanceof Collection && ((Collection)obj).size() == 0) {
+                //ignore empty arrays, model getters just return tem when not defined om pom.
+                obj = null;
+            }
             toRet.add(obj);
         }
         return toRet;
@@ -652,15 +653,35 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
      * returns true if the value is defined in current pom. Assuming the first index is the
      * current pom and the next value is it's parent, etc.
      */
-    static boolean definedInCurrent(Object[] values) {
+    static boolean isValueDefinedInCurrent(Object[] values) {
         return values[0] != null;
+    }
+
+    /**
+     * returns true if the value is defined in current pom
+     * and one of the parent poms as well.
+     */
+    static boolean overridesParentValue(Object[] values) {
+        if (values.length <= 1) {
+            return false;
+        }
+        boolean curr = values[0] != null;
+        boolean par = false;
+        for (int i = 1; i < values.length; i++) {
+            if (values[i] != null) {
+                par = true;
+                break;
+            }
+        }
+        return curr && par;
+
     }
 
     /**
      * returns true if the value is defined in in any pom. Assuming the first index is the
      * current pom and the next value is it's parent, etc.
      */
-    static boolean doesDefine(Object[] values) {
+    static boolean definesValue(Object[] values) {
         for (int i = 0; i < values.length; i++) {
             if (values[i] != null) {
                 return true;
@@ -703,11 +724,17 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             if (dispVal == null) {
                 dispVal = "&lt;Undefined&gt;";
             }
-            boolean override = definedInCurrent(values);
-            String message = "<html><i>" + key + " : </i> " +
-                    (override ? "<b>" : "") +
-                    dispVal +
-                    (override ? "</b>" : "");
+            boolean override = overridesParentValue(values);
+            String overrideStart = override ? "<b>" : "";
+            String overrideEnd = override ? "</b>" : "";
+            boolean inherited = !isValueDefinedInCurrent(values);
+            String inheritedStart = inherited ? "<i>" : "";
+            String inheritedEnd = inherited ? "</i>" : "";
+
+            String message = "<html>" +
+                    inheritedStart + overrideStart +
+                    key + " : " + dispVal +
+                    overrideEnd + inheritedEnd;
             return message;
         }
         
@@ -730,7 +757,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         private ModelLineage lineage;
         private List values;
         private ObjectNode(Lookup lkp, Children children, ModelLineage lineage, String key, List values) {
-            super( doesDefine(values.toArray()) ? children : Children.LEAF, lkp);
+            super( definesValue(values.toArray()) ? children : Children.LEAF, lkp);
             setName(key);
             this.key = key;
             this.values = values;
@@ -739,10 +766,19 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
 
         @Override
         public String getHtmlDisplayName() {
-            String dispVal = doesDefine(values.toArray()) ? "" : "&lt;Undefined&gt;";
-            boolean override = definedInCurrent(values.toArray());
-            String message = "<html>" + (override ? "<b>" : "") +
-                    key + (override ? "</b>" : "") + " " + dispVal;
+            String dispVal = definesValue(values.toArray()) ? "" : "&lt;Undefined&gt;";
+            boolean override = overridesParentValue(values.toArray());
+            String overrideStart = override ? "<b>" : "";
+            String overrideEnd = override ? "</b>" : "";
+            boolean inherited = !isValueDefinedInCurrent(values.toArray());
+            String inheritedStart = inherited ? "<i>" : "";
+            String inheritedEnd = inherited ? "</i>" : "";
+
+            String message = "<html>" +
+                    inheritedStart + overrideStart +
+                    key + " " + dispVal +
+                    overrideEnd + inheritedEnd;
+
             return message;
         }
 
@@ -766,7 +802,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         private List values;
 
         private ListNode(Lookup lkp, ChildrenCreator childrenCreator, ModelLineage lineage, String name, List<List> values) {
-            super( doesDefine(values.toArray()) ? createListChildren(childrenCreator, lineage, values) : Children.LEAF, lkp);
+            super( definesValue(values.toArray()) ? createOverrideListChildren(childrenCreator, lineage, values) : Children.LEAF, lkp);
             setName(name);
             this.key = name;
             this.values = values;
@@ -775,10 +811,17 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
 
         @Override
         public String getHtmlDisplayName() {
-            String dispVal = doesDefine(values.toArray()) ? "" : "&lt;Undefined&gt;";
-            boolean override = definedInCurrent(values.toArray());
-            String message = "<html>" + (override ? "<b>" : "") +
-                    key + (override ? "</b>" : "") + " " + dispVal;
+            String dispVal = definesValue(values.toArray()) ? "" : "&lt;Undefined&gt;";
+            boolean override = overridesParentValue(values.toArray());
+            String overrideStart = override ? "<b>" : "";
+            String overrideEnd = override ? "</b>" : "";
+            boolean inherited = !isValueDefinedInCurrent(values.toArray()) && definesValue(values.toArray());
+            String inheritedStart = inherited ? "<i>" : "";
+            String inheritedEnd = inherited ? "</i>" : "";
+            String message = "<html>" +
+                    inheritedStart + overrideStart +
+                    key + " " + dispVal +
+                    overrideEnd + inheritedEnd;
             return message;
         }
 
@@ -794,22 +837,41 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
 
     }
 
-    private static Children createListChildren(ChildrenCreator subs, ModelLineage key, List<List> values) {
+    private static Children createOverrideListChildren(ChildrenCreator subs, ModelLineage key, List<List> values) {
         Children toRet = new Children.Array();
+        int count = 0;
         for (List lst : values) {
             if (lst != null && lst.size() > 0) {
                 for (Object o : lst) {
+                    List objectList = new ArrayList(Collections.nCopies(count, null));
+                    objectList.add(o);
                     toRet.add(new Node[] {
-                        new ObjectNode(Lookup.EMPTY, subs.createChildren(o, key), key, subs.createName(o), Collections.singletonList(o))
+                        new ObjectNode(Lookup.EMPTY, subs.createChildren(objectList, key), key, subs.createName(o), objectList)
                     });
                 }
                 break;
             }
+            count = count + 1;
         }
 
         return toRet;
     }
 
+//    private static Children createMergeListChildren(ChildrenCreator subs, ModelLineage key, List<List> values) {
+//        Children toRet = new Children.Array();
+//        for (List lst : values) {
+//            if (lst != null && lst.size() > 0) {
+//                for (Object o : lst) {
+//                    toRet.add(new Node[] {
+//                        new ObjectNode(Lookup.EMPTY, subs.createChildren(o, key), key, subs.createName(o), Collections.singletonList(o))
+//                    });
+//                }
+//                break;
+//            }
+//        }
+//
+//        return toRet;
+//    }
 
 }
 
