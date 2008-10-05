@@ -640,7 +640,19 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
                     }
                 }
             }
-            
+        // see http://jira.codehaus.org/browse/GROOVY-3076
+        } else if (node instanceof BinaryExpression) {
+            Expression right = ((BinaryExpression) node).getRightExpression();
+            if (right.getLastLineNumber() > node.getLastLineNumber()
+                    || (right.getLastLineNumber() == node.getLastLineNumber() && right.getLastColumnNumber() > node.getLastColumnNumber())) {
+
+                // dowe have meaningful data
+                if (node.getLineNumber() != node.getLastLineNumber() || node.getColumnNumber() != node.getLastColumnNumber()) {
+                    // this may be not accurate, but it is more accurate than current state
+                    right.setLastLineNumber(node.getLastLineNumber());
+                    right.setLastColumnNumber(node.getLastColumnNumber());
+                }
+            }
         }
     }
 
