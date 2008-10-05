@@ -39,13 +39,19 @@
 package org.netbeans.modules.maven.cos;
 
 import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
@@ -53,11 +59,14 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.maven.customizer.RunJarPanel;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -144,11 +153,13 @@ public class CosChecker implements PrerequisitesChecker {
                 params.put(JavaRunner.PROP_EXECUTE_FILE, config.getSelectedFileObject());
 
                 List<String> jvmProps = new ArrayList<String>();
+                Set<String> jvmPropNames = new HashSet<String>();
                 params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName());
                 String dir = PluginPropertyUtils.getPluginProperty(config.getProject(), Constants.GROUP_APACHE_PLUGINS,
                         Constants.PLUGIN_SUREFIRE, "basedir", "test"); //NOI18N
                 //TODO there's another property named workingDirectory that overrides  basedir.
                 // basedir is also assumed to end up as system property for tests..
+                jvmPropNames.add("basedir"); //NOI18N
                 if (dir != null) {
                     params.put(JavaRunner.PROP_WORK_DIR, dir);
                     jvmProps.add("-Dbasedir=" + dir); //NOI18N
@@ -156,14 +167,26 @@ public class CosChecker implements PrerequisitesChecker {
                     params.put(JavaRunner.PROP_WORK_DIR, config.getExecutionDirectory());
                     jvmProps.add("-Dbasedir=" + config.getExecutionDirectory().getAbsolutePath()); //NOI18N
                 }
-                //add properties defined in
+                //add properties defined in surefire plugin
                 Properties sysProps = PluginPropertyUtils.getPluginPropertyParameter(config.getProject(), Constants.GROUP_APACHE_PLUGINS,
                         Constants.PLUGIN_SUREFIRE, "systemProperties", "test"); //NOI18N
                 if (sysProps != null) {
                     for (Map.Entry key : sysProps.entrySet()) {
                         jvmProps.add("-D" + key.getKey() + "=" + key.getValue()); //NOI18N
+                        jvmPropNames.add((String)key.getKey());
                     }
                 }
+                //add properties from action config,
+                if (config.getProperties() != null) {
+                   for (Map.Entry entry : config.getProperties().entrySet()) {
+                        //TODO do these have preference to ones defined in surefire plugin?
+                       if (!jvmPropNames.contains((String)entry.getKey())) {
+                           jvmProps.add("-D" + entry.getKey() + "=" + entry.getValue());
+                           jvmPropNames.add((String)entry.getKey());
+                       }
+                   }
+                }
+
                 String argLine = PluginPropertyUtils.getPluginProperty(config.getProject(), Constants.GROUP_APACHE_PLUGINS,
                         Constants.PLUGIN_SUREFIRE, "argLine", "test"); //NOI18N
                 if (argLine != null) {
@@ -173,13 +196,35 @@ public class CosChecker implements PrerequisitesChecker {
                     } catch (Exception ex) {
                         Exceptions.printStackTrace(ex);
                     }
+                } else {
+                    //TODO jvm args from the argLine exec property,
+                    //add and for debugging, remove the debugging ones..
                 }
-                //TODO jvm args from the argLine exec property,
-                //add and for debugging, remove the debugging ones..
 
                 ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
-                //TODO - additionalClasspathElements parameter in surefire plugin..
-                params.put(JavaRunner.PROP_EXECUTE_CLASSPATH, cpp.getProjectClassPaths(ClassPath.EXECUTE)[1]);
+                //add additionalClasspathElements parameter in surefire plugin..
+                String[] additionals = PluginPropertyUtils.getPluginPropertyList(config.getProject(), Constants.GROUP_APACHE_PLUGINS,
+                        Constants.PLUGIN_SUREFIRE, "additionalClasspathElements", "additionalClasspathElement", "test"); //NOI18N
+                ClassPath cp = cpp.getProjectClassPaths(ClassPath.EXECUTE)[1];
+                if (additionals != null) {
+                    List<URL> roots = new ArrayList<URL>();
+                    File base = FileUtil.toFile(config.getProject().getProjectDirectory());
+                    for (String add : additionals) {
+                        File root = FileUtilities.resolveFilePath(base, add);
+                        if (root != null) {
+                            try {
+                                roots.add(root.toURI().toURL());
+                            } catch (MalformedURLException ex) {
+                                Logger.getLogger(CosChecker.class.getName()).info("Cannot convert '" + add + "' to URL");
+                            }
+                        } else {
+                            Logger.getLogger(CosChecker.class.getName()).info("Cannot convert '" + add + "' to URL.");
+                        }
+                    }
+                    ClassPath addCp = ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
+                    cp = ClassPathSupport.createProxyClassPath(cp, addCp);
+                }
+                params.put(JavaRunner.PROP_EXECUTE_CLASSPATH, cp);
 
                 params.put(JavaRunner.PROP_RUN_JVMARGS, jvmProps);
                 String action2Quick = action2Quick(actionName);
