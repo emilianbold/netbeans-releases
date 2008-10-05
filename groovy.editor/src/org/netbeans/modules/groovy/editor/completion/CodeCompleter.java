@@ -1519,8 +1519,10 @@ public class CodeCompleter implements CodeCompletionHandler {
             active = (Token<? extends GroovyTokenId>) ts.token();
         }
 
-        if (ts.isValid()) {
-            LOG.log(Level.FINE, "Current token text {0}", ts.token().text().toString());
+        if (LOG.isLoggable(Level.FINE)) {
+            if (ts.isValid() && active != null) {
+                LOG.log(Level.FINE, "Current token text {0}", active.text());
+            }
         }
 
         // this should move us to dot or whitespace or NLS or prefix
@@ -2598,6 +2600,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         for (MethodItem methodItem : methodItemList) {
             MetaMethod listMethod = methodItem.getMethod();
 
+            // FIXME return types subtype
             if (listMethod.getName().equals(methodToStore.getName())
                     && listMethod.getSignature().equals(methodToStore.getSignature())) {
 
