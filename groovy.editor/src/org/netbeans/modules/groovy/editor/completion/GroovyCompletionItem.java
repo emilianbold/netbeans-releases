@@ -164,13 +164,15 @@ import org.openide.util.ImageUtilities;
         private final String simpleName;
         private final String parameterString;
         private final TypeMirror returnType;
-        
+        private final Set<javax.lang.model.element.Modifier> modifiers;
 
-        JavaMethodItem(String simpleName, String parameterString, TypeMirror returnType, int anchorOffset, CodeCompleter.CompletionRequest request) {
+        JavaMethodItem(String simpleName, String parameterString, TypeMirror returnType,
+                Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset, CodeCompleter.CompletionRequest request) {
             super(null, anchorOffset, request);
             this.simpleName = simpleName;
             this.parameterString = parameterString;
             this.returnType = returnType;
+            this.modifiers = modifiers;
         }
 
         @Override
@@ -204,11 +206,13 @@ import org.openide.util.ImageUtilities;
         
         @Override
         public ImageIcon getIcon() {
-            return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.METHOD, null);
+            return (ImageIcon) ElementIcons.getElementIcon(
+                    javax.lang.model.element.ElementKind.METHOD, modifiers);
         }
 
         @Override
         public Set<Modifier> getModifiers() {
+            // FIXME update
             return Collections.emptySet();
         }
 

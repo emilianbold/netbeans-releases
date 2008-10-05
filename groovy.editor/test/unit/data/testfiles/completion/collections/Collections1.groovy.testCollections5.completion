@@ -32,7 +32,6 @@ METHOD     eachWithIndex(Closure)                     Object
 METHOD     equals(List)                               boolean
 METHOD     equals(Object)                             boolean
 METHOD     equals(Object)                             boolean
-METHOD     equals(Object)                             boolean
 METHOD     every()                                    boolean
 METHOD     every(Closure)                             boolean
 METHOD     execute()                                  Process
@@ -53,7 +52,6 @@ METHOD     getAt(IntRange)                            List
 METHOD     getAt(String)                              List
 METHOD     getAt(String)                              Object
 METHOD     getAt(int)                                 Object
-METHOD     getClass()                                 Class
 METHOD     getClass()                                 Class<? extends Object>
 METHOD     getFrom()                                  Comparable
 METHOD     getMetaClass()                             MetaClass
@@ -62,7 +60,6 @@ METHOD     getProperties()                            Map
 METHOD     getTo()                                    Comparable
 METHOD     grep(Object)                               Collection
 METHOD     groupBy(Closure)                           Map
-METHOD     hashCode()                                 int
 METHOD     hashCode()                                 int
 METHOD     head()                                     Object
 METHOD     identity(Closure)                          Object
@@ -94,8 +91,6 @@ METHOD     minus(Collection)                          List
 METHOD     minus(Object)                              List
 METHOD     multiply(Number)                           List
 METHOD     notify()                                   void
-METHOD     notify()                                   void
-METHOD     notifyAll()                                void
 METHOD     notifyAll()                                void
 METHOD     plus(Collection)                           Collection
 METHOD     plus(Object)                               Collection
@@ -144,7 +139,6 @@ METHOD     toList()                                   List
 METHOD     toListString()                             String
 METHOD     toString()                                 String
 METHOD     toString()                                 String
-METHOD     toString()                                 String
 METHOD     transpose()                                List
 METHOD     unique()                                   Collection
 METHOD     unique(Closure)                            Collection
@@ -153,9 +147,6 @@ METHOD     use(Class, Closure)                        Object
 METHOD     use(List, Closure)                         Object
 METHOD     use(Object)                                Object
 METHOD     wait()                                     void
-METHOD     wait()                                     void
 METHOD     wait(long)                                 void
-METHOD     wait(long)                                 void
-METHOD     wait(long, int)                            void
 METHOD     wait(long, int)                            void
 METHOD     with(Closure)                              Object

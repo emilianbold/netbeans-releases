@@ -2431,8 +2431,8 @@ public class CodeCompleter implements CodeCompletionHandler {
 //                        sb.append(" ");
 //                    }
 
-                    // FIXME what is this intended to do ?
-                    proposals.add(new JavaMethodItem(indexedMethod.getName(), "", null, anchor, request));
+                    // FIXME what is this intended to do ? + modifiers
+                    proposals.add(new JavaMethodItem(indexedMethod.getName(), "", null, Collections.<javax.lang.model.element.Modifier>emptySet(), anchor, request));
                 }
             }
         }
@@ -2478,7 +2478,11 @@ public class CodeCompleter implements CodeCompletionHandler {
                         TypeMirror returnType = ((ExecutableElement) element).getReturnType();
 
                         if (simpleName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
-                            proposals.add(new JavaMethodItem(simpleName, parameterString, returnType, anchor, request));
+                            if (LOG.isLoggable(Level.FINEST)) {
+                                LOG.log(Level.FINEST, simpleName + " " + parameterString + " " + returnType.toString());
+                            }
+                            proposals.add(new JavaMethodItem(simpleName, parameterString,
+                                    returnType, element.getModifiers(), anchor, request));
                         }
                     }
                 }
@@ -2498,7 +2502,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         LOG.log(Level.FINEST, "populateProposalWithMethodsFromClass(): {0}", className); // NOI18N
 
         // getting methods on types the javac way
-
+        
         if (withJavaTypes) {
             JavaSource javaSource = getJavaSourceFromRequest(request);
             
@@ -2544,17 +2548,21 @@ public class CodeCompleter implements CodeCompletionHandler {
 
                 LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
                 for (Object method : metaClz.getMetaMethods()) {
+                    LOG.log(Level.FINEST, method.toString());
                     populateProposal(clz, method, request, result, true);
                 }
-                LOG.log(Level.FINEST, "Adding JDK methods --------------------------"); // NOI18N
-                for (Object method : metaClz.getMethods()) {
-                    populateProposal(clz, method, request, result, false);
-                }
 
+                // FIXME could we remove this in favor of java types ?
+                LOG.log(Level.FINEST, "Adding JDK methods --------------------------"); // NOI18N
+                if (!withJavaTypes) {
+                    for (Object method : metaClz.getMethods()) {
+                        LOG.log(Level.FINEST, method.toString());
+                        populateProposal(clz, method, request, result, false);
+                    }
+                }
                 for (MethodItem methodItem : result) {
                     proposals.add(methodItem);
                 }
-
             }
         }
 
