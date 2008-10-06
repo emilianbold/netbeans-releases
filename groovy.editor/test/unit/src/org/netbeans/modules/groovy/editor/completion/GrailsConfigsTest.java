@@ -45,13 +45,13 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author schmidtm
+ * @author phejl
  */
-public class CollectionsTest extends GroovyTestBase {
+public class GrailsConfigsTest extends GroovyTestBase {
 
-    String TEST_BASE = "testfiles/completion/collections/";
+    String TEST_BASE = "testfiles/completion/grails/";
 
-    public CollectionsTest(String testName) {
+    public GrailsConfigsTest(String testName) {
         super(testName);
         Logger.getLogger(CodeCompleter.class.getName()).setLevel(Level.FINEST);
     }
@@ -64,28 +64,9 @@ public class CollectionsTest extends GroovyTestBase {
         // as returning Level.FINEST here would log from all loggers
     }
 
-    // testing proper creation of constructor-call proposals
-
-    //     * groovy.lang.*
-    //     * groovy.util.*
-
-    public void testCollections1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "[\"one\",\"two\"].listIter^", false);
-    }
-
-    public void testCollections2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "[1:\"one\", 2:\"two\"].ent^", false);
-    }
-
-    public void testCollections3() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "    (1..10).a^", false);
-    }
-
-    public void testCollections4() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "    1..10.d^", false);
-    }
-    
-    public void testCollections5() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "    (1..10).^", false);
-    }    
+    // FIXME this does not provide accurate results, but we need to test
+    // at least basic closure completion
+    public void testDataSourceClosure1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "GrailsConfig1.groovy", "}.^", false);
+    }  
 }
