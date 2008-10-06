@@ -69,6 +69,9 @@ public class ScriptingMeasureActionsTest1 {
                 .addTest(PHPNavigatorTest.class)
                 .addTest(GoToSourceTest.class)
                 .addTest(NavigateGoToSourceTest.class)
+                .addTest(FormatFileTest.class)
+                .addTest(CloseProjectTest.class)
+                .addTest(CloseScriptingFiles.class)
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;        

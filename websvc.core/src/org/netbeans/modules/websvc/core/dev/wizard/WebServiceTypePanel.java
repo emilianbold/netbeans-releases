@@ -89,6 +89,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
     private boolean jsr109oldSupported;
     //private boolean jwsdpSupported;
     private boolean jaxWsInJ2ee14Supported;
+    private boolean noMetroInstalledOnGlassFishV3;
     private WebModule wm;
     private EjbJar em;
     
@@ -102,6 +103,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         jsr109Supported = stackUtils.isJsr109Supported();
         jsr109oldSupported = stackUtils.isJsr109OldSupported();
         jaxWsInJ2ee14Supported = (ServerType.JBOSS == stackUtils.getServerType());
+        noMetroInstalledOnGlassFishV3 = !jsr109Supported && ServerType.GLASSFISH_V3 == stackUtils.getServerType();
         
         //convert Java class not implemented for 5.5 release, disable components
         jRadioButtonConvert.setEnabled(false);
@@ -306,7 +308,11 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
             wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(WebServiceTypePanel.class, "LBL_SelectOneEJB")); //NOI18N
             return false;        
         }
-        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
+        if (noMetroInstalledOnGlassFishV3) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(WebServiceTypePanel.class, "LBL_NoMetroInstalled")); //NOI18N            
+        } else {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
+        }
         
         return true;
     }

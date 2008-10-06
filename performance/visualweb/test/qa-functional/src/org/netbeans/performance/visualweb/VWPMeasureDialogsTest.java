@@ -68,7 +68,7 @@ public class VWPMeasureDialogsTest {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness VisualWeb Dialogs suite");
-        System.setProperty("suitename", "org.netbeans.performance.visualweb.VWPMeasureDialogsTest");
+        System.setProperty("suitename", VWPMeasureDialogsTest.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AddComponentLibraryDialog.class)
         

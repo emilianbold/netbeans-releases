@@ -58,7 +58,7 @@ public class MeasureMobilityActionsTest  {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Mobility Actions suite");
-        System.setProperty("suitename", "org.netbeans.performance.mobility.MeasureMobilityActionsTest");
+        System.setProperty("suitename", MeasureMobilityActionsTest.class.getCanonicalName());
 
         // TODO add some test cases
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilitySetup.class)

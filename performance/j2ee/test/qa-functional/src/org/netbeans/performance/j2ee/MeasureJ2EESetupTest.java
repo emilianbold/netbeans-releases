@@ -57,7 +57,7 @@ public class MeasureJ2EESetupTest {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Setup suite");
-        System.setProperty("suitename", "org.netbeans.performance.j2ee.MeasureJ2EESetupTest");
+        System.setProperty("suitename", MeasureJ2EESetupTest.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(J2EESetup.class, ".*", ".*"));
        

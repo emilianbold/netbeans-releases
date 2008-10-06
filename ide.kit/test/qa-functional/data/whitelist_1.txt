@@ -2862,6 +2862,9 @@ org.netbeans.modules.form.palette.PaletteItemDataObject$PaletteItemDataLoader
 org.netbeans.modules.glassfish.common.Installer
 org.netbeans.modules.gototest.GotoOppositeAction
 org.netbeans.modules.groovy.grailsproject.GrailsProjectFactory
+org.netbeans.modules.groovy.support.debug.Context
+org.netbeans.modules.groovy.support.debug.GroovyLineBreakpoint
+org.netbeans.modules.groovy.support.debug.GroovyToggleBreakpointActionProvider
 org.netbeans.modules.gsf.DefaultLanguage
 org.netbeans.modules.gsf.GsfDataLoader
 org.netbeans.modules.gsf.GsfDataObject

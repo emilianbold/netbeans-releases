@@ -60,7 +60,7 @@ public class MeasureJ2EEActionsTest  {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Actions suite");
-        System.setProperty("suitename", "org.netbeans.performance.j2ee.MeasureJ2EEActionsTest");
+        System.setProperty("suitename", MeasureJ2EEActionsTest.class.getCanonicalName());
 
         
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(Deploy.class)
