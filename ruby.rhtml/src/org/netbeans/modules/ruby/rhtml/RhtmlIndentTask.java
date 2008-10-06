@@ -31,14 +31,18 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.ruby.RubyFormatter;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 
 /**
@@ -64,10 +68,6 @@ public class RhtmlIndentTask implements IndentTask {
         int start = context.startOffset();
         int end = Math.min(context.endOffset(), doc.getLength());
 
-        reindent(doc, start, end);
-    }
-
-    public static void reindent(BaseDocument doc, int start, int end) throws BadLocationException {
         //doc.putProperty(HTMLLexerFormatter.HTML_FORMATTER_ACTS_ON_TOP_LEVEL, Boolean.TRUE);
         doc.putProperty("HTML_FORMATTER_ACTS_ON_TOP_LEVEL", Boolean.TRUE);
         
@@ -78,7 +78,6 @@ public class RhtmlIndentTask implements IndentTask {
         }
         
         int offset = Utilities.getRowStart(doc, end);
-        org.netbeans.editor.Formatter editorFormatter = doc.getFormatter();
         List<Integer> offsets = new ArrayList<Integer>();
         boolean prevWasNonHtml = false;
         while (offset >= start) {
@@ -111,7 +110,39 @@ public class RhtmlIndentTask implements IndentTask {
         // Process offsets to be reformatted
         if (offsets.size() > 0) {
             for (Integer lineOffset : offsets) {
-                editorFormatter.changeRowIndent(doc, lineOffset, 0);
+                assert lineOffset == Utilities.getRowStart(doc, lineOffset);
+                context.modifyIndent(lineOffset, 0);
+            }
+        }
+
+        if (context.isIndent() && start > 0) { // inserting a newline
+            int rowEnd = Utilities.getRowLastNonWhite(doc, start-1);
+            if (rowEnd != -1) {
+                String s = doc.getText(start, end-start);
+                if (s.indexOf('\n') != -1) {
+                    // We're not just splitting a line
+                    return;
+                }
+                int delta = ts.move(rowEnd+1); // +1: getRowLastNonWhite returns START of last char
+                if (delta > 0) {
+                    if (!ts.moveNext()) {
+                        return;
+                    }
+                } else {
+                    if (!ts.movePrevious()) {
+                        return;
+                    }
+                }
+                Token<? extends RhtmlTokenId> token = ts.token();
+                if (token.id() == RhtmlTokenId.DELIMITER) {
+                    int rowStart = Utilities.getRowFirstNonWhite(doc, rowEnd);
+                    int balance = RubyFormatter.getTokenBalance(doc, rowStart, rowEnd+1, true, true);
+                    int indent = GsfUtilities.getLineIndent(doc, start-1);
+                    if (balance > 0) {
+                        indent += IndentUtils.indentLevelSize(doc);
+                    }
+                    context.modifyIndent(Utilities.getRowStart(doc, start), indent);
+                }
             }
         }
     }

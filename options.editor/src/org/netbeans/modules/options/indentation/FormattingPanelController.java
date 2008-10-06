@@ -44,6 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -59,6 +60,7 @@ import javax.swing.JComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
 import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
@@ -121,6 +123,20 @@ public final class FormattingPanelController extends OptionsPanelController {
                         ((CustomizerSelector.WrapperCustomizer) c).applyChanges();
                     }
                 }
+            }
+
+            // Find mimeTypes that do not have a customizer
+            Set<String> mimeTypes = new HashSet(EditorSettings.getDefault().getAllMimeTypes());
+            mimeTypes.removeAll(selector.getMimeTypes());
+
+            // and make sure that they do NOT override basic settings from All Languages
+            for(String mimeType : mimeTypes) {
+                Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+                prefs.remove(SimpleValueNames.EXPAND_TABS);
+                prefs.remove(SimpleValueNames.INDENT_SHIFT_WIDTH);
+                prefs.remove(SimpleValueNames.SPACES_PER_TAB);
+                prefs.remove(SimpleValueNames.TAB_SIZE);
+                prefs.remove(SimpleValueNames.TEXT_LIMIT_WIDTH);
             }
 
             pf.destroy();

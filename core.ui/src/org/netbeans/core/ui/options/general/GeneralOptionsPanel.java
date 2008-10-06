@@ -332,7 +332,7 @@ private void editBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {/
     WebBrowsersOptionsPanel wbPanel = new WebBrowsersOptionsPanel(wbModel, cbWebBrowser.getSelectedItem().toString());
     DialogDescriptor dialogDesc = new DialogDescriptor (wbPanel, loc("LBL_WebBrowsersPanel_Title"), true, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if( "OK".equals(e.getActionCommand()) ) {
+                if (DialogDescriptor.OK_OPTION.equals(e.getSource())) {
                     wbModel.applyChanges();
                 } else {
                     wbModel.discardChanges();

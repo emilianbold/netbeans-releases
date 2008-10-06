@@ -40,8 +40,10 @@
  */
 package org.netbeans.modules.php.project.spi;
 
+import java.util.concurrent.Callable;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Cancellable;
 
 /**
  * @author Radek Matous
@@ -55,7 +57,7 @@ public interface XDebugStarter {
      * @param startFile file to debug.
      * @param closeSession
      */
-    void start(Project project, Runnable run, FileObject startFile, boolean closeSession);
+    void start(Project project, Callable<Cancellable> run, FileObject startFile, boolean closeSession);    
 
     /**
      * @return true if session is already running

@@ -47,6 +47,7 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -117,7 +118,12 @@ public class IncludePathNodeFactory implements NodeFactory {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            setChildren(createChildren(project));
+            // #148927 possible deadlock
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    setChildren(createChildren(project));
+                }
+            });
         }
 
         private static Children createChildren(PhpProject project) {

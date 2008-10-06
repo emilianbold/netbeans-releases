@@ -41,6 +41,8 @@ package org.netbeans.modules.db.mysql.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -52,6 +54,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog.Tab;
+import org.netbeans.modules.db.mysql.util.DatabaseUtils;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -65,17 +68,20 @@ import org.openide.util.RequestProcessor;
 /**
  * Manages starting of a server, including posting messages if start fails
  * and allowing users to edit properties or keep waiting as needed.
+ *
+ * This is a thread-safe class
  * 
  * @author David Van Couvering
  */
-public class StopManager {
+public final class StopManager {
     private static final StopManager DEFAULT = new StopManager();
     private static final Logger LOGGER = Logger.getLogger(StopManager.class.getName());
 
-    private PropertyChangeListener listener = new StartPropertyChangeListener();
-    private volatile boolean isStopping = false;
-    private volatile boolean stopRequested = false;
-    private DatabaseServer server;
+    private final PropertyChangeListener listener = new StopPropertyChangeListener();
+    private final AtomicBoolean isStopping = new AtomicBoolean(false);
+    private final AtomicBoolean stopRequested = new AtomicBoolean(false);
+
+    private volatile DatabaseServer server;
 
     private StopManager() {
     }
@@ -86,6 +92,10 @@ public class StopManager {
 
     public PropertyChangeListener getStopListener() {
         return listener;
+    }
+
+    public boolean isStopRequested() {
+        return stopRequested.get();
     }
 
     private void disconnectConnections() {
@@ -100,40 +110,33 @@ public class StopManager {
         }
     }
 
-    private synchronized void setIsStopping(boolean isStopping) {
-        this.isStopping = isStopping;
-    }
-
     public void stop(final DatabaseServer server) {
         this.server = server;
 
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    stopRequested = true;
-                    synchronized(this) {
-                        if (isStopping) {
-                            LOGGER.log(Level.INFO, "Server is already stopping");
-                            return;
-                        }
-                        isStopping = true;
+                    boolean stopping = isStopping.getAndSet(true);
+                    if (stopping) {
+                        LOGGER.log(Level.FINE, "Server is already stopping");
+                        return;
                     }
                     StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(StopManager.class, "MSG_StoppingMySQL"));
 
                     server.stop();
 
-                    waitForStopAndDisconnect();
+                    disconnectAndWaitForStop();
                 } catch (DatabaseException dbe) {
                     Utils.displayError(Utils.getMessage("MSG_UnableToStopServer"), dbe);
                 } finally {
-                    setIsStopping(false);
+                    isStopping.set(false);
                 }
             }
             
         });
     }
 
-    private void waitForStopAndDisconnect() {
+    private void disconnectAndWaitForStop() {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 ProgressHandle handle = ProgressHandleFactory.createHandle(
@@ -144,7 +147,7 @@ public class StopManager {
                 try {
                     for ( ; ; ) {
                         if (waitForStop()) {
-                            stopRequested = false;
+                            stopRequested.set(false);
                             return;
                         }
 
@@ -188,7 +191,7 @@ public class StopManager {
         });
 
         if (cancelButton.equals(ret)) {
-            stopRequested = false;
+            stopRequested.set(false);;
             return false;
         } else if (keepWaitingButton.equals(ret)) {
             return true;
@@ -211,34 +214,40 @@ public class StopManager {
         int tries = 0;
         while (tries <= 10) {
             tries++;
-            if (! server.checkRunning()) {
-                server.disconnect();
-                disconnectConnections();
-                return true;
-            }
+            
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ie) {
-                return false;
+                LOGGER.log(Level.INFO, "Interrupted waiting for server to stop", ie);
+                Thread.currentThread().interrupt();
+                return true;
+            }
+
+            try {
+                server.reconnect();
+            } catch (DatabaseException dbe) {
+                server.disconnect();
+                disconnectConnections();
+                return true;
+            } catch (TimeoutException te) {
+                LOGGER.log(Level.INFO, te.getMessage(), te);
+
+                // If it's hanging, it's effectively down
+                server.disconnect();
+                disconnectConnections();
+                return true;
             }
         }
 
         return false;
     }
 
-    public class StartPropertyChangeListener implements PropertyChangeListener {
+    private class StopPropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             final DatabaseServer server = (DatabaseServer)evt.getSource();
             if ((MySQLOptions.PROP_STOP_ARGS.equals(evt.getPropertyName()) ||
-                    MySQLOptions.PROP_STOP_PATH.equals(evt.getPropertyName()))) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        // Run in task because checkRunning can't be run on AWT thread
-                        if (server.checkRunning() && stopRequested) {
-                            stop(server);
-                        }
-                    }
-                });
+                    MySQLOptions.PROP_STOP_PATH.equals(evt.getPropertyName())) && stopRequested.get()) {
+                stop(server);
             }
         }
     }

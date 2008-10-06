@@ -105,10 +105,12 @@ public class InfoPanel extends javax.swing.JPanel {
     private Map<JPDAThread, JMenuItem> threadToMenuItem = new HashMap<JPDAThread, JMenuItem>();
     private JPDAThread debuggerDeadlockThread;
     private WeakReference<JPDADebugger> stepBrkpDebuggerRef;
+    private DebuggingView debuggingView;
 
     /** Creates new form InfoPanel */
-    public InfoPanel(TapPanel tapPanel) {
+    public InfoPanel(TapPanel tapPanel, DebuggingView debuggingView) {
         this.tapPanel = tapPanel;
+        this.debuggingView = debuggingView;
         filterPanelColor = tapPanel.getBackground();
         hitsPanelColor = DebuggingView.hitsColor;
         deadlockPanelColor = hitsPanelColor;
@@ -247,7 +249,7 @@ public class InfoPanel extends javax.swing.JPanel {
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                thread.makeCurrent();
+                debuggingView.makeThreadCurrent(thread);
             }
         });
         return item;
@@ -456,7 +458,7 @@ public class InfoPanel extends javax.swing.JPanel {
                     Object item = arrowMenu.getComponent(0);
                     for (Map.Entry<JPDAThread, JMenuItem> entry : threadToMenuItem.entrySet()) {
                         if (entry.getValue() == item) {
-                            entry.getKey().makeCurrent();
+                            debuggingView.makeThreadCurrent(entry.getKey());
                         } // if
                     } // for
                 } // if
@@ -485,19 +487,28 @@ public class InfoPanel extends javax.swing.JPanel {
         // add toggle buttons
         Dimension space = new Dimension(3, 0);
         for (int i = 0; i < toggles.size(); i++) {
-            final int index = i;
-            final JToggleButton curToggle = toggles.get(i);
-            curToggle.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    filtersDesc.setSelected(index, curToggle.isSelected());
-                }
-            });
+            JToggleButton curToggle = toggles.get(i);
+            curToggle.addActionListener(new ToggleButtonActionListener(i));
             toolbar.add(curToggle);
             if (i != toggles.size() - 1) {
                 toolbar.addSeparator(space);
             }
         }
         return toolbar;
+    }
+
+    private static class ToggleButtonActionListener implements ActionListener {
+
+        private int index;
+
+        public ToggleButtonActionListener(int index) {
+            this.index = index;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            JToggleButton curToggle = (JToggleButton) e.getSource();
+            FiltersDescriptor.getInstance().setSelected(index, curToggle.isSelected());
+        }
     }
 
     private JToggleButton createToggle (FiltersDescriptor filtersDesc, int index) {

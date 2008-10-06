@@ -41,22 +41,20 @@
 package org.netbeans.modules.php.editor.indent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
+import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import javax.swing.text.EditorKit;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.editor.indent.spi.Context;
@@ -97,12 +95,11 @@ end
 public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
     private static final Logger LOG = Logger.getLogger(PHPFormatter.class.getName());
-    
-    private final DocSyncedCodeStyle codeStyle;
+    private static final Set<PHPTokenId> IGNORE_BREAK_IN = new HashSet<PHPTokenId>(Arrays.asList(
+            PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_WHILE, PHPTokenId.PHP_DO));
     
     public PHPFormatter() {
-        LOG.fine("PHP Formatter: " + this);
-        this.codeStyle = new DocSyncedCodeStyle();
+        LOG.fine("PHP Formatter: " + this); //NOI18N
     }
     
     public boolean needsParserResult() {
@@ -119,11 +116,11 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
     
     public int indentSize() {
-        return codeStyle.getIndentSize();
+        return CodeStyle.get((Document) null).getIndentSize();
     }
     
     public int hangingIndentSize() {
-        return codeStyle.getContinuationIndentSize();
+        return CodeStyle.get((Document) null).getContinuationIndentSize();
     }
 
     /** Compute the initial balance of brackets at the given offset. */
@@ -153,11 +150,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return ts.offset();
     }
     
-    public static int getTokenBalanceDelta(
-        Token<? extends PHPTokenId> token,
-        TokenSequence<? extends PHPTokenId> ts, 
-        boolean includeKeywords
-    ) {
+    public static int getTokenBalanceDelta(BaseDocument doc, Token<? extends PHPTokenId> token, TokenSequence<? extends PHPTokenId> ts, boolean includeKeywords) {
         if (token.id() == PHPTokenId.PHP_VARIABLE) {
             // In some cases, the [ shows up as an identifier, for example in this expression:
             //  for k, v in sort{|a1, a2| a1[0].id2name <=> a2[0].id2name}
@@ -175,6 +168,10 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
             return 1;
         } else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
             return -1;
+        } else if (token.id() == PHPTokenId.PHP_CASE || token.id() == PHPTokenId.PHP_DEFAULT) {
+            return 1;
+        } else if (token.id() == PHPTokenId.PHP_BREAK) {
+            return getIndentAfterBreak(doc, ts);
         } else if (token.id() == PHPTokenId.PHP_TOKEN) {
             if (LexUtilities.textEquals(token.text(), '(') || LexUtilities.textEquals(token.text(), '[')) {
                 return 1;
@@ -191,7 +188,48 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
         return 0;
     }
-    
+
+    // return indent if we are not in switch/case, otherwise return 0
+    private static int getIndentAfterBreak(BaseDocument doc, TokenSequence<? extends PHPTokenId> ts) {
+        // we are inside a block
+        final int index = ts.index();
+        final int breakOffset = ts.offset();
+        int indent = 0;
+        int balance = 0;
+        while (ts.movePrevious()) {
+            Token<? extends PHPTokenId> token = ts.token();
+            if (token.id() == PHPTokenId.PHP_CURLY_OPEN || LexUtilities.textEquals(token.text(), '(') || LexUtilities.textEquals(token.text(), '[')) {
+                // out of the block
+                balance--;
+            } else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE || LexUtilities.textEquals(token.text(), ')') || LexUtilities.textEquals(token.text(), ']')) {
+                // some block => ignore it
+                balance++;
+            } else if (balance == -1 && IGNORE_BREAK_IN.contains(token.id())) {
+                // out of the block
+                indent = 0;
+                break;
+            } else if (balance == 0 && token.id() == PHPTokenId.PHP_CASE) {
+                // in the same block
+                CodeStyle codeStyle = CodeStyle.get(doc);
+                int tplIndentSize = codeStyle.getIndentSize();
+                if (tplIndentSize > 0) {
+                    try {
+                        int caseIndent = Utilities.getRowIndent(doc, ts.offset());
+                        int breakIndent = Utilities.getRowIndent(doc, breakOffset);
+                        indent = (caseIndent - breakIndent) / tplIndentSize;
+                    } catch (BadLocationException ignored) {
+                        LOG.log(Level.FINE, "Incorrect offset?!", ignored);
+                    }
+                }
+                break;
+            }
+        }
+        // return to the original token
+        ts.moveIndex(index);
+        ts.moveNext();
+        return indent;
+    }
+
     // TODO RHTML - there can be many discontiguous sections, I've gotta process all of them on the given line
     public static int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords) {
         int balance = 0;
@@ -209,7 +247,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
         do {
             Token<?extends PHPTokenId> token = ts.token();
-            balance += getTokenBalanceDelta(token, ts, includeKeywords);
+            balance += getTokenBalanceDelta(doc, token, ts, includeKeywords);
         } while (ts.moveNext() && (ts.offset() < end));
 
         return balance;
@@ -385,7 +423,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return false;
     }
 
-    private void reindent(final Context context, CompilationInfo info, boolean indentOnly) {
+    private void reindent(final Context context, CompilationInfo info, final boolean indentOnly) {
         Document document = context.document();
         int startOffset = context.startOffset();
         int endOffset = context.endOffset();
@@ -471,7 +509,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
                                 int actualPrevIndent = GsfUtilities.getLineIndent(doc, prevOffset);
                                 if (actualPrevIndent != prevIndent) {
                                     // For blank lines, indentation may be 0, so don't adjust in that case
-                                    if (!(Utilities.isRowEmpty(doc, prevOffset) || Utilities.isRowWhite(doc, prevOffset))) {
+                                    if (indentOnly || !(Utilities.isRowEmpty(doc, prevOffset) || Utilities.isRowWhite(doc, prevOffset))) {
                                         indent = actualPrevIndent + (indent-prevIndent);
                                     }
                                 }
@@ -482,7 +520,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
         //                    System.out.println("~~~ [" + i + "]: currentIndent=" + currentIndent + ", indent=" + indent);
 
-                            if (currentIndent != indent) {
+                            if (currentIndent != indent && indent >= 0) {
                                 context.modifyIndent(lineBegin, indent);
                             }
                         }
@@ -523,6 +561,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
             int offset = Utilities.getRowStart(doc, startOffset); // The line's offset
             int end = endOffset;
             
+            CodeStyle codeStyle = CodeStyle.get(doc);
             int iSize = codeStyle.getIndentSize();
             int hiSize = codeStyle.getContinuationIndentSize();
 
@@ -546,7 +585,6 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
             // The bracket balance at the offset ( parens, bracket, brace )
             int bracketBalance = 0;
             boolean continued = false;
-            boolean indentHtml = false;
 
             while ((!includeEnd && offset < end) || (includeEnd && offset <= end)) {
                 int indent; // The indentation to be used for the current line
@@ -591,74 +629,4 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
         }
     }
 
-//    /**
-//     * Ensure that the editor-settings for tabs match our code style, since the
-//     * primitive "doc.getFormatter().changeRowIndent" calls will be using
-//     * those settings
-//     */
-//    private static void syncOptions(BaseDocument doc, CodeStyle style) {
-//        org.netbeans.editor.Formatter formatter = doc.getFormatter();
-//        if (formatter.getSpacesPerTab() != style.getIndentSize()) {
-//            formatter.setSpacesPerTab(style.getIndentSize());
-//        }
-//    }
-    
-    private static final class DocSyncedCodeStyle extends CodeStyle {
-        private DocSyncedCodeStyle() {
-            super(null);
-        }
-        
-        private int rightMargin = 80;
-        private Class kitClass;
-        
-        // Copied from option.editor's org.netbeans.modules.options.indentation.IndentationModel
-        private Class getEditorKitClass() {
-            if(kitClass == null) {
-                EditorKit kit = MimeLookup.getLookup(MimePath.parse("text/xml")).lookup(EditorKit.class); // NOI18N
-                if (kit != null) {
-                    kitClass = kit.getClass();
-                } else {
-                    kitClass = BaseKit.class;
-                }
-            }
-            return kitClass;
-        }
-
-        // Copied from option.editor's org.netbeans.modules.options.indentation.IndentationModel
-        private int getSpacesPerTab() {
-            Integer sp = (Integer) Settings.getValue(getEditorKitClass(), SettingsNames.SPACES_PER_TAB);
-            int indent = 4;
-            if (sp != null && sp.intValue() >= 0) {
-                indent = sp.intValue();
-            }
-            return indent;
-        }
-        
-        @Override
-        public int getIndentSize() {
-            return getSpacesPerTab();
-        }
-
-        @Override
-        public int getContinuationIndentSize() {
-            return getSpacesPerTab();
-        }
-
-        @Override
-        public boolean reformatComments() {
-            // This isn't used in JavaScript yet
-            return false;
-        }
-
-        @Override
-        public boolean indentHtml() {
-            // This isn't used in JavaScript yet
-            return false;
-        }
-
-        @Override
-        public int getRightMargin() {
-            return rightMargin;
-        }
-    }
 }

@@ -139,7 +139,14 @@ public class BuildServiceAssembly extends Task {
      * DOCUMENT ME!
      */
     public static final String SU_CATALOGXML_PATH = "META-INF/catalog.xml"; // NOI18N
-    
+
+    public static final String XML_CATALOG_CATALOG = "catalog"; // NOI18N
+    public static final String XML_CATALOG_URN = "urn:oasis:names:tc:entity:xmlns:xml:catalog"; // NOI18N
+    public static final String XML_CATALOG_XMLNS = "xmlns"; // NOI18N
+    public static final String XML_CATALOG_PREFER = "prefer"; // NOI18N
+    public static final String XML_CATALOG_SYSTEM = "system"; // NOI18N
+    public static final String XML_CATALOG_NEXTCATALOG = "nextCatalog"; // NOI18N
+
     
     /**
      * Getter for the show log option
@@ -210,6 +217,9 @@ public class BuildServiceAssembly extends Task {
         // jbiRouting = getBooleanProperty(p.getProperty((JbiProjectProperties.JBI_ROUTING)), true);
         saInternalRouting = getBooleanProperty(p.getProperty((JbiProjectProperties.JBI_SA_INTERNAL_ROUTING)), true);
 
+        // 09.29.09, IZ#145136 update project catalog before validation of wsdls...
+        updateFromSUCatalog(catalogDirLoc, projDirLoc + "Catalog.xml");
+
         // create project wsdl repository...
         try {
             FileObject baseDirFO = FileUtil.toFileObject(p.getBaseDir());
@@ -224,7 +234,7 @@ public class BuildServiceAssembly extends Task {
 
         log("Validating CompApp project...");
         validateCompAppProject();
-        
+
         try {   
             String jbiFileLoc = buildDir + "/META-INF/jbi.xml"; 
             String genericBCJarFileLoc = buildDir + "/BCDeployment.jar";       
@@ -472,6 +482,100 @@ public class BuildServiceAssembly extends Task {
         
         return bFlag;
     }
+
+    /**
+     * Update the CompApp project catalog to add/remove SE SU catalog entries
+     *
+     * @param suCatalogDirLoc
+     * @param prjCatalogFileLoc
+     */
+    private void updateFromSUCatalog(String suCatalogDirLoc, String prjCatalogFileLoc) {
+        File catalogDir = new File(suCatalogDirLoc);
+        if (!catalogDir.exists()) {  // no catalog...
+            return;
+        }
+
+        // 1. loop thru project subdirs
+        List<String> catalogFiles = new ArrayList<String>();
+        File[] children = catalogDir.listFiles();
+        if (children == null) {
+            return; // no children...
+        }
+
+        // updating catalog...
+        try {
+            for (File child : children) {
+                File catalogFile = new File(child, "catalog.xml"); // NOI18N;
+                if (catalogFile.exists()) {
+                    String catalogLoc = catalogFile.getAbsolutePath();
+                    catalogLoc = catalogLoc.replaceAll("\\\\", "/");
+                    int idx = catalogLoc.indexOf("src/jbiServiceUnits/META-INF"); // NOI18N
+                    catalogFiles.add(catalogLoc.substring(idx));
+                    // System.out.println("SU Catalog: "+catalogLoc);
+                }
+            }
+
+            if (catalogFiles.size() < 1) {
+                return; // no catalog..
+            }
+
+            File prjCatalog = new File(prjCatalogFileLoc);
+            if (!prjCatalog.exists()) { // create one...
+                prjCatalog.createNewFile();
+            }
+
+            boolean fileUpdate = false;
+            // parse content one...
+            DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = fact.newDocumentBuilder();
+            Document doc = null;
+            try {
+                doc = builder.parse(prjCatalog);
+            } catch (Exception ex) {
+                // create a new doc
+                doc = builder.newDocument();
+                Element elm = doc.createElement(XML_CATALOG_CATALOG);
+                elm.setAttribute(XML_CATALOG_XMLNS, XML_CATALOG_URN);
+                elm.setAttribute(XML_CATALOG_PREFER, XML_CATALOG_SYSTEM);
+                doc.appendChild(elm);
+            }
+             Element root = doc.getDocumentElement();
+             NodeList catalogNodes = doc.getElementsByTagName(XML_CATALOG_NEXTCATALOG); // NOI18N
+             for (int i = 0; i < catalogNodes.getLength(); i++) {
+                 Element catalogNode = (Element) catalogNodes.item(i);
+                 String catalog = catalogNode.getAttribute(XML_CATALOG_CATALOG); // NOI18N
+                 //System.out.println("next Catalog: " + catalogFiles.contains(catalog) + ", " + catalog);
+                 if (catalogFiles.contains(catalog)) { // OK, remove from List
+                     catalogFiles.remove(catalog);
+                 } else { // remove from project catalog
+                     root.removeChild(catalogNode);
+                     fileUpdate = true;
+                 }
+             }
+
+            // add new su catalogs...
+            for (String catalog : catalogFiles) {
+                Element elm = doc.createElement(XML_CATALOG_NEXTCATALOG);
+                elm.setAttribute(XML_CATALOG_CATALOG, catalog);
+                root.appendChild(elm);
+                fileUpdate = true;
+                //System.out.println("add Catalog: " + catalog);
+            }
+
+            if (fileUpdate) {
+                DOMSource src = new DOMSource(doc);
+                FileOutputStream fos = new FileOutputStream(prjCatalog);
+                StreamResult rest = new StreamResult(fos);
+                TransformerFactory transFact = TransformerFactory.newInstance();
+                Transformer transformer = transFact.newTransformer();
+                transformer.transform(src, rest);
+                fos.flush();
+                fos.close();
+            }
+        } catch (Exception ex) {
+            log("Exception: A processing error occurred; " + ex);
+        }
+    }
     
     // catalogDirLoc: <compapp>/src/jbiServiceUnits/META-INF
     private void MergeSeJarCatalogs(String catalogDirLoc) { 
@@ -558,12 +662,14 @@ public class BuildServiceAssembly extends Task {
                 URI realUri = new URI(uri);
                 
                 if (realUri.getScheme() == null) {
+                    /*
                     uri = "../" + sesuName + "/META-INF/" + uri;
                     
                     // correct the URI (get rid of "META-INF/../")
                     uri = uri.replace("/META-INF/..", "");                    
+                    */
                     
-                    
+                    uri = sesuName + "/" + uri;
                     systemNode.setAttribute("uri", uri);
                 }
             }
@@ -1045,7 +1151,7 @@ public class BuildServiceAssembly extends Task {
         byte[] buffer = new byte[1024];
         int bytesRead;
         
-        String compAppWSDLFileName = getCompAppWSDLFileName();
+        //String compAppWSDLFileName = getCompAppWSDLFileName();
         
         JarOutputStream newJar = new JarOutputStream(new FileOutputStream(outFile));
         
@@ -1059,14 +1165,15 @@ public class BuildServiceAssembly extends Task {
                 String jarEntryName = jarEntry.getName();
                 
                 // TODO: update casa wsdl entry in generic bc jar file.
-                if (jarEntryName.equals(compAppWSDLFileName)) {
+                //if (jarEntryName.equals(compAppWSDLFileName)) {
+                if (jarEntryName.toLowerCase().endsWith(".wsdl")) {
 //                    // Quick fix for J1: If the casa wsdl file doesn't contain 
 //                    // active endpoints, then we skip packaging the casa wsdl entry.
 //                    // (Future improvement: This rule should apply to all the 
 //                    // wsdl files.)
 //                    if (isCompAppWSDLNeeded) {
                     
-                    newJar.putNextEntry(new JarEntry(compAppWSDLFileName));
+                    newJar.putNextEntry(new JarEntry(jarEntryName));
                     
                     // HACK: remove "../jbiServiceUnits/" and "../jbiasa" from 
                     // import elements' location

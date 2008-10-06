@@ -480,7 +480,7 @@ import org.netbeans.junit.NbModuleSuite;
       
       public static Test suite() {
           return NbModuleSuite.create(
-                  NbModuleSuite.createConfiguration(JavaFoldsTest.class).enableModules(".*").clusters(".*"));
+                  NbModuleSuite.createConfiguration(JavaFoldsTest.class).addTest("testJavaFolds").enableModules(".*").clusters(".*"));
       }
 
     

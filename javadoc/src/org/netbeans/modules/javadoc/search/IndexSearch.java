@@ -105,8 +105,6 @@ public final class IndexSearch
     /* Hand made components */
     private javax.swing.JScrollPane resultsScrollPane;
     private javax.swing.JList resultsList;
-    //private HtmlBrowser.BrowserComponent quickBrowser;
-    private HtmlBrowser quickBrowser;
     private JSplitPane splitPanel;
 
     /** List models for different sorts */
@@ -188,13 +186,7 @@ public final class IndexSearch
 
         splitPanel.setTopComponent(resultsScrollPane);
 
-        // Quick browser component
-        quickBrowser = new HtmlBrowser( true, false );//.BrowserComponent( true, false );
-        quickBrowser.setEnableLocation( false );
-        quickBrowser.setEnableHome( false );
-        //browser buttons without border are too top
-        quickBrowser.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 0, 0, 0)));
-        splitPanel.setBottomComponent(quickBrowser);
+        splitPanel.setBottomComponent(createBrowser());
 
         DefaultListModel listModel = new DefaultListModel(); // PENDING: Change to SortedArrayList
         resultsList.setModel( listModel );
@@ -206,7 +198,7 @@ public final class IndexSearch
             new javax.swing.event.ListSelectionListener() {
                 public void valueChanged( javax.swing.event.ListSelectionEvent evt ) {
                     if (!evt.getValueIsAdjusting()) {
-                        showHelp( true );
+                        showHelp();
                     }
                 }
             });
@@ -236,7 +228,6 @@ public final class IndexSearch
         sourceButton.setToolTipText(b.getString( "CTL_SEARCH_showSource_ToolTip" ));   //NOI18N
         searchComboBox.setToolTipText(b.getString( "ACS_SEARCH_SearchComboBoxA11yDesc" ));   //NOI18N
         resultsList.setToolTipText(b.getString( "ACS_SEARCH_ResultsListA11yDesc" ));   //NOI18N
-        quickBrowser.setToolTipText(b.getString( "ACS_SEARCH_QuickBrowserA11yDesc" ));   //NOI18N
         
         // Adding mnemonics
         if (!Utilities.isMac()) {
@@ -273,8 +264,6 @@ public final class IndexSearch
         searchComboBox.getAccessibleContext().setAccessibleDescription(b.getString("ACS_SEARCH_SearchComboBoxA11yDesc")); // NOI18N
         resultsList.getAccessibleContext().setAccessibleName(b.getString("ACS_SEARCH_ResultsListA11yName"));  // NOI18N
         resultsList.getAccessibleContext().setAccessibleDescription(b.getString("ACS_SEARCH_ResultsListA11yDesc")); // NOI18N
-        quickBrowser.getAccessibleContext().setAccessibleName(b.getString("ACS_SEARCH_QuickBrowserA11yName"));  // NOI18N
-        quickBrowser.getAccessibleContext().setAccessibleDescription(b.getString("ACS_SEARCH_QuickBrowserA11yDesc"));  // NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -434,7 +423,7 @@ public final class IndexSearch
             splitPanel.setDividerLocation( oldSplit == 100 ? 0.5 : oldSplit / 100.0 );
             ds.setIdxSearchSplit( oldSplit == 100 ? 50 : oldSplit );
             ds.setIdxSearchNoHtml( false );
-            showHelp( true );
+            showHelp();
         }
         else {
             oldSplit = (int) (splitPanel.getDividerLocation() / splitPanel.getSize().getHeight() * 100);
@@ -455,7 +444,7 @@ public final class IndexSearch
         }
             else
             */
-            showHelp();
+            showHelpExternal();
         }
     }//GEN-LAST:event_resultsListKeyPressed
 
@@ -471,21 +460,71 @@ public final class IndexSearch
         }
     }//GEN-LAST:event_resultsListMouseClicked
 
-    private void showHelp(  ) {
-        showHelp( false );
-    }
-
     RequestProcessor.Task task=null;    
     /** Invokes the browser with help */
-    private void showHelp( boolean quick ) {
+    private void showHelp() {
 
-        if (quick && splitPanel.getDividerLocation() == 100 )
-            return;
+        if( null == task ) {
+            task = RequestProcessor.getDefault().create( new Runnable() {
+                public void run() {
+                    SwingUtilities.invokeLater( new Runnable() {
+                        public void run() {
+                            doShowHelp();
+                        }
+                    });
+                }
+            });
+        } else {
+            task.cancel();
+        }
+
+        task.schedule(300);
+    }
+
+    private final Object LOCK = new Object();
+    private void doShowHelp() {
+        synchronized( LOCK ) {
+            if (splitPanel.getDividerLocation() == 100 )
+                return;
+
+            if (  resultsList.getMinSelectionIndex() < 0 )
+                return;
+
+
+            DocIndexItem  dii = (DocIndexItem)resultsList.getModel().getElementAt( resultsList.getMinSelectionIndex() );
+
+            try {
+                URL url = dii.getURL();
+
+                if ( url == null )
+                    return;
+
+                // Workaround for bug in FileSystems
+                String strUrl = url.toString();
+
+                if ( strUrl.startsWith( "nbfs:" ) && strUrl.charAt( 5 ) != '/' ){ // NOI18N
+                    url = new URL( "nbfs:/" + strUrl.substring( 5 ) ); // NOI18N
+                }
+
+                HtmlBrowser browser = createBrowser();
+                browser.setURL(url);
+                int splitPosition = splitPanel.getDividerLocation();
+                splitPanel.setBottomComponent(browser);
+                splitPanel.setDividerLocation(splitPosition);
+            }
+            catch ( java.net.MalformedURLException ex ) {
+                // Do nothing if the URL isn't O.K.
+            }
+        }
+    }
+
+        /** Invokes the browser with help */
+    private void showHelpExternal() {
 
         if (  resultsList.getMinSelectionIndex() < 0 )
             return;
 
-        
+
         DocIndexItem  dii = (DocIndexItem)resultsList.getModel().getElementAt( resultsList.getMinSelectionIndex() );
 
         try {
@@ -500,33 +539,8 @@ public final class IndexSearch
             if ( strUrl.startsWith( "nbfs:" ) && strUrl.charAt( 5 ) != '/' ){ // NOI18N
                 url = new URL( "nbfs:/" + strUrl.substring( 5 ) ); // NOI18N
             }
-            
-            if ( quick ){
-                final URL furl = url;
-                if( task != null )
-                    task.cancel();
-                task = RequestProcessor.getDefault().post( new Runnable(){
-                    public void run(){
-                        synchronized( splitPanel ) {
-                            //workaround for #114175 
-                            final int divider = splitPanel.getDividerLocation();
-                            quickBrowser.setVisible(false);
-                            quickBrowser.setURL( furl );
-                            SwingUtilities.invokeLater( new Runnable() {
-                                public void run() {
-                                    synchronized( splitPanel ) {
-                                        quickBrowser.setVisible(true);
-                                        splitPanel.setDividerLocation(divider);
-                                        task = null;
-                                    }
-                                }
-                            });
-                        }
-                    }
-                }, 600 );      
-            }
-            else
-                HtmlBrowser.URLDisplayer.getDefault().showURL( url );
+
+            HtmlBrowser.URLDisplayer.getDefault().showURL( url );
         }
         catch ( java.net.MalformedURLException ex ) {
             // Do nothing if the URL isn't O.K.
@@ -811,5 +825,19 @@ public final class IndexSearch
         resultsList.invalidate();
         resultsList.revalidate();
         resultsList.repaint();
+    }
+
+    private HtmlBrowser createBrowser() {
+        // Quick browser component
+        HtmlBrowser quickBrowser = new HtmlBrowser( true, false );//.BrowserComponent( true, false );
+        quickBrowser.setEnableLocation( false );
+        quickBrowser.setEnableHome( false );
+        //browser buttons without border are too top
+        quickBrowser.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 0, 0, 0)));
+        quickBrowser.setToolTipText(NbBundle.getMessage(IndexSearch.class, "ACS_SEARCH_QuickBrowserA11yDesc" ));   //NOI18N
+        quickBrowser.getAccessibleContext().setAccessibleName(NbBundle.getMessage(IndexSearch.class, "ACS_SEARCH_QuickBrowserA11yName"));  // NOI18N
+        quickBrowser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IndexSearch.class, "ACS_SEARCH_QuickBrowserA11yDesc"));  // NOI18N
+
+        return quickBrowser;
     }
 }

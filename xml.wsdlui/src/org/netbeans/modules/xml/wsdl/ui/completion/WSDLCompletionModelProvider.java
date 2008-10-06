@@ -104,10 +104,12 @@ public class WSDLCompletionModelProvider extends CompletionModelProvider {
             //Get only those models that make sense at this point
             if (extensibilityElementType != null) {
                 WSDLExtensibilityElement element = elements.getWSDLExtensibilityElement(extensibilityElementType);
-                List<WSDLExtensibilityElementInfo> infos = element.getAllWSDLExtensibilityElementInfos();
-                for (WSDLExtensibilityElementInfo info : infos) {
-                    String ns = info.getSchema().getTargetNamespace();
-                    xmlSchemaFileInfos.add(elements.getXMLSchemaFileInfo(ns));
+                if (element != null) {
+                    List<WSDLExtensibilityElementInfo> infos = element.getAllWSDLExtensibilityElementInfos();
+                    for (WSDLExtensibilityElementInfo info : infos) {
+                        String ns = info.getSchema().getTargetNamespace();
+                        xmlSchemaFileInfos.add(elements.getXMLSchemaFileInfo(ns));
+                    }
                 }
             }
             

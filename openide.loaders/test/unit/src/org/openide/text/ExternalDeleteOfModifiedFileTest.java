@@ -49,6 +49,7 @@ import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
@@ -76,12 +77,6 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
         super(testName);
     }
     
-    public static Test suite() {
-        //TestSuite suite = new NbTestSuite(ExternalDeleteOfModifiedFileTest.class);
-        Test suite = new ExternalDeleteOfModifiedFileTest("testReloadOfABigFile");
-        return suite;
-    }
-    
     @Override
     protected Level logLevel() {
         return Level.FINE;
@@ -94,7 +89,7 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
 
     @Override
     protected void setUp () throws Exception {
-        System.setProperty ("org.openide.util.Lookup", "org.openide.text.ExternalDeleteOfModifiedFileTest$Lkp");
+        MockServices.setServices(DD.class);
         
         
         clearWorkDir();
@@ -159,51 +154,6 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
         arr = getPanes();
         assertNull("Now everything is closed", arr);
     }
-
-    public void testReloadOfABigFile() throws Exception {
-        Document doc = edit.openDocument();
-        
-        doc.insertString(0, "Ahoj", null);
-        assertTrue("Modified", edit.isModified());
-        
-        edit.open();
-        waitEQ();
-
-        JEditorPane[] arr = getPanes();
-        assertNotNull("There is one opened pane", arr);
-        
-        java.awt.Component c = arr[0];
-        while (!(c instanceof CloneableEditor)) {
-            c = c.getParent();
-        }
-        CloneableEditor ce = (CloneableEditor)c;
-
-        // select ok first, then Yes
-        DD.toReturn.push(DialogDescriptor.YES_OPTION);
-        DD.toReturn.push(DialogDescriptor.OK_OPTION);
-        
-        java.io.File f = FileUtil.toFile(obj.getPrimaryFile());
-        assertNotNull("There is file behind the fo", f);
-        OutputStream os = new BufferedOutputStream(new FileOutputStream(f));
-        for (int i = 0; i < 1024 * 1024 + 50000; i++) {
-            os.write('A');
-            if (i % 80 == 0) {
-                os.write('\n');
-            }
-        }
-        os.close();
-
-        obj.getPrimaryFile().getParent().refresh();
-
-        waitEQ();
-        
-        assertNotNull ("Text message was there", DD.message);
-
-        if (doc.getLength() < 1024) {
-            fail("Should be pretty big: " + doc.getLength());
-        }
-    }
-
     private JEditorPane[] getPanes() {
         return Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane[]>() {
             public JEditorPane[] run() {
@@ -219,25 +169,9 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
         });
     }
 
-    //
-    // Our fake lookup
-    //
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
-        static final long serialVersionUID = 3L;
-
-        public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            ic.add (new DD ());
-        }
-    }
-
     /** Our own dialog displayer.
      */
-    private static final class DD extends org.openide.DialogDisplayer {
+    public static final class DD extends org.openide.DialogDisplayer {
         public static Object[] options;
         public static Stack<Object> toReturn;
         public static Object message;

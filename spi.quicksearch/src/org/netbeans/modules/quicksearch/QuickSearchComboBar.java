@@ -59,6 +59,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.quicksearch.ProviderModel.Category;
 import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 /**
@@ -133,7 +134,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel implements ActionLis
                 formFocusLost(evt);
             }
         });
-        setLayout(new java.awt.GridBagLayout());
+        setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
         jPanel1.setBackground(getTextBackground());
         jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(getComboBorderColor()));
@@ -185,7 +186,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel implements ActionLis
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
@@ -201,16 +202,12 @@ public class QuickSearchComboBar extends javax.swing.JPanel implements ActionLis
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
         jPanel1.add(jSeparator1, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jPanel1, gridBagConstraints);
+        add(jPanel1);
     }// </editor-fold>//GEN-END:initComponents
 
 private void formFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusLost
     displayer.setVisible(false);//GEN-HEADEREND:event_formFocusLost
-}                              
+}
 
 private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-LAST:event_formFocusLost
     if (evt.getKeyCode()==KeyEvent.VK_DOWN) {//GEN-FIRST:event_commandKeyPressed
@@ -239,7 +236,7 @@ private void jLabel2MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     public void invokeSelectedItem () {
         JList list = displayer.getList();
         ResultsModel.ItemResult ir = (ItemResult) list.getSelectedValue();
-        
+
         // special handling of invocation of "more results item" (three dots)
         if (ir != null) {
             Runnable action = ir.getAction();
@@ -406,8 +403,9 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
     }
 
     static Color getComboBorderColor () {
-        Color shadow = UIManager.getColor("TextField.shadow");
-        return shadow != null ? shadow : Color.GRAY;
+        Color shadow = UIManager.getColor(
+                Utilities.isWindows() ? "Nb.ScrollPane.Border.color" : "TextField.shadow");
+        return shadow != null ? shadow : getPopupBorderColor();
     }
 
     static Color getPopupBorderColor () {

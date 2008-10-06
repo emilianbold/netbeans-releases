@@ -159,6 +159,8 @@ public class FilterNode extends Node {
 
     /** children provided or created the default ones? */
     private boolean childrenProvided;
+    
+    static final Logger LOGGER = Logger.getLogger(FilterNode.class.getName());
 
     /** Create proxy.
     * @param original the node to delegate to
@@ -1304,6 +1306,49 @@ public class FilterNode extends Node {
             original = or;
         }
         
+        @Override
+        EntrySupport entrySupport() {
+            FilterChildrenSupport support = null;
+            synchronized (Children.class) {
+                if (entrySupport != null && !entrySupport.isInitialized()) {
+                    // support is not initialized, it should be checked against original
+                    support = (FilterChildrenSupport) entrySupport;
+                }
+            }
+
+            if (support != null) {
+                // get original support without lock
+                EntrySupport origSupport = original.getChildren().entrySupport();
+                synchronized (Children.class) {
+                    if (entrySupport == support && support.originalSupport() != origSupport) {
+                        // original support was changed, force new support creation
+                        entrySupport = null;
+                    }
+                }
+            }
+
+            synchronized (Children.class) {
+                if (entrySupport != null) {
+                    return entrySupport;
+                }
+            }
+
+            // access without lock
+            org.openide.nodes.Children origChildren = original.getChildren();
+            EntrySupport os = origChildren.entrySupport();
+            boolean osIsLazy = origChildren.isLazy();
+
+            synchronized (Children.class) {
+                if (entrySupport != null) {
+                    return entrySupport;
+                }
+                lazySupport = osIsLazy;
+                entrySupport = lazySupport ? new LazySupport(this, (Lazy) os) : new DefaultSupport(this, (Default) os);
+                postInitializeEntrySupport();
+                return entrySupport;
+            }
+        }
+        
         /** Sets the original children for this children. 
          * Be aware that this method aquires
          * write lock on the nodes hierarchy ({@link Children#MUTEX}). 
@@ -1314,6 +1359,16 @@ public class FilterNode extends Node {
         protected final void changeOriginal(Node original) {
             try {
                 PR.enterWriteAccess();
+
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.finer("changeOriginal() " + this); // NOI18N
+                    LOGGER.finer("    old original children: " + this.original.getChildren()); // NOI18N
+                    LOGGER.finer("    old original lazy support: " + this.original.getChildren().lazySupport); // NOI18N
+                    LOGGER.finer("    new original: " + original); // NOI18N
+                    LOGGER.finer("    new original children: " + original.getChildren()); // NOI18N
+                    LOGGER.finer("    new original lazy support: " + original.getChildren().lazySupport); // NOI18N
+                    LOGGER.finer("    Children adapter: " + nodeL); // NOI18N
+                }
 
                 boolean wasAttached = nodeL != null;
 
@@ -1340,8 +1395,17 @@ public class FilterNode extends Node {
         }
         
         private void changeSupport(Node newOriginal) {
+            final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
             boolean init = entrySupport().isInitialized();
             boolean changed = false;
+
+            if (LOG_ENABLED) {
+                LOGGER.finer("changeSupport() " + this); // NOI18N
+                LOGGER.finer("    newOriginal: " + newOriginal); // NOI18N
+                LOGGER.finer("    entrySupport().isInitialized(): " + init); // NOI18N
+                LOGGER.finer("    parent: " + parent); // NOI18N
+            }
+
             if (init && parent != null) {
                 List<Node> snapshot = entrySupport().createSnapshot();
                 if (snapshot.size() > 0) {
@@ -1351,6 +1415,10 @@ public class FilterNode extends Node {
                     }
                     changed = true;
                     entrySupport = null;
+
+                    if (LOG_ENABLED) {
+                        LOGGER.finer("   firing node removal: " + snapshot); // NOI18N
+                    }
                     parent.fireSubNodesChangeIdx(false, idxs, null, Collections.<Node>emptyList(), snapshot);
                 }
             }
@@ -1361,8 +1429,12 @@ public class FilterNode extends Node {
                 entrySupport = null;
             }
 
-            if (newOriginal == null) {
+            if (init || newOriginal == null) {
                 entrySupport().notifySetEntries();
+
+                if (LOG_ENABLED) {
+                    LOGGER.log(Level.FINER, "    initializing new support"); // NOI18N
+                }
                 // force initialization
                 entrySupport().getNodesCount(false);
             }
@@ -1458,17 +1530,6 @@ public class FilterNode extends Node {
             return original.getChildren().add(arr);
         }
 
-        @Override
-        void checkSupportValidity() {
-            if (entrySupport != null && !entrySupport.isInitialized()) {
-                FilterChildrenSupport support = (FilterChildrenSupport) entrySupport;
-                EntrySupport origSupport = original.getChildren().entrySupport();
-                if (support.originalSupport() != origSupport) {
-                    entrySupport = null;
-                }
-            }
-        }
-
         private FilterChildrenSupport filterSupport() {
             return (FilterChildrenSupport) entrySupport();
         }
@@ -1552,13 +1613,6 @@ public class FilterNode extends Node {
         }
         
         @Override
-        EntrySupport createEntrySource() {
-            EntrySupport os = original.getChildren().entrySupport();
-            lazySupport = original.getChildren().isLazy();
-            return lazySupport ? new LazySupport(this, (Lazy) os) : new DefaultSupport(this, (Default) os);
-        }
-        
-        @Override
         void switchSupport(boolean toLazy) {        
             try {
                 Children.PR.enterWriteAccess();
@@ -1625,9 +1679,20 @@ public class FilterNode extends Node {
             }
 
             private void updateKeys() {
+                final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
+                if (LOG_ENABLED) {
+                    LOGGER.finer("updateKeys() " + this); // NOI18N
+                }
                 ChildrenAdapter cha = nodeL;
                 if (cha != null) {
+                    if (LOG_ENABLED) {
+                        LOGGER.finer("    getting original nodes"); // NOI18N
+                    }
                     Node[] arr = original.getChildren().getNodes();
+
+                    if (LOG_ENABLED) {
+                        LOGGER.finer("    setKeys(), keys: " + Arrays.toString(arr)); // NOI18N
+                    }
                     setKeys(arr);
                     if (!origSupport.isInitialized()) {
                         origSupport.notifySetEntries();
@@ -1652,11 +1717,39 @@ public class FilterNode extends Node {
                 this.origSupport = origSupport;
             }
 
+            class FilterLazySnapshot extends LazySnapshot {
+                private LazySnapshot origSnapshot;
+
+                public FilterLazySnapshot(List<Entry> entries, java.util.Map<Entry, EntryInfo> e2i) {
+                    super(entries, e2i);
+                    origSnapshot = (LazySnapshot) origSupport.createSnapshot();
+                }
+
+                @Override
+                public Node get(Entry entry) {
+                    EntryInfo info = entryToInfo.get(entry);
+                    Node node = info.currentNode();
+                    if (node == null) {
+                        node = info.getNode(false, origSnapshot);
+                    }
+                    if (isDummyNode(node)) {
+                        // force new snapshot
+                        hideEmpty(null, entry, null);
+                    }
+                    return node;
+                }
+            }
+
+            final class FilterDelayedLazySnapshot extends FilterLazySnapshot {
+
+                public FilterDelayedLazySnapshot(List<Entry> entries, java.util.Map<Entry, EntryInfo> e2i) {
+                    super(entries, e2i);
+                }
+            }
+
             @Override
             protected List<Node> createSnapshot(List<Entry> entries, java.util.Map<Entry, EntryInfo> e2i, boolean delayed) {
-                LazySnapshot snapshot = (LazySnapshot) super.createSnapshot(entries, e2i, delayed);
-                snapshot.holder = origSupport.createSnapshot();
-                return snapshot;
+                return delayed ? new FilterDelayedLazySnapshot(entries, e2i) : new FilterLazySnapshot(entries, e2i);
             }
         
             public Node[] callGetNodes(boolean optimalResult) {
@@ -1697,11 +1790,22 @@ public class FilterNode extends Node {
             }
 
             private void updateEntries() {
+                final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
+                if (LOG_ENABLED) {
+                    LOGGER.finer("updateEntries() " + this); // NOI18N
+                }
                 ChildrenAdapter cha = nodeL;
                 if (cha != null) {
                     int count = origSupport.getNodesCount(false);
+                    if (LOG_ENABLED) {
+                        LOGGER.finer("    origSupport.getNodesCount(): " + count); // NOI18N
+                    }
 
                     List<Entry> origEntries = origSupport.getEntries();
+                    if (LOG_ENABLED) {
+                        LOGGER.finer("    origSupport.getEntries() - size: " + origEntries.size() + " data: " + origEntries); // NOI18N
+                    }
+
                     ArrayList<Entry> filtEntries = new ArrayList<Entry>(origEntries.size());
                     for (Entry e : origEntries) {
                         filtEntries.add(new FilterNodeEntry(e));
@@ -1749,8 +1853,15 @@ public class FilterNode extends Node {
                 }
 
                 @Override
-                public Collection<Node> nodes() {
-                    Node node = origSupport.getNode(origEntry);
+                public Collection<Node> nodes(Object source) {
+                    Node node;
+                    if (source != null) {
+                        LazySnapshot origSnapshot = (LazySnapshot) source;
+                        node = origSnapshot.get(origEntry);
+                    } else {
+                        node = origSupport.getNode(origEntry);
+                    }
+
                     key = node;
                     if (node == null) {
                         return Collections.emptyList();
@@ -1776,9 +1887,9 @@ public class FilterNode extends Node {
                 public String toString() {
                     return "FilterNodeEntry[" + origEntry + "]@" + Integer.toString(hashCode(), 16);
                 }
-            }            
+            }
         }
-        
+
         interface FilterChildrenSupport {
             Node[] callGetNodes(boolean optimalResult);
 

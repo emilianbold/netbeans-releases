@@ -69,7 +69,7 @@ public final class EjbJar {
         Lookup.getDefault().lookup(new Lookup.Template<EjbJarProvider>(EjbJarProvider.class));
     
     static  {
-        EjbJarAccessor.DEFAULT = new EjbJarAccessor() {
+        EjbJarAccessor.setDefault(new EjbJarAccessor() {
             public EjbJar createEjbJar(EjbJarImplementation spiEjbJar) {
                 return new EjbJar(spiEjbJar);
             }
@@ -77,7 +77,7 @@ public final class EjbJar {
             public EjbJarImplementation getEjbJarImplementation(EjbJar wm) {
                 return wm == null ? null : wm.impl;
             }
-        };
+        });
     }
     
     private EjbJar (EjbJarImplementation impl) {

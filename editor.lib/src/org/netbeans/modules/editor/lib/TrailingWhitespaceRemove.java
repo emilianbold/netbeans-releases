@@ -398,7 +398,14 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
         @Override
         public void undo() throws CannotUndoException {
             super.undo();
-            modRegions.remove (region);
+            if (modRegions.get(index) != region) {
+                index = findRegionIndex(region.getStartOffset(), false);
+            }
+            if (modRegions.get(index) == region) {
+                modRegions.remove(index);
+            } else { // Safety fallback
+                modRegions.remove(region);
+            }
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("Removed region " + region + " at index=" + index + '\n'); // NOI18N
                 LOG.fine("Regions:\n" + modRegions + '\n'); // NOI18N
@@ -408,6 +415,8 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
         @Override
         public void redo() throws CannotRedoException {
             super.redo();
+            // #145588 - must recompute index according to current modRegions state
+            index = findRegionIndex(region.getStartOffset(), true);
             run();
         }
 

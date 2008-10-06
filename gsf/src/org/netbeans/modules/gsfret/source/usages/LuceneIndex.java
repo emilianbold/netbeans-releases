@@ -216,7 +216,7 @@ class LuceneIndex extends Index {
         if (Index.isPreindexed(cacheRoot)) {
             return true;
         }
-        
+
         if (!isValid(false)) {
             return false;
         }
@@ -239,8 +239,8 @@ class LuceneIndex extends Index {
                 if (hits.length() != 1) {   //0 = not present, 1 = present and has timestamp, >1 means broken index, probably killed IDE, treat it as not up to date and store will fix it.
                     return false;
                 }
-                else {                    
-                    try { 
+                else {
+                    try {
                         Hit hit = (Hit) hits.iterator().next();
                         long cacheTime = DocumentUtil.getTimeStamp(hit.getDocument());
                         if (resourceName == null) {
@@ -256,7 +256,10 @@ class LuceneIndex extends Index {
             } finally {
                 searcher.close();
             }
-        } catch (java.io.FileNotFoundException fnf) {
+        } catch (java.io.IOException ioe) {
+            //The FileNotFoundException may be thrown if the index is not fully merged,
+            //also IOException can be thrown when index was not closed on exit.
+            //Both can be caused by killing the IDE.
             this.clear();
             return false;
         }
@@ -313,7 +316,12 @@ class LuceneIndex extends Index {
 
     public boolean isValid (boolean tryOpen) throws IOException {
         checkPreconditions();
-        boolean res = IndexReader.indexExists(this.directory);
+        boolean res = false;
+        try {
+            res = IndexReader.indexExists(this.directory);
+        } catch (IOException e) {
+            return res;
+        }
         if (res && tryOpen) {
             try {
                 getReader();
@@ -418,9 +426,9 @@ class LuceneIndex extends Index {
         return refRoot;
     }
 
-    private void checkPreconditions () {
+    private void checkPreconditions () throws ClassIndexImpl.IndexAlreadyClosedException{
         if (closed) {
-            throw new IllegalStateException ("Index already closed");   //NOI18N
+            throw new ClassIndexImpl.IndexAlreadyClosedException();
         }
     }
 

@@ -41,15 +41,12 @@
 
 package org.openide.loaders;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.openide.filesystems.*;
 
-import java.beans.*;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
-import org.netbeans.junit.*;
 
 /** Testing that a change in a pool triggers notification of a change in DataFolder's
  * children.
@@ -67,6 +64,7 @@ public class DataFolderRefreshTest extends LoggingTestCaseHid {
         super (name);
     }
     
+    @Override
     protected void setUp () throws Exception {
         err = org.openide.ErrorManager.getDefault().getInstance("TEST-" + getName());
 

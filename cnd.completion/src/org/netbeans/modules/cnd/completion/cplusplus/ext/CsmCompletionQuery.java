@@ -1169,8 +1169,11 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                             res.addResulItemsToCol(vars);
                                             if (vars.size() > 0) {
                                                 // get the first
-                                                CsmVariable varElem = (CsmVariable) vars.get(0);
-                                                lastType = varElem.getType();
+                                                CsmObject firstElem = (CsmObject)vars.get(0);
+                                                if(CsmKindUtilities.isVariable(firstElem)) {
+                                                    CsmVariable varElem = (CsmVariable) firstElem;
+                                                    lastType = varElem.getType();
+                                                }
                                             }
                                         }
                                     }

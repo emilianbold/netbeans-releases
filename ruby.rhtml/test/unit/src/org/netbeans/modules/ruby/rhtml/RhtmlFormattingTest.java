@@ -27,13 +27,15 @@
  */
 package org.netbeans.modules.ruby.rhtml;
 
-import javax.swing.JEditorPane;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.ruby.RubyFormatter;
-import org.openide.filesystems.FileObject;
+import org.netbeans.lib.lexer.test.TestLanguageProvider;
+import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
+import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 
 /**
  *
@@ -44,115 +46,72 @@ public class RhtmlFormattingTest extends RhtmlTestBase {
         super(testName);
     }
 
-//    @SuppressWarnings("unchecked")
-//    public String format(BaseDocument doc, int startPos, int endPos, IndentPrefs preferences) throws Exception {
-//
-//        String text = doc.getText(0, doc.getLength());
-//        JEditorPane pane = getPane(text, startPos, endPos);
-//        assertEquals(RubyInstallation.RHTML_MIME_TYPE, pane.getDocument().getProperty("mimeType"));
-//
-//        runKitAction(pane, BaseKit.formatAction, "");
-//
-//        BaseDocument bdoc = (BaseDocument) pane.getDocument();
-//
-//        RubyFormatter formatter = getFormatter(preferences);
-//        String formatted = bdoc.getText(0, bdoc.getLength());
-//
-//        doc.remove(0, doc.getLength());
-//        doc.insertString(0, formatted, null);
-//
-//        // Apply Ruby formatting separately; can't get the indent task factory to
-//        // work (see RhtmlTestBase) because GsfIndentTask needs to find the RubyLanguage
-//        // and the system file system doesn't seem to include it
-//
-//        //CompilationInfo info = getInfo(fileObject);
-//        CompilationInfo info = null;
-//        formatter.reformat(doc, startPos, endPos, info);
-//
-//        formatted = doc.getText(0, doc.getLength());
-//
-//        return formatted;
-//    }
-    
     @Override
-    protected boolean runInEQ() {
-        // Must run in AWT thread (BaseKit.install() checks for that)
-        return true;
+    protected void setUp() throws Exception {
+        super.setUp();
+
+        try {
+            TestLanguageProvider.register(RhtmlTokenId.language());
+        } catch (IllegalStateException ise) {
+            // Already registered?
+        }
+        try {
+            TestLanguageProvider.register(HTMLTokenId.language());
+        } catch (IllegalStateException ise) {
+            // Already registered?
+        }
+
+        RhtmlIndentTaskFactory rhtmlReformatFactory = new RhtmlIndentTaskFactory();
+        MockMimeLookup.setInstances(MimePath.parse(RubyInstallation.RHTML_MIME_TYPE), rhtmlReformatFactory);
+        HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
+        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory);
     }
 
-//    @Override
-//    public void format(String source, String reformatted, IndentPrefs preferences) throws Exception {
-//        // Must run in AWT thread (BaseKit.install() checks for that)
-//        String BEGIN = "%<%"; // NOI18N
-//        int startPos = source.indexOf(BEGIN);
-//        if (startPos != -1) {
-//            source = source.substring(0, startPos) + source.substring(startPos+BEGIN.length());
-//        } else {
-//            startPos = 0;
-//        }
-//        
-//        String END = "%>%"; // NOI18N
-//        int endPos = source.indexOf(END);
-//        if (endPos != -1) {
-//            source = source.substring(0, endPos) + source.substring(endPos+END.length());
-//        }
-//
-//        BaseDocument doc = getDocument(source);
-//
-//        if (endPos == -1) {
-//            endPos = doc.getLength();
-//        }
-//        
-//        String formatted = format(doc, startPos, endPos, preferences);
-//        assertEquals(reformatted, formatted);
-//    }
-//    
+    @Override
+    public BaseDocument getDocument(String s, final String mimeType, final Language language) {
+        BaseDocument doc = super.getDocument(s, mimeType, language);
+        doc.putProperty("mimeType", RubyInstallation.RHTML_MIME_TYPE);
+        doc.putProperty(org.netbeans.api.lexer.Language.class, RhtmlTokenId.language());
+
+        return doc;
+    }
+
+    @Override
+    protected String getPreferredMimeType() {
+        return RubyInstallation.RUBY_MIME_TYPE;
+    }
+
     public void reformatFileContents(String file) throws Exception {
-        FileObject fo = getTestFile(file);
-        assertNotNull(fo);
-        BaseDocument doc = getDocument(fo);
-        assertNotNull(doc);
-
-        //IndentPrefs preferences = new IndentPrefs(2,2);
-
-        format(doc, new RubyFormatter(), null, 0, doc.getLength(), false);
-        
-        String formatted = doc.getText(0, doc.getLength());
-        
-        assertDescriptionMatches(file, formatted, false, ".formatted");
+        reformatFileContents(file, new IndentPrefs(2,2));
     }
     
-
-    public void testDummy() throws Exception {
+    public void testFormat1() throws Exception {
+        reformatFileContents("testfiles/format1.rhtml");
     }
     
-//    public void testFormat1() throws Exception {
-//        reformatFileContents("testfiles/format1.rhtml");
-//    }
-//    
-//    public void testFormat2() throws Exception {
-//        reformatFileContents("testfiles/format2.rhtml");
-//    }
-//    
-//    public void testFormat2b() throws Exception {
-//        // Same as format2.rhtml, but flushed left to ensure that
-//        // we're not reformatting correctly just by luck
-//        reformatFileContents("testfiles/format2b.rhtml");
-//    }
-//    
-//    public void testFormat3() throws Exception {
-//        reformatFileContents("testfiles/format3.rhtml");
-//    }
-//    
-//    public void testFormat4() throws Exception {
-//        reformatFileContents("testfiles/format4.rhtml");
-//    }
+    public void testFormat2() throws Exception {
+        reformatFileContents("testfiles/format2.rhtml");
+    }
+    
+    public void testFormat2b() throws Exception {
+        // Same as format2.rhtml, but flushed left to ensure that
+        // we're not reformatting correctly just by luck
+        reformatFileContents("testfiles/format2b.rhtml");
+    }
+    
+    public void testFormat3() throws Exception {
+        reformatFileContents("testfiles/format3.rhtml");
+    }
+    
+    public void testFormat4() throws Exception {
+        reformatFileContents("testfiles/format4.rhtml");
+    }
     
 //    public void testFormat5() throws Exception {
 //        format("<%\ndef foo\nwhatever\nend\n%>\n",
 //                "<%\ndef foo\n  whatever\nend\n%>\n", null);
 //    }
-    
+//
 //    public void testFormat6() throws Exception {
 //        format("<% if true %>\nhello\n%<= foo %>\n<% end %>\n",
 //                "<% if true %>\n  hello\n%  <= foo %>\n<% end %>\n", null);

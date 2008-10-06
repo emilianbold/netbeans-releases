@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.javascript.editing.JsUtils;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.ModificationResult;
@@ -191,26 +192,20 @@ public abstract class JsRefactoringPlugin extends ProgressProviderAdapter implem
             // Process Ruby files and RHTML files separately - and OTHER files separately
             // TODO - now that I don't need separate RHTML models any more, can
             // I just do a single pass?
-            Set<FileObject> rubyFiles = new HashSet<FileObject>(2*files.size());
-            Set<FileObject> rhtmlFiles = new HashSet<FileObject>(2*files.size());
+            Set<FileObject> jsFiles = new HashSet<FileObject>(2*files.size());
             for (FileObject file : files) {
                 if (RetoucheUtils.isJsFile(file)) {
-                    rubyFiles.add(file);
-//                } else if (RubyUtils.isRhtmlFile(file)) {
-//                    rhtmlFiles.add(file);
+                    // RetoucheUtils.isJsFile includes HTML files, PHP files, etc.
+                    // where as JsUtils.isJsFile includes ONLY pure JavaScript files
+                    if ((!JsUtils.isJsFile(file)) && file.getSize() >= 1024*1024) {
+                        // Skip really large HTML files
+                        continue;
+                    }
+                    jsFiles.add(file);
                 }
             }
 
-            Iterable<? extends List<FileObject>> work = groupByRoot(rubyFiles);
-            for (List<FileObject> fos : work) {
-                final Source source = Source.create(ClasspathInfo.create(fos.get(0)), fos);
-                try {
-                    results.add(source.runModificationTask(task));
-                } catch (IOException ex) {
-                    throw (RuntimeException) new RuntimeException().initCause(ex);
-                }
-            }
-            work = groupByRoot(rhtmlFiles);
+            Iterable<? extends List<FileObject>> work = groupByRoot(jsFiles);
             for (List<FileObject> fos : work) {
                 final Source source = Source.create(ClasspathInfo.create(fos.get(0)), fos);
                 try {

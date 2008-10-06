@@ -67,8 +67,8 @@ import org.openide.util.Lookup;
 * @author Ales Novak, Jesse Glick
 */
 public class TopSecurityManager extends SecurityManager {
-
-    private static boolean check = !Boolean.getBoolean("netbeans.security.nocheck"); // NOI18N
+    private static final boolean check = !Boolean.getBoolean("netbeans.security.nocheck"); // NOI18N
+    private static final Logger LOG = Logger.getLogger(TopSecurityManager.class.getName());
 
     private Permission allPermission;
     
@@ -397,8 +397,8 @@ public class TopSecurityManager extends SecurityManager {
         try {
             System.setSecurityManager(new TopSecurityManager());
         } catch (SecurityException ex) {
-            Logger.getLogger("global").log(Level.WARNING, "Cannot associated own security manager"); // NOI18N
-            Logger.getLogger("global").log(Level.INFO, "Cannot associated own security manager", ex); // NOI18N
+            LOG.log(Level.WARNING, "Cannot associated own security manager"); // NOI18N
+            LOG.log(Level.INFO, "Cannot associated own security manager", ex); // NOI18N
         }
     }
     static void uninstall() {

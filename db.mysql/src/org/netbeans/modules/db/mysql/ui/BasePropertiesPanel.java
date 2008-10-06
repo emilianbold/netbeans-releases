@@ -49,14 +49,23 @@ public class BasePropertiesPanel extends javax.swing.JPanel {
         
         String error = null;
         
-        if ( getHost() == null || getHost().equals("")) {
+        if ( getHost() == null || getHost().length() == 0) {
             error = NbBundle.getMessage(BasePropertiesPanel.class,
                         "BasePropertiesPanel.MSG_SpecifyHost");
         }
-        if ( getUser() == null || getUser().equals("")) {
+        if ( getUser() == null || getUser().length() == 0) {
             error = NbBundle.getMessage(BasePropertiesPanel.class,
                         "BasePropertiesPanel.MSG_SpecifyUser");
         }
+        
+        if (getPort() != null  && getPort().length() > 0) {
+            try {
+                Integer.valueOf(getPort());
+            } catch (NumberFormatException nfe) {
+                error = NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.MSG_InvalidPortNumber");
+            }
+         }
+
         
         if (error != null) {
             messageLabel.setText(error);
@@ -81,6 +90,7 @@ public class BasePropertiesPanel extends javax.swing.JPanel {
         
         txtUser.getDocument().addDocumentListener(docListener);
         txtHost.getDocument().addDocumentListener(docListener);
+        txtPort.getDocument().addDocumentListener(docListener);
         
         String user = server.getUser();
         if ( user == null || user.equals("") ) {

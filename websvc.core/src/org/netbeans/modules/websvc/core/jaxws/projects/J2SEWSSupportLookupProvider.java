@@ -82,6 +82,6 @@ public class J2SEWSSupportLookupProvider implements LookupProvider {
             protected void projectClosed() {
             }
         };
-        return Lookups.fixed(new Object[] {jaxWsClientSupportApi,jaxRpcClientSupportApi,new J2SEProjectWSClientSupportProvider(), new JaxWsArtifactsClassPathProvider(project), new J2SEJAXWSVersionProvider(project), new JaxWsSourceForBinaryQueryImpl(), openHook});
+        return Lookups.fixed(new Object[] {jaxWsClientSupportApi,jaxRpcClientSupportApi,new J2SEProjectWSClientSupportProvider(), new JaxWsArtifactsClassPathProvider(project), new J2SEJAXWSVersionProvider(project), new JaxWsSourceForBinaryQueryImpl(project), openHook});
     }
 }

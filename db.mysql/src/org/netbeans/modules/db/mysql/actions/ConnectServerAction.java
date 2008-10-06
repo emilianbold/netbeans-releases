@@ -39,6 +39,7 @@
 package org.netbeans.modules.db.mysql.actions;
 
 import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.DatabaseServer.ServerState;
 import org.netbeans.modules.db.mysql.impl.ConnectManager;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.nodes.Node;
@@ -79,7 +80,10 @@ public class ConnectServerAction extends CookieAction {
         
         DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
         
-        return server != null && !server.isConnected() && server.checkRunning(1000);
+        if (server == null) {
+            return false;
+        }
+        return server.getState() == ServerState.DISCONNECTED;
     }
 
     @Override

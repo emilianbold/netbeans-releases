@@ -69,7 +69,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     private static RequestProcessor refRP = new RequestProcessor("FolderChildren_Refresh"); // NOI18N
 
     /** the folder */
-    private DataFolder folder;
+    private FolderList folder;
     /** filter of objects */
     private final DataFilter filter;
     /** listener on changes in nodes */
@@ -97,7 +97,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     */
     public FolderChildren(DataFolder f, DataFilter filter) {
         super(true);
-        this.folder = f;
+        this.folder = FolderList.find(f.getPrimaryFile(), true);
         this.filter = filter;
         this.listener = org.openide.util.WeakListeners.propertyChange(this, folder);
         this.fcListener = org.openide.filesystems.FileUtil.weakFileChangeListener(this, folder.getPrimaryFile());
@@ -118,16 +118,8 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     /** If the folder changed its children we change our nodes.
      */
     public void propertyChange(final PropertyChangeEvent ev) {
-        if (DataFolder.PROP_CHILDREN.equals(ev.getPropertyName())) {
-            err.fine("Got PROP_CHILDREN");
-            refreshChildren(0);
-            return;
-        }
-        if (DataFolder.PROP_SORT_MODE.equals(ev.getPropertyName()) ||
-                DataFolder.PROP_ORDER.equals(ev.getPropertyName())) {
-            err.fine("Got PROP_SORT_MODE or PROP_ORDER");
-            refreshChildren(0);
-        }
+        err.log(Level.FINE, "Got a change {0}", ev.getPropertyName());
+        refreshChildren(0);
     }
 
     public void stateChanged(ChangeEvent e) {
@@ -236,7 +228,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     private void waitOptimalResult() {
         if (checkChildrenMutex()) {
             err.fine("waitOptimalResult"); // NOI18N
-            FolderList.find(folder.getPrimaryFile(), true).waitProcessingFinished();
+            folder.waitProcessingFinished();
             refTask.waitFinished();
             err.fine("waitOptimalResult: waitProcessingFinished"); // NOI18N
         } else {

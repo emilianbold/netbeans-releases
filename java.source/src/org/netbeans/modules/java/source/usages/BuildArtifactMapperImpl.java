@@ -102,6 +102,8 @@ public class BuildArtifactMapperImpl {
 //    private static final Map<URL, File> source2Target = new HashMap<URL, File>();
     private static final Map<URL, Set<ArtifactsUpdated>> source2Listener = new HashMap<URL, Set<ArtifactsUpdated>>();
 
+    private static final long MINIMAL_TIMESTAMP = 2000L;
+
     public static synchronized void addArtifactsUpdatedListener(URL sourceRoot, ArtifactsUpdated listener) {
         Set<ArtifactsUpdated> listeners = source2Listener.get(sourceRoot);
         
@@ -180,18 +182,22 @@ public class BuildArtifactMapperImpl {
         File result = null;
         
         for (URL u : binaryRoots.getRoots()) {
-            if (FileUtil.isArchiveFile(u)) {
-                continue;
-            }
-            
             File f = FileUtil.archiveOrDirForURL(u);
+
+            try {
+                if (FileUtil.isArchiveFile(f.toURI().toURL())) {
+                    continue;
+                }
             
-            if (f != null && result != null) {
-                Logger.getLogger(BuildArtifactMapperImpl.class.getName()).log(Level.WARNING, "More than one binary directory for root: {0}", source.toExternalForm());
-                return null;
+                if (f != null && result != null) {
+                    Logger.getLogger(BuildArtifactMapperImpl.class.getName()).log(Level.WARNING, "More than one binary directory for root: {0}", source.toExternalForm());
+                    return null;
+                }
+
+                result = f;
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
             }
-            
-            result = f;
         }
         
         return result;
@@ -314,7 +320,7 @@ public class BuildArtifactMapperImpl {
             out = new FileOutputStream(target);
 
             FileUtil.copy(ins, out);
-            target.setLastModified(0L);
+            target.setLastModified(MINIMAL_TIMESTAMP);
         } finally {
             if (ins != null) {
                 try {
@@ -517,7 +523,7 @@ public class BuildArtifactMapperImpl {
                     listener2File.put(l, tagFile);
                     FileChangeSupport.DEFAULT.addListener(l, tagFile);
                 }
-                
+
                 file2Status.put(file, new WeakReference<Status>(result = new FileBuiltQueryStatusImpl(delegate, tagFile, l)));
 
                 return result;

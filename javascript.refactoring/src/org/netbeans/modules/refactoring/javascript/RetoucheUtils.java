@@ -158,7 +158,7 @@ public class RetoucheUtils {
         String name = null;
         String simpleName = null;
         int type = node.getType();
-        if (type == org.mozilla.nb.javascript.Token.CALL) {
+        if (type == org.mozilla.nb.javascript.Token.CALL || type == org.mozilla.nb.javascript.Token.NEW) {
             name = AstUtilities.getCallName(node, true);
             simpleName = AstUtilities.getCallName(node, false);
         } else if (node instanceof Node.StringNode) {

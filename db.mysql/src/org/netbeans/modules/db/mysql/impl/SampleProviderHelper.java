@@ -54,8 +54,11 @@ public class SampleProviderHelper {
     static Collection<SampleProvider> getProviders() {
         Collection<SampleProvider> providers = new ArrayList<SampleProvider>();
 
-        providers.addAll((Collection<SampleProvider>)
-                Lookups.forPath(SampleProvider.SAMPLE_PROVIDER_PATH).lookupAll(SampleProvider.class));
+        @SuppressWarnings ("unchecked")
+        Collection<SampleProvider> lookedUpProviders = (Collection<SampleProvider>)
+                Lookups.forPath(SampleProvider.SAMPLE_PROVIDER_PATH).lookupAll(SampleProvider.class);
+
+        providers.addAll(lookedUpProviders);
 
         return providers;
     }
