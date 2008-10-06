@@ -236,8 +236,10 @@ public class DefaultDataObjectTest extends NbTestCase {
             MultiDataObject obj = new MultiDataObject(primaryFile, this);
             cnt++;
             obj.getCookieSet().assign(EditorCookie.class, DataEditorSupport.create(obj, obj.getPrimaryEntry(), obj.getCookieSet()));
-            
-            nodeListener.nodeDestroyed(null);
+
+            if (nodeListener != null) {
+                nodeListener.nodeDestroyed(null);
+            }
             
             return obj;
         }
