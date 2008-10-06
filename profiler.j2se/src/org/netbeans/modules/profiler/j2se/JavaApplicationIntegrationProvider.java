@@ -117,7 +117,8 @@ public class JavaApplicationIntegrationProvider extends AbstractIntegrationProvi
     }
 
     public boolean supportsJVM(TargetPlatformEnum jvm, AttachSettings attachSettings) {
-        if (attachSettings.isRemote() && attachSettings.getHostOS() == IntegrationUtils.PLATFORM_LINUX_OS && jvm.equals(TargetPlatformEnum.JDK_CVM)) {
+        if (attachSettings.isRemote() && jvm.equals(TargetPlatformEnum.JDK_CVM) && 
+           (attachSettings.getHostOS() == IntegrationUtils.PLATFORM_LINUX_OS ||  attachSettings.getHostOS() == IntegrationUtils.PLATFORM_WINDOWS_OS)) {
             return true;
         }
         return super.supportsJVM(jvm,attachSettings);
