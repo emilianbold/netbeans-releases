@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.StringTokenizer;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -155,7 +156,17 @@ public class PhysicalView {
         }
         
         public void stateChanged( ChangeEvent e) {            
-            changeSupport.fireChange();
+            final Runnable r = new Runnable () {
+                public void run () {
+                    changeSupport.fireChange();
+                }
+            };
+            if (SwingUtilities.isEventDispatchThread()) {
+                r.run();
+            }
+            else {
+                SwingUtilities.invokeLater(r);
+            }
         }        
     
         public void addChangeListener( ChangeListener listener ) {
@@ -274,30 +285,40 @@ public class PhysicalView {
 
         // Private methods -------------------------------------------------    
 
-        public void propertyChange(PropertyChangeEvent evt) {
-            String prop = evt.getPropertyName();
-            if (ProjectInformation.PROP_DISPLAY_NAME.equals(prop)) {
-                fireDisplayNameChange(null, null);
-            } else if (ProjectInformation.PROP_NAME.equals(prop)) {
-                fireNameChange(null, null);
-            } else if (ProjectInformation.PROP_ICON.equals(prop)) {
-                // OK, ignore
-            } else if ( "name".equals(prop) ) { // NOI18N
-                fireNameChange(null, null);
-            } else if ( "displayName".equals(prop) ) { // NOI18N
-                fireDisplayNameChange(null, null);
-            } else if ( "icon".equals(prop) ) { // NOI18N
-                // OK, ignore
-            } else if ( "rootFolder".equals(prop) ) { // NOI18N
-                // XXX Do something to children and lookup 
-                fireNameChange(null, null);
-                fireDisplayNameChange(null, null);
-                fireShortDescriptionChange(null, null);
-            } else if (SourceGroup.PROP_CONTAINERSHIP.equals(prop)) {
-                // OK, ignore
-            } else {
-                assert false : "Attempt to fire an unsupported property change event from " + pi.getClass().getName() + ": " + prop;
+        public void propertyChange(final PropertyChangeEvent evt) {
+            final Runnable r = new Runnable () {
+                public void run () {
+                    String prop = evt.getPropertyName();
+                    if (ProjectInformation.PROP_DISPLAY_NAME.equals(prop)) {
+                        fireDisplayNameChange(null, null);
+                    } else if (ProjectInformation.PROP_NAME.equals(prop)) {
+                        fireNameChange(null, null);
+                    } else if (ProjectInformation.PROP_ICON.equals(prop)) {
+                        // OK, ignore
+                    } else if ( "name".equals(prop) ) { // NOI18N
+                        fireNameChange(null, null);
+                    } else if ( "displayName".equals(prop) ) { // NOI18N
+                        fireDisplayNameChange(null, null);
+                    } else if ( "icon".equals(prop) ) { // NOI18N
+                        // OK, ignore
+                    } else if ( "rootFolder".equals(prop) ) { // NOI18N
+                        // XXX Do something to children and lookup 
+                        fireNameChange(null, null);
+                        fireDisplayNameChange(null, null);
+                        fireShortDescriptionChange(null, null);
+                    } else if (SourceGroup.PROP_CONTAINERSHIP.equals(prop)) {
+                        // OK, ignore
+                    } else {
+                        assert false : "Attempt to fire an unsupported property change event from " + pi.getClass().getName() + ": " + prop;
+                    }
+                }
+            };
+            if (SwingUtilities.isEventDispatchThread()) {
+                r.run();
             }
+            else {
+                SwingUtilities.invokeLater(r);
+            }            
         }
         
         private static Lookup createLookup( Project p, SourceGroup group, DataFolder dataFolder ) {
