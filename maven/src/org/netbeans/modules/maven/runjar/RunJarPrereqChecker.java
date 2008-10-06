@@ -100,6 +100,8 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
                 // project j2seplaform's java.exe
                 String val = (String) str.getValue();
                 if ("java".equals(val)) { //NOI18N
+                    //TODO somehow use the config.getMavenProject() call rather than looking up the
+                    // ActiveJ2SEPlatformProvider from lookup. The loaded project can be different from the executed one.
                     ActiveJ2SEPlatformProvider plat = config.getProject().getLookup().lookup(ActiveJ2SEPlatformProvider.class);
                     assert plat != null;
                     FileObject fo = plat.getJavaPlatform().findTool(val);

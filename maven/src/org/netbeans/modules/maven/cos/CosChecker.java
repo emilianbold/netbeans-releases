@@ -101,6 +101,8 @@ public class CosChecker implements PrerequisitesChecker {
                 params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName());
                 params.put(JavaRunner.PROP_WORK_DIR, config.getExecutionDirectory());
                 ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
+                //TODO somehow use the config.getMavenProject() call rather than looking up the
+                // ClassPathProviderImpl from lookup. The loaded project can be different from the executed one.
                 params.put(JavaRunner.PROP_EXECUTE_CLASSPATH, cpp.getProjectClassPaths(ClassPath.EXECUTE)[0]);
                 //exec:exec property
                 String exargs = config.getProperties().getProperty("exec.args"); //NOI18N
@@ -155,7 +157,7 @@ public class CosChecker implements PrerequisitesChecker {
                 List<String> jvmProps = new ArrayList<String>();
                 Set<String> jvmPropNames = new HashSet<String>();
                 params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName());
-                String dir = PluginPropertyUtils.getPluginProperty(config.getProject(), Constants.GROUP_APACHE_PLUGINS,
+                String dir = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
                         Constants.PLUGIN_SUREFIRE, "basedir", "test"); //NOI18N
                 //TODO there's another property named workingDirectory that overrides  basedir.
                 // basedir is also assumed to end up as system property for tests..
@@ -168,7 +170,7 @@ public class CosChecker implements PrerequisitesChecker {
                     jvmProps.add("-Dbasedir=" + config.getExecutionDirectory().getAbsolutePath()); //NOI18N
                 }
                 //add properties defined in surefire plugin
-                Properties sysProps = PluginPropertyUtils.getPluginPropertyParameter(config.getProject(), Constants.GROUP_APACHE_PLUGINS,
+                Properties sysProps = PluginPropertyUtils.getPluginPropertyParameter(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
                         Constants.PLUGIN_SUREFIRE, "systemProperties", "test"); //NOI18N
                 if (sysProps != null) {
                     for (Map.Entry key : sysProps.entrySet()) {
@@ -187,7 +189,7 @@ public class CosChecker implements PrerequisitesChecker {
                    }
                 }
 
-                String argLine = PluginPropertyUtils.getPluginProperty(config.getProject(), Constants.GROUP_APACHE_PLUGINS,
+                String argLine = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
                         Constants.PLUGIN_SUREFIRE, "argLine", "test"); //NOI18N
                 if (argLine != null) {
                     try {
@@ -201,9 +203,11 @@ public class CosChecker implements PrerequisitesChecker {
                     //add and for debugging, remove the debugging ones..
                 }
 
+                //TODO somehow use the config.getMavenProject() call rather than looking up the
+                // ClassPathProviderImpl from lookup. The loaded project can be different from the executed one.
                 ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
                 //add additionalClasspathElements parameter in surefire plugin..
-                String[] additionals = PluginPropertyUtils.getPluginPropertyList(config.getProject(), Constants.GROUP_APACHE_PLUGINS,
+                String[] additionals = PluginPropertyUtils.getPluginPropertyList(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
                         Constants.PLUGIN_SUREFIRE, "additionalClasspathElements", "additionalClasspathElement", "test"); //NOI18N
                 ClassPath cp = cpp.getProjectClassPaths(ClassPath.EXECUTE)[1];
                 if (additionals != null) {

@@ -88,9 +88,8 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
         if (debug && ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equalsIgnoreCase(config.getActionName()) && config.getGoals().contains("surefire:test")) { //NOI18N - just a safeguard
             String newArgs = config.getProperties().getProperty(MAVENSUREFIREDEBUG); //NOI18N
             String oldArgs = config.getProperties().getProperty(ARGLINE); //NOI18N
-            NbMavenProject nbprj = config.getProject().getLookup().lookup(NbMavenProject.class);
 
-            String ver = PluginPropertyUtils.getPluginVersion(nbprj.getMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE); //NOI18N
+            String ver = PluginPropertyUtils.getPluginVersion(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE); //NOI18N
             //make sure we have both old surefire-plugin and new surefire-plugin covered
             // in terms of property definitions.
 

@@ -58,6 +58,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -214,6 +215,63 @@ public final class NbMavenProjectImpl implements Project {
     }
 
     /**
+     * load a project with properties and profiles other than the current ones.
+     * @param activeProfiles
+     * @param properties
+     * @return
+     */
+    public synchronized MavenProject loadMavenProject(List<String> activeProfiles, Properties properties) {
+        try {
+            MavenExecutionRequest req = new DefaultMavenExecutionRequest();
+            req.addActiveProfiles(activeProfiles);
+            req.setPomFile(projectFile.getAbsolutePath());
+            req.setNoSnapshotUpdates(true);
+            req.setUpdateSnapshots(false);
+            req.setUserProperties(properties);
+            //MEVENIDE-634 i'm wondering if this fixes the issue
+            req.setInteractiveMode(false);
+            // recursive == false is important to avoid checking all submodules for extensions
+            // that will not be used in current pom anyway..
+            // #135070
+            req.setRecursive(false);
+            MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req);
+            if (!res.hasExceptions()) {
+                return res.getProject();
+            } else {
+                @SuppressWarnings("unchecked")
+                List<Exception> exc = res.getExceptions();
+                //TODO how to report to the user?
+                for (Exception ex : exc) {
+                    Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Exception thrown while loading maven project at " + getProjectDirectory(), ex); //NOI18N
+                }
+            }
+        } catch (RuntimeException exc) {
+            //guard against exceptions that are not processed by the embedder
+            //#136184 NumberFormatException
+            Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Runtime exception thrown while loading maven project at " + getProjectDirectory(), exc); //NOI18N
+        } 
+        File fallback = InstalledFileLocator.getDefault().locate("maven2/fallback_pom.xml", null, false); //NOI18N
+        try {
+            return getEmbedder().readProject(fallback);
+        } catch (Exception x) {
+            // oh well..
+            //NOPMD
+            }
+        return null;
+    }
+
+    public List<String> getCurrentActiveProfiles() {
+        List<String> toRet = new ArrayList<String>();
+        if (configEnabler.isConfigurationEnabled()) {
+            toRet.addAll(configEnabler.getConfigProvider().getActiveConfiguration().getActivatedProfiles());
+        } else {
+            List<String> activeProfiles = profileHandler.getActiveProfiles( false);
+            toRet.addAll(activeProfiles);
+        }
+        return toRet;
+    }
+
+    /**
      * getter for the maven's own project representation.. this instance is cached but gets reloaded
      * when one the pom files have changed.
      */
@@ -222,12 +280,7 @@ public final class NbMavenProjectImpl implements Project {
             long startLoading = System.currentTimeMillis();
             try {
                 MavenExecutionRequest req = new DefaultMavenExecutionRequest();
-                if (configEnabler.isConfigurationEnabled()) {
-                    req.addActiveProfiles(configEnabler.getConfigProvider().getActiveConfiguration().getActivatedProfiles());
-                } else {
-                    List<String> activeProfiles = profileHandler.getActiveProfiles( false);
-                    req.addActiveProfiles(activeProfiles);
-                }
+                req.addActiveProfiles(getCurrentActiveProfiles());
                 req.setPomFile(projectFile.getAbsolutePath());
                 req.setNoSnapshotUpdates(true);
                 req.setUpdateSnapshots(false);

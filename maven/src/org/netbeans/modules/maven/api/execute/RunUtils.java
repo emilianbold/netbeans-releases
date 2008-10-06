@@ -67,6 +67,8 @@ public final class RunUtils {
         MavenExecutor exec;
         boolean useEmbedded = false;
         if (config.getProject() != null) {
+            //TODO somehow use the config.getMavenProject() call rather than looking up the
+            // AuxiliaryProperties from lookup. The loaded project can be different from the executed one.
             AuxiliaryProperties props = config.getProject().getLookup().lookup(AuxiliaryProperties.class);
             String val = props.get(Constants.HINT_USE_EXTERNAL, true);
             if ("false".equalsIgnoreCase(val)) { //NOI18N
