@@ -45,8 +45,11 @@ package org.netbeans.test.xml.schema;
 // Imports required by this java code
 import java.awt.Point;
 import java.util.zip.CRC32;
+import org.netbeans.jemmy.JemmyException;
 import javax.swing.tree.TreePath;
+import java.awt.event.KeyEvent;
 import junit.framework.TestSuite;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
@@ -54,6 +57,7 @@ import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -118,7 +122,8 @@ public class AcceptanceTestCase extends JellyTestCase {
               "customizeSchema",
               "checkSourceCRC",
               "refactorComplexType",
-              "applyDesignPattern"
+              "applyDesignPattern",
+              "CreateXMLConstrainedDocument"
            )
            .enableModules( ".*" )
            .clusters( ".*" )
@@ -535,6 +540,7 @@ public class AcceptanceTestCase extends JellyTestCase {
         // Report error with appropriate message
         fail("Schema validation failed.");
     }
+
     // Call popup menu on item in list of column schema view
     private void callPopupOnListItem(JListOperator opList, String strItem, String strMenuPath) {
         // Select required item
@@ -549,7 +555,7 @@ public class AcceptanceTestCase extends JellyTestCase {
         new JPopupMenuOperator().pushMenuNoBlock(strMenuPath);
     }
 
-    // Goind down
+    // Going down
     public void tearDown() {
         // Some technical staff
         new SaveAllAction().performAPI();
@@ -563,5 +569,157 @@ public class AcceptanceTestCase extends JellyTestCase {
         // Close annoing window if any
         Helpers.closeUMLWarningIfOpened();
     }
+
+    public class CImportClickData
+    {
+      public boolean inshort;
+      public int row;
+      public int col;
+      public int count;
+      public int result;
+      public String error;
+      public String checker;
+      public int timeout;
+      
+      public CImportClickData(
+          boolean _inshort,
+          int _row,
+          int _col,
+          int _count,
+          int _result,
+          String _error,
+          String _checker,
+          int _timeout
+        )
+      {
+        inshort = _inshort;
+        row = _row;
+        col = _col;
+        count = _count;
+        result = _result;
+        error = _error;
+        checker = _checker;
+        timeout = _timeout;
+      }
+      
+      public CImportClickData(
+          boolean _inshort,
+          int _row,
+          int _col,
+          int _count,
+          int _result,
+          String _error,
+          String _checker
+        )
+      {
+        this(
+            _inshort,
+            _row,
+            _col,
+            _count,
+            _result,
+            _error,
+            _checker,
+            750
+        );
+      }
+    }
+
+  // Should early find issues like #148823
+  public void CreateXMLConstrainedDocument( )
+  {
+    ProjectsTabOperator pto = new ProjectsTabOperator( );
+    ProjectRootNode prn = pto.getProjectRootNode(
+        PROJECT_NAME + "|Source Packages|qa.xmltools.samples"
+      );
+    prn.select( );
+      
+    // new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenuNoBlock("File|New File...");
+
+    // JDialogOperator jdNew = new JDialogOperator( "New File" );
+    // Workaround for MacOS platform
+    // TODO : check platform
+    // TODO : remove after normal issue fix
+    NewFileWizardOperator.invoke( ).cancel( );
+    NewFileWizardOperator.invoke( );
+
+    NewFileWizardOperator fwNew = new NewFileWizardOperator( "New File" );
+    fwNew.selectCategory( "XML" );
+    fwNew.selectFileType( "XML Document" );
+    fwNew.next( );
+
+    fwNew.next( );
+
+    JDialogOperator jnew = new JDialogOperator( "New File" );
+    JRadioButtonOperator jbut = new JRadioButtonOperator(
+        jnew,
+        "XML Schema-Constrained Document"
+      );
+    jbut.setSelected( true );
+    jbut.clickMouse( );
+    fwNew.next( );
+
+    // === PAGE ===
+    jnew = new JDialogOperator( "New File" );
+    JButtonOperator jBrowse = new JButtonOperator( jnew, "Browse" );
+    jBrowse.pushNoBlock( );
+
+    JDialogOperator jBrowser = new JDialogOperator( "Schema Browser" );
+    JTableOperator jto = new JTableOperator( jBrowser, 0 );
+
+    CImportClickData[] aimpData =
+    {
+      new CImportClickData( true, 0, 0, 2, 3, "Unknown import table state after first click, number of rows: ", null ),
+      new CImportClickData( true, 1, 0, 2, 4, "Unknown import table state after second click, number of rows: ", null ),
+      new CImportClickData( true, 2, 0, 2, 6, "Unknown import table state after third click, number of rows: ", null, 5000 ),
+      new CImportClickData( true, 3, 0, 2, 7, "Unknown import table state after forth click, number of rows: ", null ),
+      new CImportClickData( true, 4, 1, 1, 7, "Unknown to click on checkbox. #", null )
+    };
+
+    for( CImportClickData cli : aimpData )
+    {
+      try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
+
+      jto.clickOnCell( cli.row, cli.col, cli.count );
+      jto.pushKey( KeyEvent.VK_RIGHT );
+
+      try { Thread.sleep( cli.timeout ); } catch( InterruptedException ex ) { }
+      int iRows = jto.getRowCount( );
+      if( cli.result != iRows )
+      {
+        fail(
+            "There is problem with creating schema constrained XML document. "
+            + cli.error
+          );
+      }
+    }
+
+    JButtonOperator jOk = new JButtonOperator( jBrowser, "OK" );
+    jOk.push( );
+    jBrowser.waitClosed( );
+
+    JTableOperator jtable = new JTableOperator( jnew, 0 );
+
+    jnew = new JDialogOperator( "New File" );
+    jtable.clickOnCell( 0, 0, 1 );
+
+    try
+    {
+      fwNew.next( );
+      fwNew.finish( );
+    }
+    catch( JemmyException ex )
+    {
+      fail(
+          "There is problem with creating schema constrained XML document: "
+          + ex.getMessage( )
+        );
+    }
+
+    prn = pto.getProjectRootNode(
+        PROJECT_NAME + "|Source Packages|qa.xmltools.samples|newXMLDocument.xml"
+      );
+    prn.select( );
+  }
 
 }
