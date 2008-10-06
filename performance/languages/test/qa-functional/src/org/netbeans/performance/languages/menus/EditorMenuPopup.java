@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.languages.actions;
+package org.netbeans.performance.languages.menus;
 
 
 import org.netbeans.jellytools.EditorOperator;
