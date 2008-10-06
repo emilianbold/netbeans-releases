@@ -91,6 +91,7 @@ import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
@@ -412,7 +413,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 EjbEnterpriseReferenceContainerSupport.createEnterpriseReferenceContainer(this, helper),
                 new ProjectEjbJarProvider(this),
                 ejbModule, //implements J2eeModuleProvider
-                new EjbJarActionProvider( this, helper, refHelper ),
+                new EjbJarActionProvider( this, helper, refHelper, updateHelper, eval ),
                 new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper),
                 new CustomizerProviderImpl( this, updateHelper, evaluator(), refHelper ),
                 LookupMergerSupport.createClassPathProviderMerger(cpProvider),
@@ -1144,6 +1145,11 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             css.removeArtifactListener(listener);
             artifactSupport.removeArtifactListener(listener);
         }
+
+        public boolean containsIdeArtifacts() {
+            return DeployOnSaveUtils.containsIdeArtifacts(eval, updateHelper, "build.classes.dir");
+        }
+
     }
     
     /**
@@ -1153,7 +1159,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
      * Class should not request project lock from FS listener methods
      * (deadlock prone).
      */
-    public class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener, DeployOnSaveSupport {
+    public class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener {
 
         private static final String META_INF_FOLDER = "META-INF";
 
