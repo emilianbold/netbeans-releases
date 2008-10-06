@@ -124,6 +124,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -470,7 +471,7 @@ public final class WebProject implements Project, AntProjectListener {
             new ProjectWebServicesSupportProvider(),
             webModule, //implements J2eeModuleProvider
             enterpriseResourceSupport,
-            new WebActionProvider( this, this.updateHelper ),
+            new WebActionProvider( this, this.updateHelper, this.eval ),
             new WebLogicalViewProvider(this, this.updateHelper, evaluator (), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper),        
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
@@ -1321,6 +1322,11 @@ public final class WebProject implements Project, AntProjectListener {
             css.removeArtifactListener(listener);
             artifactSupport.removeArtifactListener(listener);
         }
+
+        public boolean containsIdeArtifacts() {
+            return DeployOnSaveUtils.containsIdeArtifacts(eval, updateHelper, "build.classes.dir");
+        }
+        
     }
 
     /**
@@ -1331,7 +1337,7 @@ public final class WebProject implements Project, AntProjectListener {
      * Class should not request project lock from FS listener methods
      * (deadlock prone).
      */
-    private class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener, DeployOnSaveSupport {
+    private class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener {
 
         private FileObject docBase = null;
 
