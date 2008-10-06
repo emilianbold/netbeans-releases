@@ -185,8 +185,7 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
                         // copying a java file
                         changeType = RefactoringInfo.ChangeType.CLASS_COPY;
                         fileList.add(file);
-                        ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
-                        nameList.add(cp.getResourceName(file, '.', false));
+                        nameList.add(file.getName());
                     }
                 }
             } else if (refactoring instanceof SafeDeleteRefactoring) {
