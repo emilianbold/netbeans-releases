@@ -575,6 +575,8 @@ public final class MainWindow extends JFrame {
             g = getGraphics();
         }
         super.paint(g);
+        Logger.getLogger(MainWindow.class.getName()).log(Level.FINE, 
+                "Paint method of main window invoked normally."); //NOI18N
 
         WindowManagerImpl.getInstance().mainWindowPainted();
     }
